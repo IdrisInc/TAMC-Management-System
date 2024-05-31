@@ -1,0 +1,196 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  <title>My Requests</title>
+{% endblock title %}
+
+{% block content %}
+<div class="content-wrapper">
+  <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Task Assignment</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Task Assignment</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+  
+
+
+  <div id="messages">
+    {% for message in user_messages %}
+      <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center mb-3">
+    <a href="{% url 'equipment:view_approved_requests' %}" class="btn btn-primary">View Approved Requests</a>
+  </div>
+
+ <!-- Main content -->
+    <section class="content ">
+      <div class="container-fluid">
+       <!-- /.row -->
+       <div class="row">
+        <div class="col-12">
+          <div class="card ">
+            <div class="card-header ">
+              
+              <h3 class="card-title">My Request</h3>
+
+              <div class="card-tools">
+                <div class="input-group input-group-sm" style="width: 150px;">
+                  <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                  <div class="input-group-append">
+                    <button type="submit" class="btn btn-default">
+                      <i class="fas fa-search"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+{% if user_requests %}
+  
+
+  
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0" style="height: 300px;">
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                <thead>
+        <tr>
+          <th>Description</th>
+          <th>Date of Request</th>
+          <th>Location</th>
+          <th>Category</th>
+          <th>Equipment Required</th>
+          <th>Submission Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task_assignment in user_requests %}
+          <tr>
+            <td>{{ task_assignment.assignment }}</td>
+            <td>{{ task_assignment.date }}</td>
+            <td>{{ task_assignment.location }}</td>
+            <td>{{ task_assignment.category }}</td>
+            <td>{{ task_assignment.equipment_details }}</td>
+            <td>{{ task_assignment.submission_date }}</td>
+            <td>{{ task_assignment.status }}</td>
+            <td>
+              <td>
+                <td>
+                  <a href="{% url 'equipment:edit_task_assignment' task_assignment.id %}" class="btn btn-primary {% if task_assignment.status == 'Under Review' or task_assignment.status == 'Approved' %}disabled{% endif %}">Edit</a>
+                  <a href="{% url 'equipment:delete_task_assignment' task_assignment.id %}" class="btn btn-danger {% if task_assignment.status == 'Under Review' or task_assignment.status == 'Approved' %}disabled{% endif %}">Delete</a>
+              </td>
+              
+            </td>
+            
+            </td>
+          </tr>
+        {% endfor %}
+     </tbody>
+              </table>
+            </div>
+            {% else %}
+                    
+                        <div class="card-header mt-5 ">
+                        <p class="card-title" >You have not made any request.</p>
+                        </div>
+          {% endif %} 
+           <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+        </div>
+      </div>
+
+      <!-- /.row -->
+
+      {% if user_role != 'Technical' and user_role != 'Presenter' %}
+      <div class="container-fluid">
+        <!-- /.row -->
+        <div class="row mt-5">
+         <div class="col-12">
+           <div class="card card-primary">
+             <div class="card-header ">
+               <h3 class="card-title">Request Made</h3>
+ 
+               <div class="card-tools">
+                 <div class="input-group input-group-sm" style="width: 150px;">
+                   <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+ 
+                   <div class="input-group-append">
+                     <button type="submit" class="btn btn-default">
+                       <i class="fas fa-search"></i>
+                     </button>
+                   </div>
+                 </div>
+               </div>
+             </div>
+             <!-- /.card-header -->
+             <div class="card-body table-responsive p-0" style="height: 300px;">
+               <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                 <thead>
+        <tr>
+          <th>Description</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task_assignment in general_requests %}
+          <tr>
+            <td>{{ task_assignment.assignment }}</td>
+            <td>{{ task_assignment.date }}</td>
+            <td>{{ task_assignment.location }}</td>
+            <td>{{ task_assignment.status }}</td>
+            <td><a href="{% url 'equipment:specific_request'  task_assignment.id %}" class= "btn btn-primary">View More</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+  <!-- Overlay -->
+  <div id="overlay">
+    <div id="specific-request-details">
+      <!-- Specific request details will be displayed here -->
+    </div>
+    <span class="close-btn" onclick="closeOverlay()">×</span>
+  </div>
+
+  <script>
+    function displayOverlay(taskId) {
+      var overlay = document.getElementById('overlay');
+      var specificRequestDetails = document.getElementById('specific-request-details');
+
+      // Fetch specific request details
+      var specificRequest = document.getElementById('specific-request-' + taskId).innerHTML;
+
+      // Display specific request details in the overlay
+      specificRequestDetails.innerHTML = specificRequest;
+      overlay.style.display = 'block';
+    }
+
+    function closeOverlay() {
+      var overlay = document.getElementById('overlay');
+      overlay.style.display = 'none';
+    }
+  </script>
+
+{% endblock content %}

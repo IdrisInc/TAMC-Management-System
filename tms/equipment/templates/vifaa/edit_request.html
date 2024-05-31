@@ -1,0 +1,194 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+    <title>Edit Task Assignment</title>
+{% endblock title %}
+
+{% block content %}
+    <div id="messages">
+        {% for message in user_messages %}
+            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+
+   <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class ="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Equipment Requests</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active"><a href="#">Equipment Request</a></li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+          <div class="row ml-5">
+            <!-- left column -->
+            <div class="col-md-9">
+              <!-- general form elements -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-tasks"></i> Edit Your Task Here</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+                <form method="post" enctype="multipart/form-data">
+                  <div class="card-body">
+                    <div class="form-group">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label for="id_assignment">Assignment</label>
+                                <input type="text" class="form-control" id="id_assignment" name="assignment" value="{{ task_assignment.assignment }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_date">Date</label>
+                                <input type="date" class="form-control" id="id_date" name="date" value="{{ task_assignment.date }}" min="{{ current_date }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_location">Location of the Assignment</label>
+                                <input type="text" class="form-control" id="id_location" name="location" value="{{ task_assignment.location }}" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_category">Category</label>
+                                <select class="form-control" id="id_category" name="category" required>
+                                    {% for category_key, category_label in category_choices %}
+                                        <option value="{{ category_key }}" {% if category_key == task_assignment.category %}selected{% endif %}>{{ category_label }}</option>
+                                    {% endfor %}
+                                    <option value="__add__">Add New Category</option> <!-- Allow adding new category -->
+                                </select>
+                                <div id="new_category_input" style="display: none;">
+                                    <input type="text" class="form-control mt-2" id="id_new_category" name="new_category" placeholder="Enter New Category">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_details">Details of the Assignment</label>
+                                <select multiple class="form-control" id="id_details" name="details" required>
+                                    {% for detail in assignment_details_choices %}
+                                        <option value="{{ detail.id }}" {% if detail.id in task_assignment.details.all %}selected{% endif %}>{{ detail.detail }}</option>
+                                    {% endfor %}
+                                    <option value="__add__">Add New Detail</option> <!-- Allow adding new detail -->
+                                </select>
+                                <div id="new_detail_input" style="display: none;">
+                                    <input type="text" class="form-control mt-2" id="id_new_detail" name="new_detail" placeholder="Enter New Detail">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_submission_date">Date of Submission</label>
+                                <input type="date" class="form-control" id="id_submission_date" name="submission_date" value="{{ task_assignment.submission_date }}" required>
+                            </div>
+
+                            <button type="button" id="add-equipment-field" class="btn btn-primary mb-3">Add Equipment</button>
+
+                            <div id="equipment-fields">
+                                {% for assignment_equipment in task_assignment.assignmentequipment_set.all %}
+                                    <div class="equipment-field">
+                                        <div class="form-group">
+                                            <label for="id_equipment">Equipment Required</label>
+                                            <select class="form-control equipment-select" name="equipment[]" required>
+                                                <option value="" disabled>Select Equipment</option>
+                                                {% for equipment in all_equipments %}
+                                                    <option value="{{ equipment.id }}" {% if equipment.id == assignment_equipment.equipment.id %}selected{% endif %}>{{ equipment.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="id_quantity">Quantity</label>
+                                            <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" min="1" value="{{ assignment_equipment.quantity }}">
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="id_persons_assigned">Persons Assigned</label>
+                                <select multiple class="form-control" id="id_persons_assigned" name="persons_assigned[]" required>
+                                    {% for person in all_persons %}
+                                        <option value="{{ person.id }}" {% if person.id in task_assignment.persons_assigned.all %}selected{% endif %}>{{ person.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Update Task Assignment</button>
+                                <a href="{% url 'equipment:view_assignments' %}" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to add new equipment selection fields
+        document.getElementById('add-equipment-field').addEventListener('click', function() {
+            var equipmentFields = document.getElementById('equipment-fields');
+            var newEquipmentField = document.createElement('div');
+            newEquipmentField.className = 'equipment-field';
+            newEquipmentField.innerHTML = `
+                <div class="form-group">
+                    <label for="id_equipment">Equipment Required</label>
+                    <select class="form-control equipment-select" name="equipment[]" required>
+                        <option value="" disabled selected>Select Equipment</option>
+                        {% for equipment in all_equipments %}
+                            <option value="{{ equipment.id }}">{{ equipment.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_quantity">Quantity</label>
+                    <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" min="1" value="1">
+                </div>
+            `;
+            equipmentFields.appendChild(newEquipmentField);
+
+            // Update options in all fields to reflect selected equipment
+            var allEquipmentSelects = document.querySelectorAll('.equipment-select');
+            allEquipmentSelects.forEach(function(select) {
+                var selectedOptions = [];
+                allEquipmentSelects.forEach(function(otherSelect) {
+                    if (select !== otherSelect) {
+                        selectedOptions.push(otherSelect.value);
+                    }
+                });
+                select.querySelectorAll('option').forEach(function(option) {
+                    if (selectedOptions.includes(option.value)) {
+                        option.disabled = true; // Disable options that are selected in any other field
+                    } else {
+                        option.disabled = false; // Enable options that are not selected in any other field
+                    }
+                });
+            });
+        });
+
+          // Get current date in YYYY-MM-DD format
+          var today = new Date();
+          var dd = String(today.getDate()).padStart(2, '0');
+          var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+          var yyyy = today.getFullYear();
+          var current_date = yyyy + '-' + mm + '-' + dd;
+  
+          // Set min attribute of date input to current date
+          document.getElementById("id_date").setAttribute("min", current_date);
+    </script>
+
+{% endblock %}

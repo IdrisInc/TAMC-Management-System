@@ -1,0 +1,114 @@
+{% extends "base/base.html" %}
+{% block title %} <title>Register Equipment</title>{% endblock title %}
+
+{% block content %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Register Equipment</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Add Equipment</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+          <div class="row ml-5">
+            <!-- left column -->
+            <div class="col-md-9">
+              <!-- general form elements -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title">Equipment</h3>
+                </div>
+                <!-- /.card-header -->
+                <!-- form start -->
+    <form id="registerForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body">
+            <div class="form-group">
+            <label for="id_name">Equipment Name</label>
+            <input type="text" class="form-control" id="id_name" name="name">
+        </div>
+
+        <div class="form-group">
+            <label for="exampleInputPassword1">Serial Number</label>
+            <input type="text"  class="form-control" id="id_serial_number" name="serial_number" placeholder ="234hfbd">
+          </div>
+
+
+        <div class="form-group">
+            <label for="id_category">Category:</label>
+            <select class="form-control" id="id_category" name="category">
+                {% for choice in category_choices %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                {% endfor %}
+                <option value="add_category">Add New Category</option>
+            </select>
+            <input type="text" class="form-control mt-2" id="new_category_input" name="new_category" placeholder="New Category" style="display: none;">
+        </div>
+
+        <div class="form-group">
+            <label for="id_type_model">Type/Model:</label>
+            <select class="form-control" id="id_type_model" name="type_model">
+                {% for choice in type_model_choices %}
+                    <option value="{{ choice }}">{{ choice }}</option>
+                {% endfor %}
+                <option value="add_type_model">Add New Type/Model</option>
+            </select>
+            <input type="text" class="form-control mt-2" id="new_type_model_input" name="new_type_model" placeholder="New Type/Model" style="display: none;">
+        </div>
+
+      
+
+         <div class="form-group">
+                <label for="exampleInputFile">Equipment Image</label>
+                <div class="input-group">
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="id_equipment_image" name="equipment_image">
+                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                  </div>
+                  
+                </div>
+              </div>
+              
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const categorySelect = document.getElementById("id_category");
+        const typeModelSelect = document.getElementById("id_type_model");
+        const newCategoryInput = document.getElementById("new_category_input");
+        const newTypeModelInput = document.getElementById("new_type_model_input");
+
+        categorySelect.addEventListener("change", function() {
+            if (this.value === "add_category") {
+                newCategoryInput.style.display = "block";
+                newCategoryInput.focus();
+            } else {
+                newCategoryInput.style.display = "none";
+            }
+        });
+
+        typeModelSelect.addEventListener("change", function() {
+            if (this.value === "add_type_model") {
+                newTypeModelInput.style.display = "block";
+                newTypeModelInput.focus();
+            } else {
+                newTypeModelInput.style.display = "none";
+            }
+        });
+    });
+</script>
+{% endblock content %}

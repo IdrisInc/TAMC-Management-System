@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:TAMC2}/tms/db.sqlite3",
+            "name": "idris"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

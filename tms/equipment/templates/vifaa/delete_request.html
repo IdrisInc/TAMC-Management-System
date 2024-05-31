@@ -1,0 +1,25 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+ <title>Delete Task Assignment</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title text-center">Delete Task Assignment</h2>
+          <p>Are you sure you want to delete the task assignment "{{ task_assignment.assignment }}"?</p>
+          <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+            <a href="{% url 'equipment:view_assignments' %}" class="btn btn-secondary">Cancel</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

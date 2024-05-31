@@ -1,0 +1,144 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+<title>Edit Equipment</title>
+{% endblock title %}
+
+{% block content %}
+{% comment %} <style>
+    form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #45A049;
+    }
+</style> {% endcomment %}
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Update Equipment</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">Equipment</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+          <div class="row ml-5">
+            <!-- left column -->
+            <div class="col-md-9">
+              <!-- general form elements -->
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title">Equipment</h3>
+                </div>
+<form method="post" enctype="multipart/form-data">
+   
+    {% csrf_token %}
+    <div class="card-body">
+        <div class="form-group">
+    <label for="name">Equipment Name:</label>
+    <input type="text" class="form-control" id="name" name="name" value="{{ equipment.name }}" required>
+</div>
+<div class="form-group">
+    <label for="exampleInputPassword1">Serial Number</label>
+    <input type="text" class="form-control" id="id_serial_number" value="{{ equipment.serial_number}}">
+  </div>
+
+    <div class="form-group">
+    <label for="category">Category:</label>
+    <input type="text"class="form-control"  id="category" name="category" value="{{ equipment.category }}" required>
+    </div>
+
+    
+        <div class="form-group">
+    <label for="type_model">Type/Model:</label>
+    <input type="text"class="form-control"  id="type_model" name="type_model" value="{{ equipment.type_model }}" style="width: 100%;" required>
+
+
+    {% comment %} <div class="card-body">
+        <div class="form-group">
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" value="{{ equipment.quantity }}" min="1" required> {% endcomment %}
+    <div class="form-group">
+    <label for="status">Status:</label>  <!-- Added status field -->
+    <select id="status" name="status"class="form-control" required>
+        {% for status_key, status_label in equipment.STATUS_CHOICES %}
+            <option value="{{ status_key }}" 
+                    {% if equipment.status == status_key %}selected{% endif %}>
+                {{ status_label }}
+            </option>
+        {% endfor %}
+    </select>
+
+                 <div class="form-group">
+                <label for="exampleInputFile">Equipment Image</label>
+                <div class="input-group">
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="id_equipment_image" name="equipment_image" value='equipment.equipment_image'>
+                    <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                  </div>
+                </div>
+            </div>
+            <div class="card-footer">
+    <button type="submit"class="btn btn-primary">Save Changes</button>
+</div>
+</form>
+
+
+</div>
+<!-- /.card -->
+
+
+<!-- /.card -->
+
+</div>
+<!-- /.row -->
+</div><!-- /.container-fluid -->
+</section>
+<!-- /.content-wrapper -->
+
+{% endblock content %}

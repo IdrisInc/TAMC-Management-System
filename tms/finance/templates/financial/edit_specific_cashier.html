@@ -1,0 +1,43 @@
+<!-- templates/finance/edit_request.html -->
+{% extends "base/base.html" %}
+
+{% block title %}
+    <title> TAMC-Edit Financial Request</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Financial Request</h2>
+
+    <!-- Display error messages if any -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Check if the user has the right role -->
+    {% if user_role == 'Cashier' %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="account_to_charge">Account to be Charged:</label>
+                <input type="text" name="account_to_charge" id="account_to_charge" value="{{ financial_request.account_to_charge }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="account_code">Account Code:</label>
+                <input type="text" name="account_code" id="account_code" value="{{ financial_request.account_code }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="wef">WEF (With Effect From):</label>
+                <input type="date" name="wef" id="wef" value="{{ financial_request.wef }}" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'finance:specific_detail' financial_request.id %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    {% else %}
+        <p>You don't have permission to edit this request.</p>
+    {% endif %}
+</div>
+{% endblock %}

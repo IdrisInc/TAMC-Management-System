@@ -1,0 +1,233 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}
+<title>Financial Requests</title>
+{% endblock title %}
+
+{% block content %}
+<div class="content-wrapper">
+    <section class ="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Financial Requests</h1>
+            </div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Financial Request</a></li>
+                <li class="breadcrumb-item active">Submited Requests</li>
+              </ol>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+
+      
+    <section class="content ">
+
+        <div class="container-fluid">
+         <!-- /.row -->
+         <div class="row">
+          <div class="col-12">
+            <div class="card ">
+              <div class="card-header ">
+                    {% if messages %}
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% comment %} <a href="{% url 'finance:all_financial_request' %}">View Financial Requests</a> {% endcomment %}
+
+                    <h3 class="card-title">My Financial Requests</h3>
+               
+               
+                    {% if user_requests %}
+                 <div class="card-tools">
+                <div class="input-group input-group-sm" style="width: 150px;">
+                  <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                  <div class="input-group-append">
+                    <button type="submit" class="btn btn-default">
+                      <i class="fas fa-search"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0" style="height: 300px;">
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                <thead>
+                                    <tr>
+                                        <th scope="col">Amount Requested</th>
+                                        <th scope="col">Date Requested</th>
+                                        <th scope="col">Purpose</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Account to be Charged</th> <!-- Corrected placement -->
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Approval Stage</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in user_requests %}
+                                        <tr>
+                                            <td>{{ request.amount_numeric }} ({{ request.amount_words }})</td>
+                                            <td>{{ request.created_at|date:'Y-m-d' }}</td>
+                                            <td>{{ request.purpose }}</td>
+                                            <td>
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Item</th>
+                                                            <th scope="col">Quantity</th>
+                                                            <th scope="col">Price</th>
+                                                            <th scope="col">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in request.items.all %}
+                                                            <tr>
+                                                                <td>{{ item.item_name }}</td>
+                                                                <td>{{ item.quantity }}</td>
+                                                                <td>{{ item.price }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <td colspan="3"></td>
+                                                            <td>{{ request.total_amount }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            
+                                            <!-- Correcting 'Account to be Charged' logic -->
+                                            <td>
+                                                {% if request.approved_by_cashier %}
+                                                    {{ request.account_to_charge }} <!-- Display the account -->
+                                                {% else %}
+                                                    Waiting for Cashier's Approval <!-- Indicate waiting for approval -->
+                                                {% endif %}
+                                            </td>
+
+                                            <td class="{% if request.status == 'Pending' %}text-warning{% elif request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">
+                                                {{ request.status }}
+                                            </td>
+
+                                            <td>
+                                                <!-- Display the approval stage -->
+                                                {% if request.approved_by_production %}
+                                                    {{ request.approved_by_production.first_name }} {{ request.approved_by_production.last_name }}
+                                                {% elif request.approved_by_technical_manager %}
+                                                    {{ request.approved_by_technical_manager.first_name }} {{ request.approved_by_technical_manager.last_name }}
+                                                {% elif request.approved_by_finance %}
+                                                    {{ request.approved_by_finance.first_name }} {{ request.approved_by_finance.last_name }}
+                                                {% else %}
+                                                    Not Approved
+                                                {% endif %}
+                                            </td>
+
+                                            <td>
+                                                {% if request.status == 'Pending' %}
+                                                    <a href="{% url 'finance:update_request' request.id %}" class="btn btn-primary">Edit</a>
+                                                    <form action="{% url 'finance:delete_request' request.id %}" method="post" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ request.id }}')">Delete</button>
+                                                    </form>
+                                                {% else %}
+                                                    <button disabled class="btn btn-secondary">Edit</button>
+                                                    <button disabled class="btn btn-secondary">Delete</button>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                    
+                        <div class="card-header mt-5 ">
+                        <p class="card-title" >You have not made any request.</p>
+                        </div>
+                        {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% if user_role != 'Technical' and user_role != 'Presenter' %}
+
+<div class="container-fluid">
+<div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card card-primary">
+                <div class="card-header ">
+                  <h3 class="card-title">Request Made</h3>
+    
+                  <div class="card-tools">
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                      <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+    
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-default">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-body">
+                    {% if general_requests %}
+                    <div class="card-body table-responsive p-0" style="height: 300px;">
+                        <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                            <thead>
+                                <tr>
+                                    <th>Request From</th>
+                                    <th>Amount Requested</th>
+                                    <th>Date Requested</th>
+                                    <th>Purpose</th>
+                                    <th>View Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in general_requests %}
+                                <tr>
+                                    <td>{{ request.user }}</td>
+                                    <td>{{ request.amount_numeric }} ({{request.amount_words}} Shilings only) </td>
+                                    <td>{{ request.created_at|date:'Y-m-d' }}</td>
+                                    <td>{{ request.purpose }}</td>
+                                    <td><a href="{% url 'finance:specific_detail' request.id %}" class="btn btn-primary">View</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- /.card -->
+              </div>
+            </div>
+                    {% else %}
+                    <p>No financial requests found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+</section>
+<script>
+    function confirmDelete(requestId) {
+        if (confirm("Are you sure you want to delete this request?")) {
+            document.getElementById("deleteForm" + requestId).submit();
+        }
+    }
+</script>
+{% endblock %}

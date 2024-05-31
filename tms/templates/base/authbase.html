@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="icon" type="image/x-icon" href="{% static 'dist/img/hope.png' %}">
+
+  {% block title %}{% endblock title %}
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+</head>
+<body class="hold-transition login-page">
+  {% comment %} <div id="preloader" class="flex-column justify-content-center align-items-center">
+    <img class="animation__wobble" src="{% static 'dist/img/hope.png' %}" alt="tipm logo" height="100" width="100">
+  </div> {% endcomment %}
+
+  <div class="login-box">
+    <div class="login-logo">
+      {% comment %} <a href="index2.html"> {% endcomment %}
+      {% comment %} <br><img style="background-color:grey" src="{% static 'dist/img/taifa.png' %}"  height="90" width="90" aligned="center"> {% endcomment %}
+      TAMC MANAGEMENT SYSTEM
+    </div>
+
+    {% block content %}{% endblock content %}
+  </div>
+  <footer class="float-center d-none d-sm-inline-block">
+    &copy; {% now 'Y' %} <b>TAMC</b> All rights reserved.
+  </footer>
+
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+
+  <script>
+    $(document).ready(function() {
+      // Hide the preloader when the document is ready
+      $("#preloader").fadeOut();
+    });
+  </script>
+
+  <script>
+    // Function to hide the messages
+    function hideMessages() {
+      var messagesDiv = document.getElementById("messages");
+      if (messagesDiv) {
+        var messages = messagesDiv.getElementsByClassName("alert");
+        for (var i = 0; i < messages.length; i++) {
+          var message = messages[i];
+          // Automatically hide each message after 5 seconds (5000 milliseconds)
+          setTimeout(function () {
+            message.style.display = "none";
+          }, 5000);
+        }
+      }
+    }
+
+    // Call the hideMessages function when the page loads
+    window.addEventListener("load", hideMessages);
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- password_reset_confirm.html -->
+{% extends 'base/base.html' %}
+{% block content %}
+  <h2>Reset your password</h2>
+  <form method="post" action="{% url 'password_reset_confirm' uidb64=uid token=token %}">
+    {% if messages %}
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    {% endif %}
+    {% csrf_token %}
+    <label for="id_password">New password:</label>
+    <input type="password" id="id_password" name="password" required>
+    <label for="id_password_confirm">Confirm new password:</label>
+    <input type="password" id="id_password_confirm" name="password_confirm" required>
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}

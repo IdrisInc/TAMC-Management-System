@@ -1,0 +1,88 @@
+{% extends "base/authbase.html" %}
+
+{% block title %}
+    <title>TAMC-Update Profile</title>
+{% endblock %}
+
+{% block content %}
+<div class="update-profile-container">
+    <h2>Update Your Profile</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Username" name="username" value="{{ user.username }}" required>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-user"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="email" class="form-control" placeholder="Email" name="email" value="{{ user.email }}" required>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-envelope"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="First Name" name="first_name" value="{{ user.first_name }}" required>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-user"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Middle Name" name="middle_name" value="{{ user.middle_name }}">
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-user"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Last Name" name="last_name" value="{{ user.last_name }}" required>
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-user"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Phone Number" name="phone_number" value="{{ profile.phone_number }}">
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-phone"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="NIDA Number" name="nida_number" value="{{ profile.nida_number }}">
+            <div class="input-group-append">
+                <div class="input-group-text">
+                    <span class="fas fa-id-card"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-4"></div>
+            <div class="col-4 mb-3">
+                <button type="submit" class="btn btn-primary btn-block">Update</button>
+                
+            </div>
+        </div>
+    </form>
+
+    <a href="{% url 'staff_user:my_profile'  %} "class='btn btn-secondary'>Back to Profile</a>
+</div>
+{% endblock %}

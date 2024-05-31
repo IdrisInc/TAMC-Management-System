@@ -1,0 +1,185 @@
+{% extends 'base/base.html' %}
+{% block title %}
+<title> TAMC-PRO List  </title>
+{% endblock title %}
+
+{% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Program Scheduling</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">PRO Design</li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content ">
+    <div class="container-fluid">
+     <!-- /.row -->
+     <div class="row">
+      <div class="col-12">
+        <div class="card ">
+          <div class="card-header ">
+            
+            <h3 class="card-title">PRO</h3>
+
+            <div class="card-tools">
+              <div class="input-group input-group-sm" style="width: 150px;">
+                <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-default">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+<div id="weekly-program-display" class="card-body table-responsive p-0">
+  <table class="weekly-program-table table table-head-fixed text-nowrap table-hover table-striped">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <script>
+          // Function to get the date of the current Sunday
+          function getCurrentSunday() {
+            const currentDate = new Date();
+            const currentDayIndex = currentDate.getDay(); // Get the index of the current day (0 for Sunday, 1 for Monday, etc.)
+            const diff = 0 - currentDayIndex; // Calculate the difference in days to get to the current Sunday
+            const sundayDate = new Date(currentDate);
+            sundayDate.setDate(sundayDate.getDate() + diff); // Set the date to the current Sunday
+            return sundayDate;
+          }
+
+          // Function to format date as desired
+          function formatDate(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            return date.toLocaleDateString(undefined, options);
+          }
+
+          // Get the date of the current Sunday
+          const currentSunday = getCurrentSunday();
+
+          const tableHead = document.querySelector('thead tr');
+
+          // Loop through the days of the week, starting from Sunday
+          for (let i = 0; i < 7; i++) {
+            const th = document.createElement('th');
+            const date = new Date(currentSunday);
+            date.setDate(date.getDate() + i); // Increment the date by the day index
+            const formattedDate = formatDate(date); // Format the date
+            th.textContent = formattedDate;
+            tableHead.appendChild(th);
+          }
+        </script>
+      </tr>
+    </thead>
+    <tbody>
+      {% for hour in hours %}
+        {% with time_slot=hour|time:"H:i" %}
+          <tr>
+            <td>{{ time_slot }}</td>
+            {% for day, programs in daily_programs.items %}
+              <td>
+                {% for program in programs %}
+                  {% if program.time_and_date|time:"H:i" == time_slot %}
+                    <div class="program-row" data-time="{{ program.time_and_date|date:"Y-m-d H:i:s" }}">
+                      <div>{{ program.program_name }}</div>
+                      <div class="status">
+                        {% if program.status == 'played' %}
+                          <span style="color: grey; background-color: lightgrey;">{{ program.status }}</span>
+                        {% elif program.status == 'next' %}
+                          <span style="color: green; background-color: lightgreen;">{{ program.status }}</span>
+                        {% elif program.status == 'running' %}
+                          <span style="color: red; background-color: pink;">{{ program.status }}</span>
+                        {% else %}
+                          <span style="color: black; background-color: lightgrey;">{{ program.status }}</span>
+                        {% endif %}
+                      </div>
+                      <div style="background-color: {% if program.is_new == 'new' %}lightgreen{% elif program.is_new == 'repeated' %}lightgrey{% else %}pink{% endif %};">{{ program.is_new }}</div>
+                      <a href="{% url 'pro:program_edit' program_id=program.id %}">Edit</a>
+                    </div>
+                  {% endif %}
+                {% empty %}
+                  No programs scheduled
+                {% endfor %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .weekly-program-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .weekly-program-table th,
+  .weekly-program-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .weekly-program-table th {
+    background-color: #f2f2f2;
+  }
+
+  /* Add CSS styling for notifications */
+  .notification {
+    background-color: yellow; /* Change this to your preferred notification color */
+  }
+</style>
+
+<script>
+  // Function to check if program starts within 5 minutes
+  function checkPrograms() {
+    var programs = document.querySelectorAll('.program-row');
+    var currentTime = new Date();
+
+    programs.forEach(function(program) {
+      var programTime = new Date(program.dataset.time); // Get program time
+      
+      // Check if the program is running
+      if (programTime <= currentTime && currentTime < new Date(programTime.getTime() + (30 * 60000))) {
+        program.querySelector('.status').textContent = 'running';
+        program.classList.add('notification'); // Add class for styling
+      }
+      // Check if the program has already played
+      else if (programTime < currentTime) {
+        program.querySelector('.status').textContent = 'played';
+      }
+      // Check if the program is scheduled for later
+      else if (programTime > currentTime) {
+        program.querySelector('.status').textContent = 'next';
+      }
+      // Check if the day has not yet reached
+      else {
+        program.querySelector('.status').textContent = 'not played';
+      }
+    });
+  }
+
+  // Call the function when the page loads
+  window.onload = function() {
+    checkPrograms();
+    setInterval(checkPrograms, 60000); // Check every minute
+  };
+</script>
+
+{% endblock %}

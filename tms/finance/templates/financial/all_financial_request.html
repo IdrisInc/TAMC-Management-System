@@ -1,0 +1,92 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}
+<title>TAMC- All Financial Requests</title>
+{% endblock title %}
+
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Financial Requests</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item"><a href="#">Financial Request</a></li>
+              <li class="breadcrumb-item active">Specific Requests</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content ">
+        <div class="container-fluid">
+         <!-- /.row -->
+         <div class="row">
+          <div class="col-12">
+            <div class="card  card-primary">
+              <div class="card-header  ">
+                <h3 class="card-title">All Request</h3>
+  
+                <div class="card-tools">
+                  <div class="input-group input-group-sm" style="width: 150px;">
+                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+  
+                    <div class="input-group-append">
+                      <button type="submit" class="btn btn-default">
+                        <i class="fas fa-search"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-header -->
+                    {% if all_requests %}
+                         <div class="card-body table-responsive p-0" style="height: 300px;">
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                <thead>
+                  <tr>
+                                        <th>Request From</th>
+                                        <th>Amount Requested</th>
+                                        <th>Date Requested</th>
+                                        <th>Purpose</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in all_requests %}
+                                        <tr>
+                                            <td>{{ request.user.username }}</td>
+                                            <td>{{ request.amount_numeric }} ({{ request.amount_words }})</td>
+                                            <td>{{ request.created_at }}</td>
+                                            <td>{{ request.purpose }}</td>
+                                            <td class="{% if request.status == 'Pending' %}text-warning{% elif request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">{{ request.status }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                    <div class="card-header mt-5 ">
+                        <p class="card-title" >No any request made now.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+   
+</div>
+
+
+</section>
+<!-- /.content -->
+</div>
+{% endblock %}

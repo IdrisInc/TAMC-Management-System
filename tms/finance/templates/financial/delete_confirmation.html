@@ -1,0 +1,17 @@
+<!-- delete_confirmation.html -->
+
+{% extends "base/base.html" %}
+
+{% block title %}
+    <title>TAMC-Delete Confirmation</title>
+{% endblock title %}
+
+{% block content %}
+    <h1>Delete Confirmation</h1>
+    <p>Are you sure you want to delete the financial request?</p>
+    <form action="{% url 'finance:delete_request' request.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+        <a href="{% url 'finance:request_detail' %}"><button type="button">Cancel</button></a>
+    </form>
+{% endblock content %}

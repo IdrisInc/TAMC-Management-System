@@ -1,0 +1,159 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+<title>Task Assignment Form</title>
+{% endblock %}
+
+{% block content %}
+<div id="messages">
+  {% for message in user_messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class ="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Equipment Requests</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active"><a href="#">Equipment Request</a></li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row ml-5">
+        <!-- left column -->
+        <div class="col-md-9">
+          <!-- general form elements -->
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-tasks"></i> Assign Your Task Here</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <form method="post" enctype="multipart/form-data">
+              <div class="card-body">
+                <div class="form-group">
+                  {% csrf_token %}
+                  <!-- Assignment Information -->
+                  <div class="form-group">
+                    <label for="id_assignment">Assignment</label>
+                    <input type="text" class="form-control" id="id_assignment" name="assignment" placeholder="News Coverage" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="id_date">Date</label>
+                    <input type="date" class="form-control" id="id_date" name="date" min="{{ current_date }}" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="id_location">Location</label>
+                    <input type="text" class="form-control" id="id_location" name="location" placeholder="Posta" required>
+                  </div>
+
+                  <!-- Equipment Fields -->
+                  <div id="equipment-fields">
+                    <div class="equipment-field">
+                      <div class="form-group">
+                        <label for="id_equipment">Equipment Required</label>
+                        <select class="form-control equipment-select" name="equipment[]" required>
+                          <option value="" disabled selected>Select Equipment</option>
+                          {% for equipment in available_equipments %}
+                            <option value="{{ equipment.id }}">{{ equipment.name }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="id_quantity">Quantity</label>
+                        <input type="number" class="form-control" name="quantity[]" min="1" value="1">
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" id="add-equipment-field" class="btn btn-primary">Add Equipment</button>
+                  <button type="submit" class="btn btn-primary">Create Task Assignment</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+
+<!-- JavaScript to synchronize dropdowns and disable selected equipment -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var addEquipmentButton = document.getElementById("add-equipment-field");
+    var equipmentFields = document.getElementById("equipment-fields");
+
+    if (addEquipmentButton && equipmentFields) {
+        // Function to disable equipment that's already selected
+        function updateEquipmentSelects() {
+            var allEquipmentSelects = document.querySelectorAll(".equipment-select");
+            var selectedOptions = Array.from(allEquipmentSelects)
+                .filter(select => select.value) // Get current selections
+                .map(select => select.value); // Collect values
+
+            allEquipmentSelects.forEach(function(select) {
+                select.querySelectorAll("option").forEach(function(option) {
+                    if (selectedOptions.includes(option.value) && option.value !== select.value) {
+                        option.disabled = true; // Disable duplicates
+                    } else {
+                        option.disabled = false; // Enable non-selected options
+                    }
+                });
+            });
+        }
+
+        // Add event listener to equipment-select fields to update on change
+        var equipmentSelects = document.querySelectorAll(".equipment-select");
+        equipmentSelects.forEach(function(select) {
+            select.addEventListener("change", updateEquipmentSelects);
+        });
+
+        addEquipmentButton.addEventListener("click", function() {
+            var newEquipmentField = document.createElement("div");
+            newEquipmentField.className = "equipment-field";
+
+            newEquipmentField.innerHTML = `
+                <div class="form-group">
+                    <label for="id_equipment">Equipment Required</label>
+                    <select class="form-control equipment-select" name="equipment[]" required>
+                        <option value="" disabled selected>Select Equipment</option>
+                        {% for equipment in available_equipments %}
+                            <option value="{{ equipment.id }}">{{ equipment.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="id_quantity">Quantity</label>
+                    <input type="number" class="form-control" name="quantity[]" min="1" value="1">
+                </div>
+            `;
+
+            equipmentFields.appendChild(newEquipmentField);
+
+            // Attach event listener to the new field
+            var newSelect = newEquipmentField.querySelector(".equipment-select");
+            newSelect.addEventListener("change", updateEquipmentSelects);
+
+            // Immediately update to avoid duplicates
+            updateEquipmentSelects();
+        });
+    }
+});
+</script>
+
+{% endblock %}

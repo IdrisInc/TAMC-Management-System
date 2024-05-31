@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+  <title>Approved Requests</title>
+{% endblock title %}
+
+{% block content %}
+  <h4>Approved Requests</h4>
+  <table class="table table-striped table-bordered table-hover">
+    <thead class="thead-dark">
+      <tr>
+        <th>Request From</th>
+        <th>Description</th>
+        <th>Date of Request</th>
+        <th>Location</th>
+        <th>Category</th>
+        <th>Equipment Required</th>
+        <th>Submission Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for request in approved_requests %}
+        <tr>
+          <td>{{ request.requested_by }}</td>
+          <td>{{ request.assignment }}</td>
+          <td>{{ request.date }}</td>
+          <td>{{ request.location }}</td>
+          <td>{{ request.category }}</td>
+          <td>
+            {% for equipment in request.equipment_required.all %}
+              {{ equipment.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ request.submission_date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock content %}

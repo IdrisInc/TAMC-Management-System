@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+
+{% block title %}
+<title> TAMC-Edit PRO </title>
+
+{% endblock title %}
+{% block content %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Edit Program Running Order</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active">PRO Design</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row ml-5">
+          <!-- left column -->
+          <div class="col-md-9">
+            <!-- general form elements -->
+            <div class="card card-primary">
+              <div class="card-header">
+                <h3 class="card-title">PRO Design</h3>
+              </div>
+              <!-- /.card-header -->
+              <!-- form start -->
+              <form method="post">
+                <div class="card-body">
+                  {% csrf_token %}
+                  <div class="form-group">
+                    <label for="program_name">Program Name:</label>
+                    <input type="text" id="program_name" name="program_name" class="form-control" value="{{ program.program_name }}" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status" class="form-control">
+                      {% for choice in program.STATUS_CHOICES %}
+                        <option value="{{ choice.0 }}" {% if program.status == choice.0 %} selected {% endif %}>{{ choice.1 }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="is_new">Is New:</label>
+                    <select id="is_new" name="is_new" class="form-control">
+                      {% for choice in program.IS_NEW_CHOICES %}
+                        <option value="{{ choice.0 }}" {% if program.is_new == choice.0 %} selected {% endif %}>{{ choice.1 }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <!-- /.card-body -->
+
+                <div class="card-footer">
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                  <a href="{% url 'pro:program_list' %}" class="btn btn-secondary">Back to Program List</a>
+                </div>
+              </form>
+              <!-- /.form -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+{% endblock %}
