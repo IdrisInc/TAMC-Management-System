@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-<title>Task Assignment Form</title>
+<title>TAMC | Task Assignment Form</title>
 {% endblock %}
 
 {% block content %}
@@ -53,8 +53,17 @@
                     <input type="text" class="form-control" id="id_assignment" name="assignment" placeholder="News Coverage" required>
                   </div>
                   <div class="form-group">
-                    <label for="id_date">Date</label>
-                    <input type="date" class="form-control" id="id_date" name="date" min="{{ current_date }}" required>
+                  <label for="id_category">Category:</label>
+                  <select id="id_category" name="category" class="form-control" required>
+                      <option value="" disabled selected>Select Category</option>
+                      {% for choice in category_choices %}
+                      <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+                  <div class="form-group">
+                    <label for="id_date">Submission Date</label>
+                    <input type="date" class="form-control" id="id_date" name="submission_date" min="{{ current_date }}" required>
                   </div>
                   <div class="form-group">
                     <label for="id_location">Location</label>
@@ -79,6 +88,17 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- Person(s) Required Field -->
+                  <div class="form-group">
+                    <label for="id_persons_assigned">Person(s) Required</label>
+                    <select class="form-control" id="id_persons_assigned" name="persons_assigned[]" multiple required>
+                      {% for person in all_persons %}
+                        <option value="{{ person.id }}">{{ person.get_full_name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
                   <button type="button" id="add-equipment-field" class="btn btn-primary">Add Equipment</button>
                   <button type="submit" class="btn btn-primary">Create Task Assignment</button>
                 </div>

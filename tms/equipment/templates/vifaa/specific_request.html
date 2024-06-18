@@ -1,108 +1,104 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-  <title>Specific Request</title>
+    <title>Specific Task</title>
 {% endblock title %}
 
 {% block content %}
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
+<div class="content-wrapper">
     <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Task Assignment</h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item"><a href="#">Task Assignment</a></li>
-              <li class="breadcrumb-item active">Specific Task</li>
-            </ol>
-          </div>
-        </div>
-      </div><!-- /.container-fluid -->
-    </section>
-
-    <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-        <!-- /.row -->
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Specific Task</h3>
-
-                <div class="card-tools">
-                  <div class="input-group input-group-sm" style="width: 150px;">
-                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
-                    <div class="input-group-append">
-                      <button type="submit" class="btn btn-default">
-                        <i class="fas fa-search"></i>
-                      </button>
-                    </div>
-                  </div>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Task Assignment</h1>
                 </div>
-              </div>
-             <!-- /.card-header -->
-<div class="card-body table-responsive p-0" style="height: 300px;">
-  <table class="table table-head-fixed text-nowrap table-hover table-striped">
-      <thead>
-          <tr>
-              <th>Request From</th>
-              <th>Description</th>
-              <th>Date of Request</th>
-              <th>Location</th>
-              <th>Category</th>
-              <th>Equipment Required</th>
-              <th>Submission Date</th>
-              <th>Status</th>
-              <th>Action</th>
-          </tr>
-      </thead>
-      <tbody>
-          <tr>
-              <td>{{ task_assignment.requested_by }}</td>
-              <td>{{ task_assignment.assignment }}</td>
-              <td>{{ task_assignment.date }}</td>
-              <td>{{ task_assignment.location }}</td>
-              <td>{{ task_assignment.category }}</td>
-              <td>
-                  {% for detail in equipment_details %}
-                      {{ detail.equipment.name }} (Quantity: {{ detail.quantity }})
-                      {% if not forloop.last %}, {% endif %}
-                  {% endfor %}
-              </td>
-              <td>{{ task_assignment.submission_date }}</td>
-              <td>{{ task_assignment.status }}</td>
-              <td>
-                  {% if task_assignment.status != 'Approved' %}
-                      <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
-                      <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
-                  {% else %}
-                      <button class="btn btn-success" disabled>Approve</button>
-                      <button class="btn btn-danger" disabled>Reject</button>
-                      <!-- Confirm Return Button -->
-                      <a href="{% url 'equipment:confirm_return' task_assignment.id %}" class="btn btn-warning">Confirm Return</a>
-                  {% endif %}
-              </td>
-          </tr>
-      </tbody>
-  </table>
-</div>
-<!-- /.card-body -->
-
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Task Assignment</a></li>
+                        <li class="breadcrumb-item active">Specific Task</li>
+                    </ol>
+                </div>
             </div>
-            <!-- /.card -->
-          </div>
         </div>
-        <!-- /.row -->
-      </div>
-      <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
-{% endblock content %}
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Specific Task</h3>
+                        </div>
+                        <div class="card-body table-responsive p-0" style="height: 300px;">
+                            <table class="table table-head-fixed text-nowrap table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Request From</th>
+                                        <th>Description</th>
+                                        <th>Date of Request</th>
+                                        <th>Location</th>
+                                        <th>Category</th>
+                                        <th>Equipment Required</th>
+                                        <th>Persons Assigned</th>
+                                        <th>Submission Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ task_assignment.requested_by }}</td>
+                                        <td>{{ task_assignment.assignment }}</td>
+                                        <td>{{ task_assignment.date }}</td>
+                                        <td>{{ task_assignment.location }}</td>
+                                        <td>{{ task_assignment.category }}</td>
+                                        <td>
+                                            {% for detail in equipment_details %}
+                                                {{ detail.equipment }} (Quantity: {{ detail.quantity }})
+                                                {% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% for person in task_assignment.persons_assigned.all %}
+                                                {{ person.username }}
+                                                {% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>{{ task_assignment.submission_date }}</td>
+                                        <td>{{ task_assignment.status }}</td>
+                                        <td>
+                                            {% if user_role == 'Production' and task_assignment.status == 'Pending' %}
+                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
+                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
+                                            
+                                            {% elif user_role == 'Technical' and task_assignment.status == 'Under Review' and task_assignment.production_approved %}
+                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
+                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
+                                                <a href="{% url 'equipment:confirm_return' task_assignment.id %}" class="btn btn-primary">Confirm Return</a>
+                                            
+                                            {% elif user_role == 'Treasurer' and task_assignment.status == 'Under Review' and task_assignment.production_approved and task_assignment.technical_approved %}
+                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
+                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
+                                            
+                                            {% elif user_role == 'Cashier' and task_assignment.status == 'Under Review' and task_assignment.production_approved and task_assignment.technical_approved and task_assignment.treasurer_approved %}
+                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
+                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
+                                            
+                                            {% else %}
+                                                <button class="btn btn-success" disabled>Approve</button>
+                                                <button class="btn btn-danger" disabled>Reject</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -12,6 +12,7 @@ from datetime import date
 # from finance.utility import determine_user_role  # Import the determine_user_role function from the utils module
 
 
+
 @login_required(login_url='staff_user:staff_login_process')
 @role_required('Technical','Technical Manager')
 
@@ -106,7 +107,6 @@ def delete_equipment(request, pk):
         return redirect('equipment:equipment_list')
     return redirect('equipment:delete_confirmation', pk=pk)
 
-
 @login_required(login_url='staff_user:staff_login_process')
 @role_required('Production', 'Presenter')
 def task_assignment(request):
@@ -118,6 +118,7 @@ def task_assignment(request):
         location = request.POST.get('location')
         category = request.POST.get('category')
         submission_date = request.POST.get('submission_date')
+       
         detail_ids = request.POST.getlist('details')
         equipment_ids = request.POST.getlist('equipment[]')
         quantities = request.POST.getlist('quantity[]')
@@ -145,6 +146,10 @@ def task_assignment(request):
             equipment.status = 'Reserved'
             equipment.save()
         
+        # Optionally, save amount required
+       
+        task_assignment.save()
+
         return redirect('equipment:view_assignments')  # Redirect to a view or success page
 
     else:
@@ -164,6 +169,7 @@ def task_assignment(request):
         }
 
         return render(request, 'vifaa/equipment_request.html', context)
+
     
     
 @login_required(login_url='staff_user:staff_login_process')
@@ -195,54 +201,60 @@ def view_assignments(request):
     
     return render(request, 'vifaa/equip_request_view.html', context)
 
+
+
 @login_required(login_url='staff_user:staff_login_process')
 def specific_request_view(request, task_id):
     task_assignment = get_object_or_404(TaskAssignment, pk=task_id)
     equipment_details = AssignmentEquipment.objects.filter(task_assignment=task_assignment)
+
+    # Check user role and task stage for visibility
+    user_role = determine_user_role(request.user) # Assuming you have a role field in your user profile
+    print(f"User Role: {user_role}") 
+   
     context = {
         'task_assignment': task_assignment,
         'equipment_details': equipment_details,
+        'user_role': user_role,
     }
     return render(request, 'vifaa/specific_request.html', context)
 
 
-@role_required('Production', 'Presenter')
 @login_required(login_url='staff_user:staff_login_process')
+@role_required('Production', 'Presenter')
 def edit_task_assignment(request, task_id):
-    """
-    This method allows authorized users (Production or Presenter) to update a specific task assignment.
-    """
-    
-    task_assignment = TaskAssignment.objects.get(pk=task_id)
+    task_assignment = get_object_or_404(TaskAssignment, pk=task_id)
     
     if request.method == 'POST':
-        print(request.POST)
-        # Process the update data manually without forms
+        print("POST data received:", request.POST)
         assignment = request.POST.get('assignment')
         location = request.POST.get('location')
         category = request.POST.get('category')
         submission_date = request.POST.get('submission_date')
         agreement = request.POST.get('agreement') == 'on'
         detail_ids = request.POST.getlist('details')
-        equipment_ids = request.POST.getlist('equipment[]')  # Correctly retrieve equipment IDs as an array
-        quantities = request.POST.getlist('quantity[]')  # Correctly retrieve quantities as an array
-        persons_assigned_ids = request.POST.getlist('persons_assigned')
-        current_date = date.today()
+        equipment_ids = request.POST.getlist('equipment[]')
+        quantities = request.POST.getlist('quantity[]')
+        persons_assigned_ids = request.POST.getlist('persons_assigned[]')  # Corrected to 'persons_assigned[]'
         
-        # Update the TaskAssignment object fields
+        current_date = date.today()
+
         task_assignment.assignment = assignment
         task_assignment.location = location
         task_assignment.category = category
         task_assignment.submission_date = submission_date
         task_assignment.agreement = agreement
+        
         task_assignment.date = current_date
         
-        # Clear existing AssignmentEquipment objects (compatible with Django 5.0.2)
-        existing_assignments = task_assignment.assignmentequipment_set.all()
-        for assignment in existing_assignments:
-            assignment.delete()
-
-        # Update AssignmentEquipment objects (assuming a one-to-many relationship)
+        # Save the updated details
+        task_assignment.save()
+        
+        # Update the ManyToMany fields
+        task_assignment.details.set(detail_ids)
+        
+        # Delete existing equipment assignments and create new ones
+        task_assignment.assignmentequipment_set.all().delete()
         for equipment_id, quantity in zip(equipment_ids, quantities):
             equipment = Equipment.objects.get(id=equipment_id)
             AssignmentEquipment.objects.create(
@@ -251,17 +263,13 @@ def edit_task_assignment(request, task_id):
                 quantity=quantity
             )
 
-        # Update assigned persons
+        # Update persons assigned
         task_assignment.persons_assigned.set(persons_assigned_ids)
         
-        # Save the updated task assignment
-        task_assignment.save()
-        
-        # Redirect to a success page or further processing
-        return redirect('equipment:view_assignments')  # Replace with actual success URL
+        return redirect('equipment:view_assignments')
     
     else:
-        # Prepare context data for rendering the update form (similar to task_assignment)
+        # Handle GET request to display the form
         all_equipments = Equipment.objects.all()
         presenter = Group.objects.get(name='Presenter')
         all_persons = User.objects.filter(groups=presenter)
@@ -294,47 +302,90 @@ def delete_task_assignment(request, task_id):
         context = {'task_assignment': task_assignment}
         return render(request, 'vifaa/delete_request.html', context)
     
-    
+
 @login_required(login_url='staff_user:staff_login_process')
+@role_required('Production', 'Technical', 'Treasurer', 'Cashier')
 def approve_request(request, task_id):
-    task_assignment = get_object_or_404(TaskAssignment, id=task_id)
-    print(request.user.groups.all())  # Print all groups the user belongs to
+    task_assignment = get_object_or_404(TaskAssignment, pk=task_id)
 
-    # Check if the current user is in the technical or treasurer group
-    if request.user.groups.filter(name='Technical').exists():
-        # Technical approves the request
-        task_assignment.status = 'Under Review'
-        task_assignment.save()
-    elif request.user.groups.filter(name='Treasurer').exists():
-        # Treasurer approves the request
-        task_assignment.status = 'Approved'
-        task_assignment.save()
+    # Determine user role using the determine_user_role function
+    user_role = determine_user_role(request.user)
+    print(f"User Role: {user_role}")  # Debugging print statement
+    
+    if task_assignment.status == 'Pending':
+        if user_role == 'Production':
+            # Only Production can approve when status is Pending
+            task_assignment.status = 'Under Review'
+            task_assignment.production_approved = True
+            task_assignment.save()
+
+            # Redirect to specific request view or another appropriate page
+            return redirect('equipment:specific_request', task_id=task_id)
+
+        else:
+            return HttpResponseForbidden("You are not authorized to approve this task at this stage.")
+
+    elif task_assignment.status == 'Under Review':
+        if user_role == 'Technical':
+            if task_assignment.production_approved:
+                task_assignment.technical_approved = True
+                task_assignment.save()
+
+                # Redirect to specific request view or another appropriate page
+                return redirect('equipment:specific_request', task_id=task_id)
+
+            else:
+                return HttpResponseForbidden("You are not authorized to approve this task at this stage.")
+
+        elif user_role == 'Treasurer':
+            if task_assignment.production_approved and task_assignment.technical_approved:
+                task_assignment.treasurer_approved = True
+                task_assignment.save()
+
+                # Redirect to specific request view or another appropriate page
+                return redirect('equipment:specific_request', task_id=task_id)
+
+            else:
+                return HttpResponseForbidden("You are not authorized to approve this task at this stage.")
+
+        elif user_role == 'Cashier':
+            if (task_assignment.production_approved and 
+                task_assignment.technical_approved and 
+                task_assignment.treasurer_approved):
+                
+                task_assignment.cashier_approved = True
+                task_assignment.status = 'Approved'
+                task_assignment.save()
+
+                # Redirect to specific request view or another appropriate page
+                return redirect('equipment:specific_request', task_id=task_id)
+
+            else:
+                return HttpResponseForbidden("You are not authorized to approve this task at this stage.")
+
+        else:
+            return HttpResponseForbidden("You are not authorized to approve this task.")
+
     else:
-        # User doesn't have permission to approve
-        return HttpResponseForbidden("You don't have permission to approve this request.")
+        return HttpResponseForbidden("This task assignment is not pending approval.")
 
-    # Redirect to a success page or another appropriate view
-    return redirect('equipment:view_assignments')
-    # Redirect to the view assignments page
-    return redirect('equipment:view_assignments')
 
 @login_required(login_url='staff_user:staff_login_process')
+@role_required('Production', 'Technical', 'Treasurer', 'Cashier')
 def reject_request(request, task_id):
-    task_assignment = get_object_or_404(TaskAssignment, id=task_id)
-    
-    # Check if the current user is authorized to reject the request
-    if request.user.groups.filter(name='Technical').exists() or request.user.groups.filter(name='Treasurer').exists():
-        # Update the status to "Rejected"
+    task_assignment = get_object_or_404(TaskAssignment, pk=task_id)
+
+    # Check if the user belongs to the appropriate group and update the task status to 'Rejected'
+    user_groups = request.user.groups.values_list('name', flat=True)
+
+    if 'Production' in user_groups or 'Technical' in user_groups or 'Treasurer' in user_groups or 'Cashier' in user_groups:
         task_assignment.status = 'Rejected'
+        task_assignment.rejection_reason = request.POST.get('rejection_reason', '')
         task_assignment.save()
-        
-        # Redirect to a success page or another appropriate view
-        return redirect('equipment:view_assignments')
     else:
-        # User doesn't have permission to reject
-        return HttpResponseForbidden("You don't have permission to reject this request.")
+        return HttpResponseForbidden('You are not authorized to reject this task.')
 
-
+    return redirect('specific_request_view', task_id=task_id)
 
 @login_required(login_url='staff_user:staff_login_process')
 @role_required('Technical', 'Technical Manager')
@@ -353,7 +404,30 @@ def confirm_return(request, task_id):
         task_assignment.save()
 
     return redirect('equipment:view_assignments')  # Update with your redirect URL
+
+@login_required(login_url='staff_user:staff_login_process')
 def view_approved_requests(request):
     approved_requests = TaskAssignment.objects.filter(status='Approved')
-    context = {'approved_requests': approved_requests}
+    user_role = determine_user_role(request.user)
+    
+    context = {
+        'approved_requests': approved_requests,
+        'user_role': user_role,
+    }
     return render(request, 'vifaa/approved_request.html', context)
+
+@login_required(login_url='staff_user:staff_login_process')
+@role_required('Technical')  # Assuming you have this decorator to check user roles
+def confirm_return(request, task_id):
+    task_assignment = get_object_or_404(TaskAssignment, pk=task_id)
+    
+    if task_assignment.status == 'Approved' and task_assignment.cashier_approved:
+        for equipment in task_assignment.assignmentequipment_set.all():
+            if equipment.equipment.status == 'Reserved':
+                equipment.equipment.status = 'Available'
+                equipment.equipment.save()
+                
+        return redirect('equipment:view_approved_request')  # Redirect to the approved requests view
+
+    return HttpResponseForbidden("You are not authorized to perform this action.")
+

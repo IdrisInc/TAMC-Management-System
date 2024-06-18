@@ -37,11 +37,10 @@ def program_create(request):
 
 
 
-from datetime import time, timedelta
-from django.utils import timezone
+
 
 def program_list(request):
-    # Generating a list of time objects from 8:00 to 23:00
+    # Generating a list of time objects from 5:00 to 23:00
     hours = [time(hour) for hour in range(5, 24)]  
 
     # Days of the week
@@ -50,27 +49,26 @@ def program_list(request):
     # Query programs for each day and order by time
     daily_programs = {day: Program.objects.filter(selected_day=day).order_by('time_and_date') for day in days}
     
-    # Update program status based on current time
-    current_datetime = timezone.now()
+    # Update program status based on current time and day
+    current_datetime = datetime.now()
+    current_day = current_datetime.strftime('%A').lower()
+    print("Current datetime:", current_datetime)
+    print("Current day:", current_day)
     for day_programs in daily_programs.values():
         for program in day_programs:
-            # Check if the program's day has passed
-            if program.selected_day < current_datetime.strftime('%A').lower():
-                program.status = 'played'
-            # Check if it's the program's day and time has passed
-            elif program.selected_day == current_datetime.strftime('%A').lower():
-                if program.time_and_date.time() < current_datetime.time():
-                    program.status = 'played'
-                # Check if it's the current program's time
-                elif program.time_and_date.time() <= current_datetime.time() < (program.time_and_date + timedelta(minutes=30)).time():
-                    program.status = 'running'
-                # Check if it's the next program's time
-                elif program.time_and_date.time() > current_datetime.time():
-                    program.status = 'next'
-            # For future days
+            program_day = program.selected_day.lower()
+            program_time = program.time_and_date.time()
+            
+            if program_day < current_day or (program_day == current_day and program_time < current_datetime.time()):
+                program.status = 'played'  # The day has already passed, mark as 'played'
+            elif program_day == current_day and program_time <= current_datetime.time() < (program.time_and_date + timedelta(minutes=30)).time():
+                program.status = 'running'  # Change status to 'Running'
+            elif program_day == current_day and program_time > current_datetime.time():
+                program.status = 'next'
             else:
-                program.status = 'not_played'
+                program.status = 'not_played'  # The day has not come yet, mark as 'not played'
             program.save()
+            print(f"Program: {program.program_name}, Status: {program.status}")
 
     return render(request, 'programs/program_list.html', {'hours': hours, 'daily_programs': daily_programs})
 

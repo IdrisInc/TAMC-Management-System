@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-    <title>TAMC-Financial Request Form</title>
+    <title>TAMC | Financial Request Form</title>
 {% endblock title %}
 
 {% block content %}
@@ -168,7 +168,7 @@
 
         if (number == 0) return 'Zero';
 
-        let word = '';
+        let word = '' + 'Shilings only';
 
         function getWords(n, index) {
             if (n == 0) return '';

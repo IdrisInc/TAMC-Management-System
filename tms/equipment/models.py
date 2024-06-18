@@ -58,13 +58,11 @@ class AssignmentDetail(models.Model):
 
     def __str__(self):
         return self.detail
-    
 class TaskAssignment(models.Model):
     CATEGORY_CHOICES = [
         ('Live', 'Live'),
         ('Recording', 'Recording'),
         ('Other', 'Other'),
-        # Add more choices as needed
     ]
     
     STATUS_CHOICES = [
@@ -72,6 +70,13 @@ class TaskAssignment(models.Model):
         ('Under Review', 'Under Review'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+    ]
+
+    STAGE_CHOICES = [
+        ('Production', 'Production'),
+        ('Technical', 'Technical'),
+        ('Treasurer', 'Treasurer'),
+        ('Cashier', 'Cashier'),
     ]
 
     assignment = models.CharField(max_length=255, verbose_name="Assignment")
@@ -82,11 +87,19 @@ class TaskAssignment(models.Model):
     submission_date = models.DateField(verbose_name="Date of Submission", null=True, blank=True)
     persons_assigned = models.ManyToManyField(User, verbose_name="Person(s) Assigned", related_name='assigned_tasks')
     agreement = models.BooleanField(default=False, verbose_name="Agreement")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')  # Default status is "Pending"
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    
     slug = models.SlugField(default="", null=False)
     requested_by = models.ForeignKey(User, on_delete=models.CASCADE, default=1, related_name='requested_tasks')
     rejection_reason = models.TextField(blank=True)
+    current_stage = models.CharField(max_length=20, choices=STAGE_CHOICES, default='Production')
+    production_approved = models.BooleanField(default=False)
+    technical_approved = models.BooleanField(default=False)
+    treasurer_approved = models.BooleanField(default=False)
+    cashier_approved = models.BooleanField(default=False)
 
+
+   
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.assignment)

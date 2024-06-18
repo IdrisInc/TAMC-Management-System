@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-<title>Financial Requests</title>
+<title>TAMC | Financial Requests</title>
 {% endblock title %}
 
 {% block content %}
@@ -199,7 +199,7 @@
                                 {% for request in general_requests %}
                                 <tr>
                                     <td>{{ request.user }}</td>
-                                    <td>{{ request.amount_numeric }} ({{request.amount_words}} Shilings only) </td>
+                                    <td>{{ request.amount_numeric }} ({{request.amount_words}} ) </td>
                                     <td>{{ request.created_at|date:'Y-m-d' }}</td>
                                     <td>{{ request.purpose }}</td>
                                     <td><a href="{% url 'finance:specific_detail' request.id %}" class="btn btn-primary">View</a></td>

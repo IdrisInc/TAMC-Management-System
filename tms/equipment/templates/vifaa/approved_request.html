@@ -16,6 +16,9 @@
         <th>Category</th>
         <th>Equipment Required</th>
         <th>Submission Date</th>
+        {% if user_role == 'Technical' or user_role == 'Technical Manager' or user_role == 'Treasurer' %}
+          <th>Action</th>
+        {% endif %}
       </tr>
     </thead>
     <tbody>
@@ -27,11 +30,26 @@
           <td>{{ request.location }}</td>
           <td>{{ request.category }}</td>
           <td>
-            {% for equipment in request.equipment_required.all %}
-              {{ equipment.name }}{% if not forloop.last %}, {% endif %}
+            {% for equipment in request.assignmentequipment_set.all %}
+              {{ equipment.equipment.name }} (Quantity: {{ equipment.quantity }})
+              {% if not forloop.last %}, {% endif %}
             {% endfor %}
           </td>
           <td>{{ request.submission_date }}</td>
+          {% if user_role == 'Technical' and request.status == 'Approved' and request.cashier_approved %}
+            <td>
+              {% for equipment in request.assignmentequipment_set.all %}
+                {% if equipment.equipment.status == 'Reserved' %}
+                  {% if forloop.first %}
+                    <form action="{% url 'equipment:confirm_return' request.id %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-primary">Confirm Return</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </td>
+          {% endif %}
         </tr>
       {% endfor %}
     </tbody>

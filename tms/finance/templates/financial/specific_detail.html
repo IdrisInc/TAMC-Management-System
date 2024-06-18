@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title  %}
-<title> TAMC-Financial Specific Details</title>
+<title> TAMC | Financial Specific Details</title>
 {% endblock title  %}
 
 
@@ -68,7 +68,7 @@
                     <dt class="col-sm-4">Request From </dt>
                         <dd class="col-sm-6">{{ financial_request.user.username }}</dd>
                         <dt class="col-sm-4">Amount Requested
-                            <dd class="col-sm-8"> {{ financial_request.amount_numeric }} ({{ financial_request.amount_words }} Shillings only)</p>
+                            <dd class="col-sm-8"> {{ financial_request.amount_numeric }} ({{ financial_request.amount_words }} )</p>
                                 <dt class="col-sm-4">Date Requested
                                     <dd class="col-sm-8">{{ financial_request.created_at }}</p>
                                     <dt class="col-sm-4">Purpose
