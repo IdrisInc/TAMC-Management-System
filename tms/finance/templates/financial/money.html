@@ -6,37 +6,32 @@
 
 {% block content %}
 <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <section class="content-header">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1>Financial Request</h1>
-            </div>
-            <div class="col-sm-6">
-              <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Financial Form</li>
-              </ol>
-            </div>
-          </div>
-        </div><!-- /.container-fluid -->
-      </section>
-  <!-- Content Wrapper. Contains page content -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Financial Request</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Financial Form</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+  
   <section class="content">
     <div class="container-fluid">
-      <div class="row ml-5">
-        <!-- left column -->
+      <div class="row justify-content-center">
         <div class="col-md-9">
-          <!-- general form elements -->
           <div class="card card-primary">
             <div class="card-header">
               <h3 class="card-title">Petty/Cheque</h3>
             </div>
-            <!-- /.card-header -->
-            <!-- form start -->
             <form method="post" onsubmit="return validateForm()">
-                {% csrf_token %}
+              {% csrf_token %}
               <div class="card-body">
                 <div class="form-group">
                   <label for="amountNumeric">Numeric Amount</label>
@@ -50,158 +45,150 @@
                   <label for="purpose">Purpose</label>
                   <input type="text" class="form-control" id="purpose" placeholder="Transport Fare" name="purpose" required>
                 </div>
-               <!-- 6: Description of Request -->
-        <div class="form-group">
-          <label for="description">Description of Request</label>
-          <table class="table table-bordered" id="descriptionTable">
-              <thead>
-                  <tr>
-                      <th>Item</th>
-                      <th>Quantity</th>
-                      <th>Price</th>
-                      <th>Total Request</th>
-                      <th>Action</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <!-- Default row for initial input -->
-                  <tr>
-                      <td><input type="text" class="form-control" name="item[]" required placeholder="Transport Fare"></td>
-                      <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>
-                      <td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>
-                      <td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>
-                      <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
-                  </tr>
-              </tbody>
-          </table>
-          <!-- Buttons to add new rows and calculate total -->
-          <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
-          <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
-      </div>
-      <!-- Total Request -->
-      <div class="form-group">
-          <label for="totalRequest">Total Request</label>
-          <input type="text" class="form-control" id="totalRequest" name="total_request" readonly>
-      </div>
+                <div class="form-group">
+                  <label for="description">Description of Request</label>
+                  <div class="table-responsive">
+                    <table class="table table-bordered" id="descriptionTable">
+                      <thead>
+                        <tr>
+                          <th>Item</th>
+                          <th>Quantity</th>
+                          <th>Price</th>
+                          <th>Total Request</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><input type="text" class="form-control" name="item[]" required placeholder="Transport Fare"></td>
+                          <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>
+                          <td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>
+                          <td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>
+                          <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
+                  <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
+                </div>
+                <div class="form-group">
+                  <label for="totalRequest">Total Request</label>
+                  <input type="text" class="form-control" id="totalRequest" name="total_request" readonly>
+                </div>
               </div>
-              <!-- /.card-body -->
-
               <div class="card-footer">
                 <button type="submit" class="btn btn-primary">Submit</button>
               </div>
             </form>
           </div>
-          <!-- /.card -->
+        </div>
       </div>
-      <!-- /.row -->
-    </div><!-- /.container-fluid -->
+    </div>
   </section>
-  <!-- /.content-wrapper -->
+</div>
 
 <script>
-    // JavaScript functions for handling dynamic rows and calculating totals
-    function addRow() {
-        var newRow = '<tr>' +
-            '<td><input type="text" class="form-control" name="item[]" required></td>' +
-            '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-            '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-            '<td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>' +
-            '<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>' +
-            '</tr>';
-        $('#descriptionTable tbody').append(newRow);
-        calculateTotal(); // Calculate total after adding a row
-    }
+  function addRow() {
+    var newRow = '<tr>' +
+      '<td><input type="text" class="form-control" name="item[]" required></td>' +
+      '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+      '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+      '<td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>' +
+      '<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>' +
+      '</tr>';
+    $('#descriptionTable tbody').append(newRow);
+    calculateTotal();
+  }
 
-    function removeRow(button) {
-        $(button).closest('tr').remove();
-        calculateTotal(); // Calculate total after removing a row
-    }
+  function removeRow(button) {
+    $(button).closest('tr').remove();
+    calculateTotal();
+  }
 
-    function updateTotal(element) {
-        var row = $(element).closest('tr');
-        var quantity = parseFloat(row.find('.quantity').val()) || 0;
-        var price = parseFloat(row.find('.price').val()) || 0;
-        var total = quantity * price;
-        row.find('.total_request').val(total.toFixed(2)); // Ensure two decimal places
-        calculateTotal(); // Update the overall total
-    }
+  function updateTotal(element) {
+    var row = $(element).closest('tr');
+    var quantity = parseFloat(row.find('.quantity').val()) || 0;
+    var price = parseFloat(row.find('.price').val()) || 0;
+    var total = quantity * price;
+    row.find('.total_request').val(total.toFixed(2));
+    calculateTotal();
+  }
 
-    function calculateTotal() {
-        var totalRequest = 0;
-        $('#descriptionTable tbody tr').each(function () {
-            var total = parseFloat($(this).find('.total_request').val()) || 0;
-            totalRequest += total;
-        });
-        $('#totalRequest').val(totalRequest.toFixed(2)); // Ensure two decimal places
-    }
-
-    function validateForm() {
-        var totalRequest = parseFloat(document.getElementById('totalRequest').value) || 0;
-        var amountNumeric = parseFloat(document.getElementById('amountNumeric').value) || 0;
-        
-        if (totalRequest > amountNumeric) {
-            alert('Total request amount exceeds the specified numeric amount.');
-            return false; // Prevent form submission
-        }
-        return true; // Allow form submission
-    }
-
-    // Add event listeners to existing inputs when the document is ready
-    $(document).ready(function() {
-        // Attach input event to quantity and price inputs in the initial row
-        $('#descriptionTable').on('input', '.quantity, .price', function() {
-            updateTotal(this);
-        });
+  function calculateTotal() {
+    var totalRequest = 0;
+    $('#descriptionTable tbody tr').each(function () {
+      var total = parseFloat($(this).find('.total_request').val()) || 0;
+      totalRequest += total;
     });
+    $('#totalRequest').val(totalRequest.toFixed(2));
+  }
 
-    function convertAmountToWords() {
-        var amountNumeric = document.getElementById('amountNumeric').value;
-        var amountWords = document.getElementById('amountWords');
-        amountWords.value = numberToWords(amountNumeric);
+  function validateForm() {
+    var totalRequest = parseFloat(document.getElementById('totalRequest').value) || 0;
+    var amountNumeric = parseFloat(document.getElementById('amountNumeric').value) || 0;
+    
+    if (totalRequest > amountNumeric) {
+      alert('Total request amount exceeds the specified numeric amount.');
+      return false;
+    }
+    return true;
+  }
+
+  $(document).ready(function() {
+    $('#descriptionTable').on('input', '.quantity, .price', function() {
+      updateTotal(this);
+    });
+  });
+
+  function convertAmountToWords() {
+    var amountNumeric = document.getElementById('amountNumeric').value;
+    var amountWords = document.getElementById('amountWords');
+    amountWords.value = numberToWords(amountNumeric);
+  }
+
+  function numberToWords(number) {
+    const units = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+    const teens = ['Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const thousands = ['Thousand', 'Million', 'Billion', 'Trillion'];
+
+    if (number == 0) return 'Zero';
+
+    let word = ' Shilings only';
+
+    function getWords(n, index) {
+      if (n == 0) return '';
+      let str = '';
+      if (n > 99) {
+        str += units[Math.floor(n / 100)] + ' Hundred ';
+        n %= 100;
+      }
+      if (n > 10 && n < 20) {
+        str += teens[n - 11] + ' ';
+      } else {
+        if (n > 9) {
+          str += tens[Math.floor(n / 10) - 1] + ' ';
+          n %= 10;
+        }
+        if (n > 0) {
+          str += units[n] + ' ';
+        }
+      }
+      return str.trim() + (index > 0 ? ' ' + thousands[index - 1] + ' ' : '');
     }
 
-    function numberToWords(number) {
-        const units = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-        const teens = ['Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-        const tens = ['Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-        const thousands = ['Thousand', 'Million', 'Billion', 'Trillion'];
-
-        if (number == 0) return 'Zero';
-
-        let word = '' + 'Shilings only';
-
-        function getWords(n, index) {
-            if (n == 0) return '';
-            let str = '';
-            if (n > 99) {
-                str += units[Math.floor(n / 100)] + ' Hundred ';
-                n %= 100;
-            }
-            if (n > 10 && n < 20) {
-                str += teens[n - 11] + ' ';
-            } else {
-                if (n > 9) {
-                    str += tens[Math.floor(n / 10) - 1] + ' ';
-                    n %= 10;
-                }
-                if (n > 0) {
-                    str += units[n] + ' ';
-                }
-            }
-            return str.trim() + (index > 0 ? ' ' + thousands[index - 1] + ' ' : '');
-        }
-
-        let index = 0;
-        while (number > 0) {
-            const chunk = number % 1000;
-            if (chunk) {
-                word = getWords(chunk, index) + word;
-            }
-            number = Math.floor(number / 1000);
-            index++;
-        }
-
-        return word.trim();
+    let index = 0;
+    while (number > 0) {
+      const chunk = number % 1000;
+      if (chunk) {
+        word = getWords(chunk, index) + word;
+      }
+      number = Math.floor(number / 1000);
+      index++;
     }
+
+    return word.trim();
+  }
 </script>
 {% endblock content %}

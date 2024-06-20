@@ -2,130 +2,202 @@
 {% extends "base/base.html" %}
 
 {% block title %}
-    <title>TAMC| ffhhhffUpdate Financial Request</title>
+<title>TAMC | Update Financial Request</title>
 {% endblock title %}
 
 {% block content %}
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1> Update Financial Request</h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Financial Form</li>
-            </ol>
-          </div>
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Update Financial Request</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Financial Form</li>
+                    </ol>
+                </div>
+            </div>
         </div>
-      </div><!-- /.container-fluid -->
     </section>
 
     <section class="content">
         <div class="container-fluid">
-          <div class="row ml-5">
-            <!-- left column -->
-            <div class="col-md-9">
-              <!-- general form elements -->
-              <div class="card card-primary">
-                <div class="card-header">
-                  <h3 class="card-title">Petty/Cheque</h3>
+            <div class="row justify-content-center">
+                <!-- left column -->
+                <div class="col-md-9">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Petty/Cheque</h3>
+                        </div>
+                        <form method="post" onsubmit="return validateForm()">
+                            {% csrf_token %}
+                            <div class="card-body">
+                                <!-- Pre-fill the form fields with existing request data -->
+                                <input type="hidden" name="request_id" value="{{ request.id }}">
+                                <div class="form-group">
+                                    <label for="amount_numeric">Amount in Numeric</label>
+                                    <input type="number" class="form-control" id="amount_numeric" name="amount_numeric" value="{{ request.amount_numeric }}" required oninput="convertAmountToWords()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="amount_words">Amount in Words</label>
+                                    <input type="text" class="form-control" id="amount_words" name="amount_words" value="{{ request.amount_words }}" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="purpose">Purpose</label>
+                                    <input type="text" class="form-control" id="purpose" name="purpose" value="{{ request.purpose }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description of Request</label>
+                                    <!-- Add dynamic rows for existing items -->
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="descriptionTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Quantity</th>
+                                                    <th>Price</th>
+                                                    <th>Total Request</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in request.items.all %}
+                                                <tr>
+                                                    <td><input type="text" class="form-control" name="item[]" value="{{ item.item_name }}" required></td>
+                                                    <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="{{ item.quantity }}" required oninput="updateTotal(this)"></td>
+                                                    <td><input type="number" class="form-control price" name="price[]" min="0" value="{{ item.price }}" required oninput="updateTotal(this)"></td>
+                                                    <td><input type="text" class="form-control total_request" name="total_request[]" value="{{ item.total_request }}" readonly required></td>
+                                                    <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- Buttons to add new rows and calculate total -->
+                                    <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
+                                    <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
+                                </div>
+                                <div class="form-group">
+                                    <label for="total_request">Total Request</label>
+                                    <input type="text" class="form-control" id="total_request" name="total_request" value="{{ request.total_request }}" readonly>
+                                </div>
+                                <!-- Submit Button -->
+                                <button type="submit" class="btn btn-primary">Update Request</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-    <form method="post">
-        {% csrf_token %}
-        <div class="card-body">
-            <div class="form-group">
-        <!-- Pre-fill the form fields with existing request data -->
-        <input type="hidden" name="request_id" value="{{ request.id }}">
-        <div class="form-group">
-            <label for="amount_numeric">Amount in Numeric</label>
-            <input type="number" class="form-control" id="amount_numeric" name="amount_numeric" value="{{ request.amount_numeric }}" required>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="amount_words">Amount in Words</label>
-            <input type="text" class="form-control" id="amount_words" name="amount_words" value="{{ request.amount_words }}" required>
-        </div>
-        <div class="form-group">
-            <label for="purpose">Purpose</label>
-            <input type="text" class="form-control" id="purpose" name="purpose" value="{{ request.purpose }}" required>
-        </div>
-        <div class="form-group">
-            <label for="description">Description of Request</label>
-            <!-- Add dynamic rows for existing items -->
-            <table class="table table-bordered" id="descriptionTable">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total Request</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in request.items.all %}
-                        <tr>
-                            <td><input type="text" class="form-control" name="item[]" value="{{ item.item_name }}" required></td>
-                            <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="{{ item.quantity }}" required></td>
-                            <td><input type="number" class="form-control price" name="price[]" min="0" value="{{ item.price }}" required></td>
-                            <td><input type="text" class="form-control total_request" name="total_request[]" value="{{ item.total_request }}" readonly required></td>
-                            <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <!-- Buttons to add new rows and calculate total -->
-            <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
-            <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
-        </div>
-        <div class="form-group">
-            <label for="total_request">Total Request</label>
-            <input type="text" class="form-control" id="total_request" name="total_request" value="{{ request.total_request }}" readonly>
-        </div>
-        <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary">Update Request</button>
-    </form>
+    </section>
 </div>
-
-</div>
-<!-- /.row -->
-</div><!-- /.container-fluid -->
-</section>
-<!-- /.content-wrapper -->
 
 <script>
-    // JavaScript functions for handling dynamic rows and calculating totals
     function addRow() {
         var newRow = '<tr>' +
             '<td><input type="text" class="form-control" name="item[]" required></td>' +
-            '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required></td>' +
-            '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required></td>' +
+            '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+            '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
             '<td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>' +
             '<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>' +
             '</tr>';
         $('#descriptionTable tbody').append(newRow);
-        calculateTotal(); // Calculate total after adding a row
+        calculateTotal();
     }
 
     function removeRow(button) {
         $(button).closest('tr').remove();
-        calculateTotal(); // Calculate total after removing a row
+        calculateTotal();
+    }
+
+    function updateTotal(element) {
+        var row = $(element).closest('tr');
+        var quantity = parseFloat(row.find('.quantity').val()) || 0;
+        var price = parseFloat(row.find('.price').val()) || 0;
+        var total = quantity * price;
+        row.find('.total_request').val(total.toFixed(2));
+        calculateTotal();
     }
 
     function calculateTotal() {
         var totalRequest = 0;
         $('#descriptionTable tbody tr').each(function () {
-            var quantity = parseFloat($(this).find('.quantity').val()) || 0;
-            var price = parseFloat($(this).find('.price').val()) || 0;
-            var total = quantity * price;
-            $(this).find('.total_request').val(total);
+            var total = parseFloat($(this).find('.total_request').val()) || 0;
             totalRequest += total;
         });
-        // Update the total_request input field with the calculated total
         $('#total_request').val(totalRequest.toFixed(2));
     }
+
+    function validateForm() {
+        var totalRequest = parseFloat(document.getElementById('total_request').value) || 0;
+        var amountNumeric = parseFloat(document.getElementById('amount_numeric').value) || 0;
+
+        if (totalRequest > amountNumeric) {
+            alert('Total request amount exceeds the specified numeric amount.');
+            return false;
+        }
+        return true;
+    }
+
+    $(document).ready(function() {
+        $('#descriptionTable').on('input', '.quantity, .price', function() {
+            updateTotal(this);
+        });
+    });
+
+    function convertAmountToWords() {
+        var amountNumeric = document.getElementById('amount_numeric').value;
+        var amountWords = document.getElementById('amount_words');
+        amountWords.value = numberToWords(amountNumeric);
+    }
+
+    function numberToWords(number) {
+        const units = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+        const teens = ['Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const tens = ['Ten', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        const thousands = ['Thousand', 'Million', 'Billion', 'Trillion'];
+
+        if (number == 0) return 'Zero';
+
+        let word = ' Shilings only';
+
+        function getWords(n, index) {
+            if (n == 0) return '';
+            let str = '';
+            if (n > 99) {
+                str += units[Math.floor(n / 100)] + ' Hundred ';
+                n %= 100;
+            }
+            if (n > 10 && n < 20) {
+                str += teens[n - 11] + ' ';
+            } else {
+                if (n > 9) {
+                    str += tens[Math.floor(n / 10) - 1] + ' '; 
+                    n %= 10;
+                }
+                if (n > 0) {
+                    str += units[n] + ' ';
+                }
+            }
+            return str.trim() + (index > 0 ? ' ' + thousands[index - 1] + ' ' : '');
+        }
+
+        let index = 0;
+        while (number > 0) {
+            const chunk = number % 1000;
+            if (chunk) {
+                word = getWords(chunk, index) + word;
+            }
+            number = Math.floor(number / 1000);
+            index++;
+        }
+
+        return word.trim();
+    }
 </script>
-{% endblock %}
+{% endblock content %}

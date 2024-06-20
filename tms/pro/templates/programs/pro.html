@@ -1,192 +1,133 @@
+<!-- finance/templates/finance/program_scheduling.html -->
 {% extends 'base/base.html' %}
 
-
 {% block content %}
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Program Scheduling</h1>
-          </div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">PRO Design</li>
-            </ol>
-          </div>
-        </div>
-      </div><!-- /.container-fluid -->
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Program Scheduling</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">PRO Design</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
     </section>
 
     <section class="content">
-      <div class="container-fluid">
-        <div class="row ml-5">
-          <!-- left column -->
-          <div class="col-md-9">
-            <!-- general form elements -->
-            <div class="card card-primary">
-              <div class="card-header">
-                <h3 class="card-title">PRO Design</h3>
-              </div>
-              <!-- /.card-header -->
-              <!-- form start -->
-              <form id="program-form" class="program-form" method="POST">
-                {% csrf_token %}
-                <div class="card-body">
-                  <div class="form-group">
-                    <div class="day-selector">
-                      <label for="day-select">Day:</label>
-                      <select id="day-select" name="selected_day">
-                        {% for day_choice in day_choices %}
-                          <option value="{{ day_choice.0 }}">{{ day_choice.1 }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-9">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">PRO Design</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form id="program-form" class="program-form" method="POST">
+                            {% csrf_token %}
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div class="day-selector">
+                                        <label for="day-select">Day:</label>
+                                        <select id="day-select" name="selected_day">
+                                            {% for day_choice in day_choices %}
+                                            <option value="{{ day_choice.0 }}">{{ day_choice.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
 
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Hour</th>
-                        <th>Time</th>
-                        <th>Program Name</th>
-                        <th>Is New</th>
-                      </tr>
-                    </thead>
-                    <tbody id="program-table-body">
-                    </tbody>
-                  </table>
-                  <button type="submit" class="submit-button mt-8">Create Program</button>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Hour</th>
+                                                <th>Time</th>
+                                                <th>Program Name</th>
+                                                <th>Is New</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="program-table-body">
+                                            <!-- Table rows will be dynamically added via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary mt-3">Create Program</button>
+                            </div>
+                            <!-- /.card-body -->
+                        </form>
+                    </div>
+                    <!-- /.card -->
                 </div>
-              </form>
+                <!-- /.col -->
             </div>
-            <!-- /.card -->
-          </div>
-          <!-- /.col -->
+            <!-- /.row -->
         </div>
-        <!-- /.row -->
-      </div>
-      <!-- /.container-fluid -->
+        <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
+</div>
+<!-- /.content-wrapper -->
 
-  <script>
+<script>
     document.addEventListener("DOMContentLoaded", function() {
-      const programForm = document.getElementById("program-form");
-      const programTableBody = document.getElementById("program-table-body");
+        const programForm = document.getElementById("program-form");
+        const programTableBody = document.getElementById("program-table-body");
 
-      // Function to create program rows for each hour
-      function createProgramRows() {
-        for (let hour = 0; hour < 24; hour++) {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${hour}</td>
-            <td><input type="time" name="${hour}_time" required></td>
-            <td><input type="text" name="${hour}_program_name" required></td>
-            <td>
-              <select name="${hour}_is_new" required>
-                <option value="new">New</option>
-                <option value="repeated">Repeated</option>
-                <option value="live">Live</option>
-              </select>
-            </td>
-          `;
-          programTableBody.appendChild(row);
+        // Function to create program rows for each hour
+        function createProgramRows() {
+            for (let hour = 0; hour < 24; hour++) {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${hour}</td>
+                    <td><input type="time" class="form-control" name="${hour}_time" required></td>
+                    <td><input type="text" class="form-control" name="${hour}_program_name" required></td>
+                    <td>
+                        <select class="form-control" name="${hour}_is_new" required>
+                            <option value="new">New</option>
+                            <option value="repeated">Repeated</option>
+                            <option value="live">Live</option>
+                        </select>
+                    </td>
+                `;
+                programTableBody.appendChild(row);
+            }
         }
-      }
 
-      // Call function to create program rows
-      createProgramRows();
+        // Call function to create program rows
+        createProgramRows();
     });
-  </script>
+</script>
 
-   
-  {% block style %}
-  <style>
-  /* Add this to your base CSS file */
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
-  }
-  
-  .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .day-selector {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .day-selector label {
-    margin-right: 10px;
-  }
-  
-  .program-form {
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 10px;
-    position: relative; /* Position relative for absolute positioning of the button */
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-  }
-  
-  th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-  }
-  
-  th {
-    background-color: #f2f2f2;
-  }
-  
-  input[type="time"],
-  input[type="text"],
-  select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-  
-  .submit-button {
-    background-color: #4caf50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    position: absolute; /* Position absolute to place the button relative to the form */
-    bottom: 20px; /* Distance from the bottom */
-    left: 50%; /* Center horizontally */
-    transform: translateX(-50%); /* Center horizontally */
-  }
-  </style>
-  {% endblock style %}
-    
+{% endblock %}
 
+{% block style %}
+<style>
+    /* Custom styles specific to this page */
+    .day-selector {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .day-selector label {
+        margin-right: 10px;
+    }
+
+    .table-responsive {
+        margin-bottom: 20px;
+    }
+</style>
 {% endblock %}
