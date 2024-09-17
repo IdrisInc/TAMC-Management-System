@@ -1,0 +1,537 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holiday Form</title>
+    
+</head>
+<body>
+    <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Vacation Request</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a href="#">Home</a></li>
+                  <li class="breadcrumb-item active">vacation Form</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+    <!-- Overlay for description -->
+    <div id="overlay">
+        <div id="overlay-content">
+            <h2 id="important-note">IMPORTANT!</h2>
+            {% if overlay and overlay.descriptions.all %}
+            <ul>
+                {% for desc in overlay.descriptions.all %}
+                    <li>{{ desc.description }}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+                <p>No description available.</p>
+            {% endif %}
+            <button id="close-overlay">Close</button>
+        </div>
+    </div>
+
+    <!-- Multi-Step Form -->
+    {% comment %} <h1>Holiday Form</h1> {% endcomment %}
+    <section class="content">
+        <div class="container-fluid">
+          <div class="row justify-content-center">
+            <div class="col-md-9">
+              <div class="card card-primary">
+                <div class="card-header">
+                  <h3 class="card-title">Vacation Form</h3>
+                </div>
+                <form id="holiday-form" method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <!-- Step 1: Basic Information -->
+                        <div class="form-step active" id="step-1">
+                            <h2>Step 1: Basic Information</h2>
+                            <div id="step-1-error" class="error"></div>
+                
+                            <div class="form-group">
+                                <label for="address">Address:</label>
+                                <textarea id="address" name="address" class="form-control" required>{{ holiday.address|default:'' }}</textarea>
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="working_holiday">Select a Holiday Type:</label>
+                                <select id="working_holiday" name="working_holiday" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    {% for code, name in holiday_type_choices %}
+                                        <option value="{{ code }}" {% if holiday and holiday.working_holiday == code %}selected{% endif %}>{{ name }}</option>
+                                    {% endfor %}
+                                    <option value="other">Other (Please specify)</option>
+                                </select>
+                            </div>
+                
+                            <div id="custom_holiday_field" class="form-group" style="display: {% if holiday and holiday.working_holiday == 'other' %}block{% else %}none{% endif %};">
+                                <label for="custom_holiday">Custom Holiday Type:</label>
+                                <input type="text" class="form-control" id="custom_holiday" name="custom_holiday" placeholder="Enter your custom holiday type" value="{{ holiday.custom_holiday|default:'' }}">
+                            </div>
+                
+                            <button type="button" class="btn btn-primary" id="next-step">Next Step</button>
+                        </div>
+                
+                        <!-- Step 2: Dates -->
+                        <div class="form-step" id="step-2">
+                            <h2>Step 2: Dates</h2>
+                            <div id="step-2-error" class="error"></div>
+                
+                            <div class="form-group">
+                                <label for="start_date">Start Date:</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required value="{{ holiday.start_date|default:'' }}">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="end_date">End Date:</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required value="{{ holiday.end_date|default:'' }}">
+                            </div>
+                
+                            {% if not has_approved_holiday %}
+                            <div class="form-group">
+                                <label for="my_last_holiday_start">My Last Holiday Start:</label>
+                                <input type="date" class="form-control" name="my_last_holiday_start" id="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|default_if_none:'' }}">
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="my_last_holiday_end">My Last Holiday End:</label>
+                                <input type="date" class="form-control" name="my_last_holiday_end" id="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|default_if_none:'' }}">
+                            </div>
+                            {% endif %}
+                
+                            <button type="button" class="btn btn-secondary" id="prev-step">Previous Step</button>
+                            <button type="button" class="btn btn-primary" id="next-step-2">Next Step</button>
+                        </div>
+                
+                        <!-- Step 3: Additional Information -->
+                        <div class="form-step" id="step-3">
+                            <h2>Step 3: Additional Information</h2>
+                            <div id="step-3-error" class="error"></div>
+                
+                            <div class="form-group">
+                                <label for="current_address">Current Address:</label>
+                                <textarea id="current_address" class="form-control" name="current_address" required>{{ holiday.current_address|default:'' }}</textarea>
+                            </div>
+                
+                            <div class="form-group">
+                                <label for="delegatee">Select Delegatee:</label>
+                                <select id="delegatee" name="delegatee" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    {% for user in users_in_same_group %}
+                                        <option value="{{ user.id }}" {% if holiday and holiday.delegatee_id == user.id %}selected{% endif %}>{{ user.get_full_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                
+                            {% if is_presenter_or_production %}
+                            <div class="form-group">
+                                <h2>Programs</h2>
+                                <label for="programs">Select Programs:</label>
+                                <select id="programs" name="programs" class="form-control" multiple required>
+                                    {% for program_name in programs %}
+                                        <option value="{{ program_name }}" {% if program_name in selected_programs %}selected{% endif %}>{{ program_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                
+                            <button type="button" class="btn btn-secondary" id="prev-step-2">Previous Step</button>
+                            <button type="submit" class="btn btn-success">Submit</button>
+                        </div>
+                    </div>
+                </form>
+                
+</section>
+</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var steps = document.querySelectorAll('.form-step');
+            var currentStep = 0;
+            var nextStepButtons = document.querySelectorAll('#next-step, #next-step-2');
+            var prevStepButtons = document.querySelectorAll('#prev-step, #prev-step-2');
+            var form = document.getElementById('holiday-form');
+            var holidayTypeSelect = document.getElementById('working_holiday');
+            var customHolidayField = document.getElementById('custom_holiday_field');
+            var overlay = document.getElementById('overlay');
+            var overlayContent = document.getElementById('overlay-content');
+            var closeButton = document.getElementById('close-overlay');
+            var startDateInput = document.getElementById('start_date');
+            var endDateInput = document.getElementById('end_date');
+            var lastHolidayStartInput = document.getElementById('my_last_holiday_start');
+            var lastHolidayEndInput = document.getElementById('my_last_holiday_end');
+
+            function showStep(step) {
+                steps.forEach(function(s, index) {
+                    s.classList.toggle('active', index === step);
+                    s.classList.toggle('disabled', index < step);
+                });
+                currentStep = step;
+            }
+
+            function validateStep(step) {
+                var stepElement = document.getElementById('step-' + (step + 1));
+                var inputs = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
+                var valid = true;
+
+                inputs.forEach(function(input) {
+                    if (!input.value.trim()) {
+                        valid = false;
+                    }
+                });
+
+                if (step === 1) { // Step 2 validation
+                    var startDate = new Date(startDateInput.value);
+                    var endDate = new Date(endDateInput.value);
+                    if (startDate && endDate && endDate < startDate) {
+                        valid = false;
+                        document.getElementById('step-2-error').textContent = 'End Date cannot be earlier than Start Date.';
+                        setTimeout(function() {
+                            document.getElementById('step-2-error').textContent = '';
+                        }, 5000);
+                    }
+                }
+
+                if (step === 2) { // Step 3 validation
+                    var lastHolidayStart = new Date(lastHolidayStartInput.value);
+                    var lastHolidayEnd = new Date(lastHolidayEndInput.value);
+                    var today = new Date();
+                    today.setHours(0, 0, 0, 0); // Reset time part for comparison
+
+                    if (lastHolidayStart && lastHolidayStart >= today) {
+                        valid = false;
+                        document.getElementById('step-3-error').textContent = 'My Last Holiday Start Date cannot be today or in the future.';
+                        setTimeout(function() {
+                            document.getElementById('step-3-error').textContent = '';
+                        }, 5000);
+                    }
+
+                    if (lastHolidayEnd && lastHolidayEnd >= today) {
+                        valid = false;
+                        document.getElementById('step-3-error').textContent = 'My Last Holiday End Date cannot be today or in the future.';
+                        setTimeout(function() {
+                            document.getElementById('step-3-error').textContent = '';
+                        }, 5000);
+                    }
+
+                    if (lastHolidayStart && lastHolidayEnd && lastHolidayEnd < lastHolidayStart) {
+                        valid = false;
+                        document.getElementById('step-3-error').textContent = 'My Last Holiday End Date cannot be earlier than My Last Holiday Start Date.';
+                        setTimeout(function() {
+                            document.getElementById('step-3-error').textContent = '';
+                        }, 5000);
+                    }
+                }
+
+                return valid;
+            }
+
+            function setupDateValidation() {
+                var today = new Date().toISOString().split('T')[0];
+                startDateInput.setAttribute('min', today);
+
+                startDateInput.addEventListener('change', function() {
+                    validateDates();
+                    // Update end date minimum date
+                    var startDate = startDateInput.value;
+                    endDateInput.setAttribute('min', startDate);
+                    validateDates();
+                });
+
+                endDateInput.addEventListener('change', function() {
+                    validateDates();
+                });
+
+                lastHolidayStartInput.addEventListener('change', function() {
+                    validateLastHolidayDates();
+                });
+
+                lastHolidayEndInput.addEventListener('change', function() {
+                    validateLastHolidayDates();
+                });
+            }
+
+            function validateDates() {
+                var startDate = new Date(startDateInput.value);
+                var endDate = new Date(endDateInput.value);
+                var errorElement = document.getElementById('step-2-error');
+
+                if (startDate && endDate && endDate < startDate) {
+                    errorElement.textContent = 'End Date cannot be earlier than Start Date.';
+                    setTimeout(function() {
+                        errorElement.textContent = '';
+                    }, 5000);
+                } else {
+                    errorElement.textContent = '';
+                }
+            }
+
+            function validateLastHolidayDates() {
+                var lastHolidayStart = new Date(lastHolidayStartInput.value);
+                var lastHolidayEnd = new Date(lastHolidayEndInput.value);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time part for comparison
+                var errorElement = document.getElementById('step-3-error');
+
+                if (lastHolidayStart && lastHolidayStart >= today) {
+                    errorElement.textContent = 'My Last Holiday Start Date cannot be today or in the future.';
+                } else if (lastHolidayEnd && lastHolidayEnd >= today) {
+                    errorElement.textContent = 'My Last Holiday End Date cannot be today or in the future.';
+                } else if (lastHolidayStart && lastHolidayEnd && lastHolidayEnd < lastHolidayStart) {
+                    errorElement.textContent = 'My Last Holiday End Date cannot be earlier than My Last Holiday Start Date.';
+                } else {
+                    errorElement.textContent = '';
+                }
+
+                setTimeout(function() {
+                    errorElement.textContent = '';
+                }, 5000);
+            }
+
+            nextStepButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    if (validateStep(currentStep)) {
+                        var nextStep = currentStep + 1;
+                        if (nextStep < steps.length) {
+                            showStep(nextStep);
+                        }
+                    } else {
+                        var errorElement = document.getElementById('step-' + (currentStep + 1) + '-error');
+                        errorElement.textContent = 'Please fill in all required fields correctly before proceeding.';
+
+                        // Hide the error message after 5 seconds
+                        setTimeout(function() {
+                            errorElement.textContent = '';
+                        }, 5000);
+                    }
+                });
+            });
+
+            prevStepButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    var prevStep = currentStep - 1;
+                    if (prevStep >= 0) {
+                        showStep(prevStep);
+                    }
+                });
+            });
+
+            holidayTypeSelect.addEventListener('change', function() {
+                customHolidayField.style.display = this.value === 'other' ? 'block' : 'none';
+            });
+
+            closeButton.addEventListener('click', function() {
+                overlay.style.display = 'none';
+            });
+
+            // Show the overlay based on a query parameter
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('show_overlay')) {
+                overlay.style.display = 'flex';
+                setTimeout(() => {
+                    overlayContent.classList.add('show');
+                }, 100); // Delay to ensure overlay is displayed before animation
+            } else {
+                overlay.style.display = 'none';
+            }
+
+            // Initialize date validation
+            setupDateValidation();
+        });
+    </script>
+{% endblock content %}
+    {% block styles %}
+    <style>
+        {% comment %} body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        } {% endcomment %}
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-step {
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none; /* Disable interactions */
+        }
+
+        .form-step.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto; /* Enable interactions */
+        }
+
+        .form-step.disabled {
+            opacity: 0.1;
+            pointer-events: none; /* Disable interactions */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none; /* Start hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        #overlay-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            transform: translateY(-50px);
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #overlay-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #overlay-content ul {
+            list-style-type: decimal; /* Numbering for list items */
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        #important-note {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 15px;
+        }
+
+
+          /* Responsive Styles */
+          @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .buttons {
+                flex-direction: column;
+            }
+            .buttons button {
+                margin-bottom: 10px;
+            }
+            #overlay-content {
+                max-width: 95%;
+                max-height: 80%;
+            }
+            #close-overlay {
+                width: 35px;
+                height: 35px;
+                padding: 8px;
+                font-size: 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            #overlay-content {
+                padding: 15px;
+            }
+            #close-overlay {
+                width: 30px;
+                height: 30px;
+                padding: 6px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    {% endblock styles %}
+
+    
+    
+</body>
+</html>

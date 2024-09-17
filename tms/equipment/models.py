@@ -41,7 +41,7 @@ class Equipment(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="Category")
     type_model = models.CharField(max_length=255, choices=TYPE_MODEL_CHOICES, verbose_name="Type/Model")
     serial_number = models.CharField(max_length=100, verbose_name="Serial Number", unique=True)
-    quantity = models.PositiveIntegerField(verbose_name="Quantity")
+    quantity = models.PositiveIntegerField(verbose_name="Quantity",default=0)
     equipment_image = models.ImageField(upload_to=equipment_image_upload_path, verbose_name="Equipment Image")
     slug = AutoSlugField(populate_from=generate_slug, default='', unique=True, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Available', verbose_name="Status")
@@ -70,6 +70,7 @@ class TaskAssignment(models.Model):
         ('Under Review', 'Under Review'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+         ('Returned', 'Returned'),
     ]
 
     STAGE_CHOICES = [
@@ -97,6 +98,13 @@ class TaskAssignment(models.Model):
     technical_approved = models.BooleanField(default=False)
     treasurer_approved = models.BooleanField(default=False)
     cashier_approved = models.BooleanField(default=False)
+    
+    
+    production_approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='production_approved_tasks')
+    technical_approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='technical_approved_tasks')
+    treasurer_approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='treasurer_approved_tasks')
+    cashier_approver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='cashier_approved_tasks')
+
 
 
    

@@ -1,0 +1,313 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Holiday Requests</h1>
+
+    <!-- User's Own Holidays -->
+    <h2>Your Holidays</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Address</th>
+                    <th>Holiday Type</th>
+                    <th>Delegatee</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Program Counts</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for holiday in user_holidays %}
+                <tr>
+                    <td>{{ holiday.address }}</td>
+                    <td>{{ holiday.get_holiday_type_display }}</td>
+                    <td>{{ holiday.delegatee.get_full_name }}</td>
+                    <td>
+                        <span class="duration" data-start-date="{{ holiday.start_date }}" data-end-date="{{ holiday.end_date }}">
+                            {{ holiday.start_date }} to {{ holiday.end_date }} 
+                            (<span class="number-of-days"></span> days)
+                        </span>
+                    </td>
+                    <td>{{ holiday.get_status_display }}</td>
+                    <td>
+                        {% if holiday.program_counts_display %}
+                            {% for program_name, count in holiday.program_counts_display.items %}
+                                {{ program_name }}: {{ count }}<br>
+                            {% empty %}
+                                No programs
+                            {% endfor %}
+                        {% else %}
+                            No program counts available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if holiday.status == 'pending' %}
+                            <a href="{% url 'vacation:edit_holiday' holiday.id %}" class="btn btn-primary">Edit</a>
+                            <a href="{% url 'vacation:delete_holiday' holiday.id %}" class="btn btn-danger">Delete</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">You have no holiday requests.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approved Delegated Holidays -->
+    {% if approved_delegated_holidays %}
+        <h2>Approved Delegated Holidays</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Requester</th>
+                        <th>Address</th>
+                        <th>Holiday Type</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Program Counts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for holiday in approved_delegated_holidays %}
+                    <tr>
+                        <td>{{ holiday.user.get_full_name }}</td>
+                        <td>{{ holiday.address }}</td>
+                        <td>{{ holiday.get_holiday_type_display }}</td>
+                        <td>
+                            <span class="duration" data-start-date="{{ holiday.start_date }}" data-end-date="{{ holiday.end_date }}">
+                                {{ holiday.start_date }} to {{ holiday.end_date }} 
+                                (<span class="number-of-days"></span> days)
+                            </span>
+                        </td>
+                        <td>{{ holiday.get_status_display }}</td>
+                        <td>
+                            {% if holiday.program_counts_display %}
+                                {% for program_name, count in holiday.program_counts_display.items %}
+                                    {{ program_name }}: {{ count }}<br>
+                                {% empty %}
+                                    No programs
+                                {% endfor %}
+                            {% else %}
+                                No program counts available
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No approved delegated holidays.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <!-- Delegated Holidays -->
+    {% if delegated_holidays %}
+        <h2>Delegated Holidays</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Requester</th>
+                        <th>Address</th>
+                        <th>Holiday Type</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Program Counts</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for holiday in delegated_holidays %}
+                    <tr>
+                        <td>{{ holiday.user.get_full_name }}</td>
+                        <td>{{ holiday.address }}</td>
+                        <td>{{ holiday.get_holiday_type_display }}</td>
+                        <td>
+                            <span class="duration" data-start-date="{{ holiday.start_date }}" data-end-date="{{ holiday.end_date }}">
+                                {{ holiday.start_date }} to {{ holiday.end_date }} 
+                                (<span class="number-of-days"></span> days)
+                            </span>
+                        </td>
+                        <td>{{ holiday.get_status_display }}</td>
+                        <td>
+                            {% if holiday.program_counts_display %}
+                                {% for program_name, count in holiday.program_counts_display.items %}
+                                    {{ program_name }}: {{ count }}<br>
+                                {% empty %}
+                                    No programs
+                                {% endfor %}
+                            {% else %}
+                                No program counts available
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if holiday.status == 'pending' %}
+                                <button class="btn btn-success toggle-approve-form" data-holiday-id="{{ holiday.id }}">Approve</button>
+                                <button class="btn btn-danger toggle-reject-form" data-holiday-id="{{ holiday.id }}">Reject</button>
+                            {% else %}
+                                <span>No actions available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">You have no delegated holidays.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <!-- Holidays for Approval -->
+    {% if holidays_for_approval %}
+    <h2>Holidays for Approval</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Requester</th>
+                    <th>Address</th>
+                    <th>Holiday Type</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Program Counts</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for holiday in holidays_for_approval %}
+                <tr>
+                    <td>{{ holiday.user.get_full_name }}</td>
+                    <td>{{ holiday.address }}</td>
+                    <td>{{ holiday.get_holiday_type_display }}</td>
+                    <td>
+                        <span class="duration" data-start-date="{{ holiday.start_date }}" data-end-date="{{ holiday.end_date }}">
+                            {{ holiday.start_date }} to {{ holiday.end_date }} 
+                            (<span class="number-of-days"></span> days)
+                        </span>
+                    </td>
+                    <td>{{ holiday.get_status_display }}</td>
+                    <td>
+                        {% if holiday.program_counts_display %}
+                            {% for program_name, count in holiday.program_counts_display.items %}
+                                {{ program_name }}: {{ count }}<br>
+                            {% empty %}
+                                No programs
+                            {% endfor %}
+                        {% else %}
+                            No program counts available
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if holiday.status == 'under_review' %}
+                            <button class="btn btn-success toggle-approve-form" data-holiday-id="{{ holiday.id }}">Approve</button>
+                            <button class="btn btn-danger toggle-reject-form" data-holiday-id="{{ holiday.id }}">Reject</button>
+                            {% if 'Director' in user_groups %}
+                                <div class="overlay" id="overlay-{{ holiday.id }}" style="display:none;">
+                                    <div class="overlay-content">
+                                        <form method="post" action="{% url 'vacation:update_holiday' holiday.id %}">
+                                            {% csrf_token %}
+                                            <h3>Update Holiday</h3>
+                                            <label for="start_date">Start Date:</label>
+                                            <input type="date" name="start_date" value="{{ holiday.start_date }}" readonly>
+                                            <label for="end_date">End Date:</label>
+                                            <input type="date" name="end_date" value="{{ holiday.end_date }}" readonly>
+                                            <label for="comment">Comment:</label>
+                                            <textarea name="comment" placeholder="Optional comment"></textarea>
+                                            <button type="submit" class="btn btn-primary">Update & Approve</button>
+                                            <button type="button" class="btn btn-secondary close-overlay" data-overlay-id="{{ holiday.id }}">Cancel</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="overlay" id="overlay-{{ holiday.id }}" style="display:none;">
+                                    <div class="overlay-content">
+                                        <form method="post" action="{% url 'vacation:approve_holiday' holiday.id %}">
+                                            {% csrf_token %}
+                                            <h3>Approve Holiday</h3>
+                                            <label for="comment">Comment:</label>
+                                            <textarea name="comment" placeholder="Optional comment"></textarea>
+                                            <button type="submit" class="btn btn-primary">Confirm Approval</button>
+                                            <button type="button" class="btn btn-secondary close-overlay" data-overlay-id="{{ holiday.id }}">Cancel</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="overlay" id="overlay-reject-{{ holiday.id }}" style="display:none;">
+                                <div class="overlay-content">
+                                    <form method="post" action="{% url 'vacation:reject_holiday' holiday.id %}">
+                                        {% csrf_token %}
+                                        <h3>Reject Holiday</h3>
+                                        <label for="comment">Comment:</label>
+                                        <textarea name="comment" required placeholder="Mandatory comment for rejection"></textarea>
+                                        <button type="submit" class="btn btn-primary">Confirm Rejection</button>
+                                        <button type="button" class="btn btn-secondary close-overlay" data-overlay-id="reject-{{ holiday.id }}">Cancel</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% else %}
+                            <span>No actions available</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No holidays pending approval.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.toggle-approve-form').forEach(button => {
+        button.addEventListener('click', function() {
+            const holidayId = this.getAttribute('data-holiday-id');
+            document.getElementById('overlay-' + holidayId).style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.toggle-reject-form').forEach(button => {
+        button.addEventListener('click', function() {
+            const holidayId = this.getAttribute('data-holiday-id');
+            document.getElementById('overlay-reject-' + holidayId).style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.close-overlay').forEach(button => {
+        button.addEventListener('click', function() {
+            const overlayId = this.getAttribute('data-overlay-id');
+            document.getElementById('overlay-' + overlayId).style.display = 'none';
+            document.getElementById('overlay-reject-' + overlayId).style.display = 'none';
+        });
+    });
+
+    document.querySelectorAll('.duration').forEach(durationElement => {
+        const startDate = durationElement.getAttribute('data-start-date');
+        const endDate = durationElement.getAttribute('data-end-date');
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            durationElement.querySelector('.number-of-days').textContent = duration;
+        }
+    });
+});
+</script>
+{% endblock extra_scripts %}
+{% endblock content %}

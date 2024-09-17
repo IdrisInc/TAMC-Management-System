@@ -1,0 +1,232 @@
+{% load custom_filters %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Holiday Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 80px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #custom_holiday_field {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Holiday Request</h1>
+    <form method="post">
+        {% csrf_token %}
+    
+        <!-- Address -->
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" required>{{ holiday.address }}</textarea><br><br>
+    
+        <!-- Working Holiday Type -->
+        <label for="working_holiday">Select a Holiday Type:</label>
+        <select id="working_holiday" name="working_holiday" required>
+            <option value="">Select...</option>
+            {% for code, name in holiday.HOLIDAY_TYPE_CHOICES %}
+                <option value="{{ code }}" {% if code == holiday.working_holiday %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+            <option value="other" {% if holiday.working_holiday == 'other' %}selected{% endif %}>Other (Please specify)</option>
+        </select><br><br>
+    
+        <!-- Custom Holiday Type Field -->
+        <div id="custom_holiday_field">
+            <label for="custom_holiday">Custom Holiday Type:</label>
+            <input type="text" id="custom_holiday" name="custom_holiday" value="{% if holiday.custom_holiday_type %}{{ holiday.custom_holiday_type.name }}{% endif %}" placeholder="Enter your custom holiday type"><br><br>
+        </div>
+        
+        <!-- Start Date -->
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ holiday.start_date|date:'Y-m-d' }}" required><br><br>
+    
+        <!-- End Date -->
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ holiday.end_date|date:'Y-m-d' }}" required><br><br>
+    
+        <!-- My Last Holiday Start -->
+        <label for="my_last_holiday_start">My Last Holiday Start Date:</label>
+        <input type="date" id="my_last_holiday_start" name="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|date:'Y-m-d' }}" required><br><br>
+    
+        <!-- My Last Holiday End -->
+        <label for="my_last_holiday_end">My Last Holiday End Date:</label>
+        <input type="date" id="my_last_holiday_end" name="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|date:'Y-m-d' }}" required><br><br>
+    
+        <!-- Current Address -->
+        <label for="current_address">Current Address:</label>
+        <textarea id="current_address" name="current_address" required>{{ holiday.current_address }}</textarea><br><br>
+    
+        <!-- Delegatee -->
+        <label for="delegatee">Select Delegatee:</label>
+        <select id="delegatee" name="delegatee" required>
+            <option value="">Select...</option>
+            {% for user in users_in_same_group %}
+                <option value="{{ user.id }}" {% if user.id == holiday.delegatee.id %}selected{% endif %}>{{ user.get_full_name }}</option>
+            {% endfor %}
+        </select><br><br>
+    
+        {% if is_presenter_or_production %}
+        <label for="programs">Select Programs:</label>
+        <select id="programs" name="programs" multiple>
+            {% for program in programs %}
+                <option value="{{ program.program_name }}" {% if program.program_name in selected_programs %}selected{% endif %}>{{ program.program_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Program Counts -->
+        <div id="program-counts">
+            {% for program_name, count in program_counts_list %}
+                <label for="count_{{ program_name }}">Count for {{ program_name }}:</label>
+                <input type="number" id="count_{{ program_name }}" name="count_{{ program_name }}" min="0" value="{{ count }}">
+                <br><br>
+            {% endfor %}
+        </div>
+        {% endif %}
+    
+        <!-- Submit Button -->
+        <button type="submit">Update Request</button>
+    </form>
+    
+    <script>
+        // Function to toggle the custom holiday field based on selection
+        function toggleCustomHolidayField() {
+            var holidayTypeSelect = document.getElementById('working_holiday');
+            var customHolidayField = document.getElementById('custom_holiday_field');
+            var customHolidayInput = document.getElementById('custom_holiday');
+            
+            if (holidayTypeSelect.value === 'other') {
+                customHolidayField.style.display = 'block';
+                customHolidayInput.required = true;  // Make sure the field is required when visible
+            } else {
+                customHolidayField.style.display = 'none';
+                customHolidayInput.required = false; // Remove the required attribute when hidden
+                customHolidayInput.value = ''; // Clear the custom holiday input field
+            }
+        }
+
+        // Set up event listener for the holiday type dropdown
+        document.getElementById('working_holiday').addEventListener('change', toggleCustomHolidayField);
+
+        // Initialize the field display based on the current value
+        window.onload = toggleCustomHolidayField;
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var select = document.getElementById('programs');
+            var programCountsDiv = document.getElementById('program-counts');
+            var currentValues = {};  // Object to store current values
+        
+            function updateProgramCounts() {
+                var selectedOptions = Array.from(select.selectedOptions);
+        
+                // Preserve current values for selected options
+                selectedOptions.forEach(function(option) {
+                    var programName = option.value;
+                    var countName = 'count_' + programName;
+                    var existingInput = programCountsDiv.querySelector('input[name="' + countName + '"]');
+        
+                    if (existingInput) {
+                        currentValues[countName] = existingInput.value;
+                    }
+                });
+        
+                programCountsDiv.innerHTML = '';  // Clear previous counts
+        
+                selectedOptions.forEach(function(option) {
+                    var programName = option.value;
+                    var countName = 'count_' + programName;
+        
+                    var input = document.createElement('input');
+                    input.type = 'number';
+                    input.name = countName;
+                    input.min = 0;
+                    input.value = currentValues[countName] || 0; // Use stored value or default to 0
+                    input.placeholder = 'Number of ' + programName;
+        
+                    var label = document.createElement('label');
+                    label.textContent = 'Count for ' + programName + ': ';
+                    label.appendChild(input);
+        
+                    var br = document.createElement('br');
+                    programCountsDiv.appendChild(label);
+                    programCountsDiv.appendChild(br);
+                });
+            }
+        
+            // Update program counts when a selection changes
+            select.addEventListener('change', updateProgramCounts);
+        
+            // Initialize the field display based on the current selections
+            updateProgramCounts();
+        });
+        
+    </script>
+</body>
+</html>
+</body>
+</html>

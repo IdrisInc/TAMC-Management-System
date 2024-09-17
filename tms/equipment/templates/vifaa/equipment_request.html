@@ -1,4 +1,3 @@
-<!-- finance/templates/finance/update_request.html -->
 {% extends "base/base.html" %}
 
 {% block title %}
@@ -63,7 +62,7 @@
                   </div>
                   <div class="form-group">
                     <label for="id_date">Submission Date</label>
-                    <input type="date" class="form-control" id="id_date" name="submission_date" min="{{ current_date }}" required>
+                    <input type="date" class="form-control" id="id_date" name="submission_date" required>
                   </div>
                   <div class="form-group">
                     <label for="id_location">Location</label>
@@ -114,13 +113,18 @@
   </section>
 </div>
 
-<!-- JavaScript to synchronize dropdowns and manage equipment fields -->
+<!-- JavaScript to set the min date and manage equipment fields -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   var categorySelect = document.getElementById("id_category");
   var addEquipmentButton = document.getElementById("add-equipment-field");
   var equipmentFields = document.getElementById("equipment-fields");
   var allEquipmentSelects = document.querySelectorAll(".equipment-select");
+  var submissionDateInput = document.getElementById("id_date");
+
+  // Set the minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  submissionDateInput.setAttribute('min', today);
 
   if (categorySelect && addEquipmentButton && equipmentFields) {
     // Function to handle category change event

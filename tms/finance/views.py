@@ -10,7 +10,7 @@ from django.http import HttpResponseForbidden
 from django.db.models import Q
 from django.db.models import Sum,F
 import datetime
-
+from django.utils import timezone
 
 
 # Role recognition
@@ -90,86 +90,71 @@ def money(request):
 
 
 
+
 @login_required(login_url='staff_user:staff_login_process')
 def request_detail_view(request):
-    if request.user.is_authenticated:
-        user = request.user
-        user_role = determine_user_role(user)
-        
-        # Retrieve all financial requests
-        all_user_requests = FinancialRequest.objects.filter(user=user)
-        
-        # Filter user requests based on user role
-        if user_role == 'Technical Manager':
-            user_requests = all_user_requests.filter(user__groups__name='Technical')
-        elif user_role == 'Production':
-            user_requests = all_user_requests.filter(user__groups__name='Presenter')
-        elif user_role == 'Finance':
-            # For Finance, include requests from Technical Managers and Production users
-            user_requests = all_user_requests.filter(user__groups__name__in=['Technical Manager', 'Production'])
-        elif user_role == 'Treasurer':
-            # For Treasurer, include requests approved by Finance and requests made by Finance
-            user_requests = all_user_requests.filter(Q(approved_by_finance=True) | Q(user__groups__name='Finance'))
-        elif user_role == 'Cashier':
-            # For Cashier, include requests approved by Treasurer and requests made by Cashier
-            user_requests = all_user_requests.filter(Q(approved_by_treasurer=True) | Q(user=user))
-        else:
-            user_requests = all_user_requests
-        
-        # Fetch associated items for each user request
-        for req in user_requests:
-            req.user_items = Item.objects.filter(financial_request=req)
-        
-        # Include the user's own requests in the queryset
-        user_requests |= all_user_requests.filter(user=user)
-        
-        # Filter general requests based on user role
-        if user_role == 'Production':
-            # Production users can see requests from Presenters in the general part
-            general_requests = FinancialRequest.objects.filter(user__groups__name='Presenter')
-        elif user_role == 'Technical Manager':
-            # Technical Managers can see requests from Technical users in the general part
-            general_requests = FinancialRequest.objects.filter(user__groups__name='Technical')
-        elif user_role == 'Finance':
-            # Finance users can see requests from Technical Managers and Production users in the general part
-            general_requests = FinancialRequest.objects.filter(user__groups__name__in=['Technical Manager', 'Production']).exclude(user=user)
-            general_requests |=FinancialRequest.objects.filter(approved_by_technical_manager =True)
-            general_requests |= FinancialRequest.objects.filter(approved_by_production= True, )
-        elif user_role == 'Treasurer':
-            # Treasurer can see Presenter and Technical requests approved by Finance and requests made by Finance
-            general_requests = FinancialRequest.objects.filter(Q(approved_by_finance=True) | Q(user__groups__name='Finance'))
-            # Include requests made by Cashier
-            general_requests |=FinancialRequest.objects.filter(user__groups__name='Cashier')
-        elif user_role == 'Cashier':
-            # Cashier can see requests approved by Treasurer and requests made by Cashier
-            general_requests = FinancialRequest.objects.filter(approved_by_treasurer=True)
-            # Exclude Cashier's own requests from the general part
-            general_requests = general_requests.exclude(user=user)
-            # Include requests made by Treasurer in the general part
-            general_requests |= FinancialRequest.objects.filter(user__groups__name='Treasurer')
-        else:
-            # For other roles, fetch all general requests except Finance's own requests
-            general_requests = FinancialRequest.objects.exclude(user=user)
-        
-        # Calculate total amount for each request
-        for req in user_requests:
-            req.total_amount = req.items.aggregate(total_amount=Sum(F('quantity') * F('price')))['total_amount'] or 0
-
-        
-        return render(request, 'financial/financial_req_detail.html', {
-            'user_requests': user_requests,
-            'general_requests': general_requests,
-            'user_role': user_role,
-            'logged_in_user': user,  # Pass the logged-in user to the template
-        })
+    user = request.user
+    user_role = determine_user_role(user)
+    
+    # Retrieve all financial requests
+    all_user_requests = FinancialRequest.objects.all()
+    
+    # Filter user requests based on user role
+    if user_role == 'Technical Manager':
+        user_requests = all_user_requests.filter(user__groups__name='Technical')
+    elif user_role == 'Production':
+        user_requests = all_user_requests.filter(user__groups__name='Presenter')
+    elif user_role == 'Finance':
+        user_requests = all_user_requests.filter(user__groups__name__in=['Technical Manager', 'Production'])
+    elif user_role == 'Treasurer':
+        user_requests = all_user_requests.filter(Q(approved_by_finance__isnull=False) | Q(user__groups__name='Finance'))
+    elif user_role == 'Cashier':
+        user_requests = all_user_requests.filter(Q(approved_by_treasurer__isnull=False) | Q(user=user))
     else:
-        # Redirect unauthenticated users to the login page with a message
-        messages.info(request, 'Please log in to view your financial requests.')
-        return redirect('staff_user:staff_login_process')
-
-
-
-
+        user_requests = all_user_requests.filter(user=user)
+    
+    # Fetch associated items for each user request
+    for req in user_requests:
+        req.user_items = Item.objects.filter(financial_request=req)
+    
+    # Include the user's own requests in the queryset
+    user_requests |= all_user_requests.filter(user=user)
+    
+    # Filter general requests based on user role
+    if user_role == 'Production':
+        general_requests = FinancialRequest.objects.filter(user__groups__name='Presenter')
+    elif user_role == 'Technical Manager':
+        general_requests = FinancialRequest.objects.filter(user__groups__name='Technical')
+    elif user_role == 'Finance':
+        general_requests = FinancialRequest.objects.filter(
+            Q(user__groups__name__in=['Technical Manager', 'Production']) |
+            Q(approved_by_technical_manager__isnull=False) |
+            Q(approved_by_production__isnull=False)
+        ).exclude(user=user)
+    elif user_role == 'Treasurer':
+        general_requests = FinancialRequest.objects.filter(
+            Q(approved_by_finance__isnull=False) |
+            Q(user__groups__name='Finance') |
+            Q(user__groups__name='Cashier')
+        )
+    elif user_role == 'Cashier':
+        general_requests = FinancialRequest.objects.filter(
+            approved_by_treasurer__isnull=False
+        ).exclude(user=user)
+        general_requests |= FinancialRequest.objects.filter(user__groups__name='Treasurer')
+    else:
+        general_requests = FinancialRequest.objects.exclude(user=user)
+    
+    # Calculate total amount for each request
+    for req in user_requests:
+        req.total_amount = req.items.aggregate(total_amount=Sum(F('quantity') * F('price')))['total_amount'] or 0
+    
+    return render(request, 'financial/financial_req_detail.html', {
+        'user_requests': user_requests,
+        'general_requests': general_requests,
+        'user_role': user_role,
+        'logged_in_user': user,
+    })
 @login_required(login_url='staff_user:staff_login_process')
 def specific_detail_view(request, request_id):
     financial_request = get_object_or_404(FinancialRequest, id=request_id)
@@ -182,16 +167,16 @@ def specific_detail_view(request, request_id):
     # Handle approval/rejection logic
     if request.method == 'POST':
         action = request.POST.get('action')
-        comment = request.POST.get('comment')
+        comment = request.POST.get('comment', '')
         if action == 'approve':
             financial_request.comment = comment
             # Update request status based on user role
             if user_role == 'Finance':
-                financial_request.approved_by_finance = True
+                financial_request.approved_by_finance.add(user)
             elif user_role == 'Treasurer':
-                financial_request.approved_by_treasurer = True
+                financial_request.approved_by_treasurer.add(user)
             elif user_role == 'Cashier':
-                financial_request.approved_by_cashier = True
+                financial_request.approved_by_cashier.add(user)
             financial_request.update_status()  # Update the status based on approval fields
             financial_request.save()
         elif action == 'reject':
@@ -204,7 +189,7 @@ def specific_detail_view(request, request_id):
         'user_role': user_role,
         'total': total,
     })
-    
+
 #Update or delete request
 
 @login_required(login_url='staff_user:staff_login_process')
@@ -286,39 +271,37 @@ def delete_request(request, request_id):
 def approve_request(request, request_id):
     if request.method == 'POST':
         user = request.user
-        financial_request = FinancialRequest.objects.get(pk=request_id)
+        financial_request = get_object_or_404(FinancialRequest, pk=request_id)
         user_role = determine_user_role(user)
 
         # Handle approvals for various roles
         if user_role == 'Technical Manager':
             if financial_request.status == 'Pending':
-                financial_request.approved_by_technical_manager = True
-                financial_request.save()
+                financial_request.approved_by_technical_manager.add(user)
                 messages.success(request, 'Request approved by Technical Manager.')
             else:
                 messages.error(request, 'Cannot proceed. Previous review not completed.')
 
         elif user_role == 'Production':
             if financial_request.status == 'Pending':
-                financial_request.approved_by_production = True
-                financial_request.save()
+                financial_request.approved_by_production.add(user)
                 messages.success(request, 'Request approved by Production.')
             else:
                 messages.error(request, 'Cannot proceed. Previous review not completed.')
 
         elif user_role == 'Finance':
             if financial_request.status == 'Under Review':
-                financial_request.approved_by_finance = True
-                financial_request.save()
+                financial_request.approved_by_finance.add(user)
                 messages.success(request, 'Request approved by Finance.')
             else:
                 messages.error(request, 'Cannot proceed. Previous review not completed.')
 
         elif user_role == 'Treasurer':
             if financial_request.status == 'Under Review':
-                financial_request.approved_by_treasurer = True
-                financial_request.save()
+                financial_request.approved_by_treasurer.add(user)
                 messages.success(request, 'Request approved by Treasurer.')
+            else:
+                messages.error(request, 'Cannot proceed. Previous review not completed.')
 
         elif user_role == 'Cashier':
             # Account to be Charged and Account Code are required fields
@@ -330,13 +313,14 @@ def approve_request(request, request_id):
                 return HttpResponseBadRequest('Required information missing.')
 
             # Set the WEF date to the current date/time when the Cashier approves
-            wef = datetime.datetime.now()
+            wef = timezone.now()
 
             if financial_request.status == 'Under Review':
-                financial_request.approved_by_cashier = True
+                financial_request.approved_by_cashier.add(user)
                 financial_request.account_to_charge = account_to_charge
                 financial_request.account_code = account_code
                 financial_request.wef = wef  # Set WEF to the current date
+                financial_request.status = 'Approved'
                 financial_request.save()
 
                 messages.success(request, 'Request approved by Cashier.')
@@ -351,8 +335,7 @@ def approve_request(request, request_id):
 
     else:
         messages.error(request, 'Invalid request method.')
-        return redirect('finance:request_detail', request_id)
-
+        return redirect('finance:request_detail')
 
 
 

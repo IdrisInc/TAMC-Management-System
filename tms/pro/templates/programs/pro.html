@@ -39,7 +39,7 @@
                                 <div class="form-group">
                                     <div class="day-selector">
                                         <label for="day-select">Day:</label>
-                                        <select id="day-select" name="selected_day">
+                                        <select id="day-select" name="selected_day" class="form-control">
                                             {% for day_choice in day_choices %}
                                             <option value="{{ day_choice.0 }}">{{ day_choice.1 }}</option>
                                             {% endfor %}

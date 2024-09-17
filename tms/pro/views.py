@@ -1,8 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from reportlab.lib.pagesizes import letter,landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from .models import Program
-from django.utils import timezone
-from datetime import datetime,time,timedelta
+from reportlab.lib import colors 
+from datetime import datetime, timedelta, time
 from collections import defaultdict
+from io import BytesIO
+from reportlab.lib.units import inch
 
 
 def program_create(request):
@@ -37,8 +44,7 @@ def program_create(request):
 
 
 
-
-
+from datetime import datetime, time, timedelta
 def program_list(request):
     # Generating a list of time objects from 5:00 to 23:00
     hours = [time(hour) for hour in range(5, 24)]  
@@ -72,8 +78,6 @@ def program_list(request):
 
     return render(request, 'programs/program_list.html', {'hours': hours, 'daily_programs': daily_programs})
 
-
-
 def program_edit(request, program_id):
     program = get_object_or_404(Program, pk=program_id)
     if request.method == 'POST':
@@ -83,3 +87,66 @@ def program_edit(request, program_id):
         program.save()
         return redirect('pro:program_list')
     return render(request, 'programs/program_edit.html', {'program': program}) 
+
+
+
+
+
+
+
+
+def download_program_list_pdf(request):
+    # Generating data for the PDF
+    hours = [time(hour) for hour in range(5, 24)]
+    days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    daily_programs = {day: Program.objects.filter(selected_day=day.lower()).order_by('time_and_date') for day in days}
+
+    # Prepare the response as PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="program_list.pdf"'
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+
+    # Table data
+    data = [['Time'] + days]
+
+    for hour in hours:
+        row = [hour.strftime('%H:%M')]
+        for day in days:
+            programs = daily_programs[day]
+            program_details = []
+            for program in programs:
+                if program.time_and_date.time() == hour:
+                    program_details.append(f"{program.program_name} ({program.status}) at {program.time_and_date.strftime('%H:%M')}")
+            row.append('\n'.join(program_details))
+        data.append(row)
+
+    # Create Table
+    col_widths = [2*inch] + [1*inch]*len(days)  # Adjusted column widths
+    table = Table(data, colWidths=col_widths)
+
+    # Table style
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.gray),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+    ])
+
+    table.setStyle(style)
+
+    # Build the PDF
+    elements = []
+    elements.append(Paragraph('Program List', getSampleStyleSheet()['Heading1']))
+    elements.append(table)
+
+    doc.build(elements)
+
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+
+    return response

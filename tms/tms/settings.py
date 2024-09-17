@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'finance',
     'autoslug',
     'pro',
+    'vacation',
 ]
 
 MIDDLEWARE = [
@@ -124,7 +125,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = BASE_DIR / 'media'  
-
+MEDIA_URL = '/media/'
 
  
 
@@ -149,12 +150,33 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Sessions expire after SESSION_COOKIE_
 import os
 
 # Email settings
+
+
+# settings.py
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Example: 'smtp.gmail.com'
-EMAIL_PORT = 587  # Port for TLS: 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('allyidrisaally@gmail.com')  # Your email address
-EMAIL_HOST_PASSWORD = os.environ.get('')  # Your email password
-DEFAULT_FROM_EMAIL = os.environ.get('email')  # Default sender email address
+
+# Gmail account credentials (replace with your own)
+EMAIL_HOST_USER = 'allyidrisaally@gmail.com'
+EMAIL_HOST_PASSWORD = 'ureflivjkyecijwu'
 
 
+# settings.py
+
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Optional: Configure timezone
+CELERY_TIMEZONE = 'Africa/Dar_es_Salaam'
+
+# Configure Celery to use the Django settings module
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send-weekly-program-email': {
+        'task': 'pro.tasks.scheduled_weekly_report',
+        'schedule': crontab(hour=15, minute=3, day_of_week='Wednesday'),  # Adjust timing as needed
+    },
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Overlay Description</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            height: 80px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .description-field {
+            margin-bottom: 10px;
+        }
+
+        .remove-button {
+            background-color: #dc3545;
+        }
+
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var addDescriptionButton = document.getElementById('add-description');
+            var descriptionsContainer = document.getElementById('descriptions-container');
+            var descriptionIndex = document.querySelectorAll('.description-field').length; // Start from the number of existing fields
+
+            addDescriptionButton.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent form submission
+                
+                descriptionIndex++;
+                var newDescriptionField = document.createElement('div');
+                newDescriptionField.className = 'description-field';
+                newDescriptionField.innerHTML = `
+                    <label for="description-${descriptionIndex}">Description ${descriptionIndex + 1}:</label>
+                    <textarea id="description-${descriptionIndex}" name="description-${descriptionIndex}" required></textarea>
+                    <button type="button" class="remove-button" onclick="removeDescription(this)">Remove</button>
+                `;
+                descriptionsContainer.appendChild(newDescriptionField);
+            });
+        });
+
+        function removeDescription(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+<body>
+    <h1>Add Overlay Description</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div id="descriptions-container">
+            <!-- Initial description field (editable) -->
+            <div class="description-field">
+                <label for="description-1">Initial Description:</label>
+                <textarea id="description-1" name="description-1" required></textarea>
+                <button type="button" class="remove-button" onclick="removeDescription(this)">Remove</button>
+            </div>
+            <!-- Existing descriptions will be listed here -->
+        </div>
+        <button id="add-description">Add Description</button><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

@@ -31,6 +31,7 @@ urlpatterns = [
     path('ems/',include('equipment.urls', namespace='equipment')),
     path('finance/',include('finance.urls', namespace='finance')),
     path('pro/',include('pro.urls',namespace='PRO')),
+    path('vacation/',include ('vacation.urls',namespace= 'vacation')),
     path('404/', custom_404_page), 
     
 ]

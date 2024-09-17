@@ -7,4 +7,5 @@ urlpatterns = [
     path('programs/', views.program_list, name='program_list'),
     path('programs/create/', views.program_create, name='program_create'),
     path('programs/<int:program_id>/edit/', views.program_edit, name='program_edit'),
+     path('download-pdf/',views.download_program_list_pdf, name='download_program_list_pdf'),
 ]

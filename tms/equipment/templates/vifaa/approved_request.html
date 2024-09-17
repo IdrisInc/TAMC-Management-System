@@ -16,7 +16,7 @@
         <th>Category</th>
         <th>Equipment Required</th>
         <th>Submission Date</th>
-        {% if user_role == 'Technical' or user_role == 'Technical Manager' or user_role == 'Treasurer' %}
+        {% if can_see_actions %}
           <th>Action</th>
         {% endif %}
       </tr>
@@ -36,18 +36,16 @@
             {% endfor %}
           </td>
           <td>{{ request.submission_date }}</td>
-          {% if user_role == 'Technical' and request.status == 'Approved' and request.cashier_approved %}
+          {% if can_see_actions and request.status == 'Approved' and request.treasurer_approved %}
             <td>
-              {% for equipment in request.assignmentequipment_set.all %}
-                {% if equipment.equipment.status == 'Reserved' %}
-                  {% if forloop.first %}
-                    <form action="{% url 'equipment:confirm_return' request.id %}" method="post">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-primary">Confirm Return</button>
-                    </form>
-                  {% endif %}
-                {% endif %}
-              {% endfor %}
+              {% if request.status == 'Returned' %}
+                <button type="button" class="btn btn-secondary" disabled>Confirm Return</button>
+              {% else %}
+                <form action="{% url 'equipment:confirm_return' request.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary">Confirm Return</button>
+                </form>
+              {% endif %}
             </td>
           {% endif %}
         </tr>

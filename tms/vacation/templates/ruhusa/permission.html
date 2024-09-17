@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Permission Request</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        /* Header */
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Form */
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Steps */
+        .step {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .step.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Labels and Inputs */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* Disabled Inputs */
+        input[disabled],
+        select[disabled],
+        textarea[disabled] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* Navigation Buttons */
+        button {
+            background-color: #5cb85c;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .prev-btn {
+            background-color: #0275d8;
+        }
+
+        .prev-btn:hover {
+            background-color: #025aa5;
+        }
+
+        .submit-btn {
+            background-color: #5bc0de;
+        }
+
+        .submit-btn:hover {
+            background-color: #31b0d5;
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            color: #d9534f;
+            background: #f2dede;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .error-message.hide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .error-message.show.hide {
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .dynamic-duties {
+            margin-top: 10px;
+        }
+
+        .duty-item {
+            margin-bottom: 5px;
+        }
+
+        .remove-duty {
+            color: red;
+            cursor: pointer;
+        }
+
+        /* Overlay styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .overlay-content h2 {
+            margin-top: 0;
+        }
+
+        .close-btn {
+            background: #d9534f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .close-btn:hover {
+            background: #c9302c;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Financial Request</h1>
+              </div>
+              <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                  <li class="breadcrumb-item"><a href="#">Home</a></li>
+                  <li class="breadcrumb-item active">Financial Form</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+         
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row justify-content-center">
+        <div class="col-md-9">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Petty/Cheque</h3>
+            </div>
+            
+    <form method="post">
+        {% csrf_token %}
+        <div class="card-body">
+            <div class="form-group">
+        <!-- Error Message -->
+        <div class="error-message"></div>
+
+        <!-- Step 1 -->
+        <div class="step active">
+            <label for="address">Your Address:</label>
+            <input type="text" id="address" name="address" required>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" required>
+
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" required>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step">
+            <label for="place">Place Where You Are Going:</label>
+            <input type="text" id="place" name="place" required>
+
+            <label for="description">Permission Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step">
+            <label for="delegatee">Delegatee (If Applicable):</label>
+            <select id="delegatee" name="delegatee">
+                <option value="">No Delegatee</option>
+                {% for delegatee in delegatees %}
+                    <option value="{{ delegatee.id }}">{{ delegatee.username }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="reporting_date">Reporting Back On:</label>
+            <input type="date" id="reporting_date" name="reporting_date" required>
+        </div>
+
+        <!-- Step 5: Duties Section -->
+        <div class="step">
+            <label for="duties">Duties:</label>
+            <div id="dutyContainer" class="dynamic-duties">
+                <input type="text" id="dutyInput" placeholder="Enter duty and press Add" />
+                <button type="button" id="addDuty">Add Duty</button>
+                <div id="dutyList"></div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button type="button" class="prev-btn" id="prevBtn">Previous</button>
+        <button type="button" class="next-btn" id="nextBtn">Next</button>
+        <button type="submit" class="submit-btn" style="display: none;">Submit</button>
+    </form>
+
+    <!-- Overlay for Detailed View -->
+    <div id="detailsOverlay" class="overlay">
+        <div class="overlay-content">
+            <button class="close-btn" id="closeOverlay">Close</button>
+            <h2>Request Details</h2>
+            <div id="overlayDetails">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const steps = document.querySelectorAll(".step");
+            const nextButton = document.getElementById("nextBtn");
+            const prevButton = document.getElementById("prevBtn");
+            const submitButton = document.querySelector(".submit-btn");
+            const form = document.querySelector("form");
+            const errorMessage = document.querySelector(".error-message");
+        
+            let currentStep = 0;
+            const today = new Date().toISOString().split('T')[0];
+        
+            function updateDateInputs() {
+                document.getElementById("start_date").setAttribute("min", today);
+                document.getElementById("end_date").setAttribute("min", today);
+                document.getElementById("reporting_date").setAttribute("min", today);
+            }
+        
+            function validateDates() {
+                const startDate = document.getElementById("start_date").value;
+                const endDate = document.getElementById("end_date").value;
+                const reportingDate = document.getElementById("reporting_date").value;
+        
+                if (endDate && new Date(endDate) <= new Date(startDate)) {
+                    return "End date must be after the start date.";
+                }
+        
+                if (reportingDate && (new Date(reportingDate) <= new Date(startDate) || new Date(reportingDate) <= new Date(endDate))) {
+                    return "Reporting back date must be after both the start and end dates.";
+                }
+        
+                return null;
+            }
+        
+            function updateEndDateMin() {
+                const startDate = document.getElementById("start_date").value;
+                const endDate = document.getElementById("end_date");
+                endDate.setAttribute("min", startDate);
+                if (endDate.value && new Date(endDate.value) <= new Date(startDate)) {
+                    showError("End date must be after the start date.");
+                    endDate.value = "";
+                }
+            }
+        
+            function showStep(stepIndex) {
+                steps.forEach((step, index) => {
+                    if (index === stepIndex) {
+                        step.classList.add("active");
+                        setTimeout(() => {
+                            step.style.opacity = 1;
+                        }, 10);
+                    } else {
+                        step.style.opacity = 0;
+                        setTimeout(() => {
+                            step.classList.remove("active");
+                        }, 500); // Match the opacity transition duration
+                    }
+                });
+        
+                // Toggle Previous and Submit Button Visibility
+                prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
+                submitButton.style.display = stepIndex === steps.length - 1 ? "inline-block" : "none";
+                nextButton.style.display = stepIndex === steps.length - 1 ? "none" : "inline-block";
+            }
+        
+            function validateStep(stepIndex) {
+                const step = steps[stepIndex];
+                const inputs = step.querySelectorAll("input[required], textarea[required], select[required]");
+                let isValid = true;
+                let errorMsg = '';
+        
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        isValid = false;
+                        errorMsg = getErrorMessage(stepIndex); // Update error message for missing required input
+                    }
+                });
+        
+                // Additional validation for step-specific requirements
+                if (stepIndex === 1 || stepIndex === 3) { 
+                    const dateError = validateDates();
+                    if (dateError) {
+                        isValid = false;
+                        errorMsg = dateError;
+                    }
+                }
+        
+                if (!isValid) {
+                    showError(errorMsg);
+                }
+        
+                return isValid;
+            }
+        
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add("show");
+                setTimeout(() => {
+                    errorMessage.classList.remove("show");
+                    errorMessage.classList.add("hide");
+                }, 5000); // Show error message for 5 seconds
+            }
+        
+            function getErrorMessage(stepIndex) {
+                switch (stepIndex) {
+                    case 0:
+                        return "Please fill out the required personal information.";
+                    case 1:
+                        return "Ensure that start date, end date, and reporting back date are valid.";
+                    case 2:
+                        return "Please provide a reason for your request.";
+                    case 3:
+                        return "Ensure all information is correct before submission.";
+                    default:
+                        return "Please complete all required fields.";
+                }
+            }
+        
+            nextButton.addEventListener("click", () => {
+                if (validateStep(currentStep)) {
+                    currentStep++;
+                    if (currentStep >= steps.length) {
+                        currentStep = steps.length - 1;
+                    }
+                    showStep(currentStep);
+                }
+            });
+        
+            prevButton.addEventListener("click", () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+        
+            form.addEventListener("submit", function(event) {
+                if (!validateStep(currentStep)) {
+                    event.preventDefault();
+                    showError(getErrorMessage(currentStep));
+                }
+            });
+        
+            updateDateInputs();
+        
+            // Handle date input changes
+            document.getElementById("start_date").addEventListener("change", updateEndDateMin);
+            document.getElementById("end_date").addEventListener("change", updateEndDateMin);
+        
+            // Dynamic Duties Management
+            const dutyInput = document.getElementById("dutyInput");
+            const addDutyButton = document.getElementById("addDuty");
+            const dutyList = document.getElementById("dutyList");
+        
+            addDutyButton.addEventListener("click", () => {
+                const dutyText = dutyInput.value.trim();
+                if (dutyText) {
+                    const dutyItem = document.createElement("div");
+                    dutyItem.classList.add("duty-item");
+                    dutyItem.innerHTML = `${dutyText} <span class="remove-duty">Remove</span>`;
+                    dutyList.appendChild(dutyItem);
+                    dutyInput.value = "";
+        
+                    // Add event listener to remove duty
+                    dutyItem.querySelector(".remove-duty").addEventListener("click", () => {
+                        dutyItem.remove();
+                    });
+                }
+            });
+        
+            showStep(currentStep); // Initialize the first step
+        });
+        
+    </script>
+    
+</body>
+</html>

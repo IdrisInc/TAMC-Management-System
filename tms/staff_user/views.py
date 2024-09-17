@@ -20,10 +20,13 @@ from django.contrib.auth import password_validation
 from django.db.models import Q
 from django.http import JsonResponse
 from .models import UserProfile,ChatMessage # Assuming UserProfile is in the same app
-import re
+from django.db import transaction
+
+
 # Create your views here.
 
 # codes toregister user
+
 @permission_required('auth.add_user', raise_exception=True)
 def user_registration(request):
     roles = Group.objects.all()
@@ -37,62 +40,72 @@ def user_registration(request):
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         middle_name = request.POST.get('middle_name')
-        phone_number = request.POST.get('phone_number')  # Additional field
-        gender = request.POST.get('gender')  # Additional field
-        nida_number = request.POST.get('nida_number')  # Additional field
+        phone_number = request.POST.get('phone_number')
+        gender = request.POST.get('gender')
+        nida_number = request.POST.get('nida_number')
 
         # Validate Password
         if password != password_confirm:
             messages.error(request, 'Passwords do not match.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         if len(password) < 8:
             messages.error(request, 'Password must be at least 8 characters long.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         if not re.match(r'^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{8,}$', password):
             messages.error(request, 'Password must contain at least one digit, one uppercase letter, one lowercase letter, and one special character.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         # Check if Phone Number is Unique
         if UserProfile.objects.filter(phone_number=phone_number).exists():
             messages.error(request, 'Phone number already exists.')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
         try:
             with transaction.atomic():
+                # Create the User object
                 user = User.objects.create_user(
                     username=username, email=email, password=password,
                     first_name=first_name, last_name=last_name
                 )
+
+                # Assign the user to a group
                 group = Group.objects.get(name=position)
                 user.groups.add(group)
 
-                # Create the UserProfile with additional fields
-                UserProfile.objects.create(
-                    user=user,
-                    phone_number=phone_number,
-                    gender=gender,
-                    nida_number=nida_number
-                )
+                # Ensure UserProfile does not already exist
+                if not UserProfile.objects.filter(user=user).exists():
+                    # Create the UserProfile with additional fields
+                    UserProfile.objects.create(
+                        user=user,
+                        phone_number=phone_number,
+                        gender=gender,
+                        nida_number=nida_number
+                    )
+                else:
+                    messages.error(request, 'Profile for this user already exists.')
+                    return redirect('staff_user:user_registration')
 
             messages.success(request, 'User registered successfully.')
-            return redirect(reverse('staff_user:registered_user'))
+            return redirect('staff_user:registered_user')
 
         except Exception as e:
             messages.error(request, f'Error registering user: {e}')
-            return redirect(reverse('staff_user:user_registration'))
+            return redirect('staff_user:user_registration')
 
     context = {'roles': roles}
     return render(request, 'register.html', context)
+
+
 # registration ends here
 
 
@@ -160,7 +173,7 @@ def password_reset_form(request):
 
 
 def password_reset_done(request):
-    return render(request, 'password_reset_done.html')
+    return render(request, 'emails/email_send.html')
 
 
 def password_reset_confirm(request, uidb64, token):
@@ -233,7 +246,7 @@ def update_profile(request):
 
             # Validate email uniqueness
             if User.objects.filter(email=user.email).exclude(pk=user.pk).exists():
-                messages.error(request, 'Email is already in use.')
+                messages.error(request,'Email is already in use.')
                 return redirect('staff_user:update_profile')
 
             # Update Profile-related fields

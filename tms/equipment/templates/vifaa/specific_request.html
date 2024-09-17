@@ -32,68 +32,84 @@
                             <h3 class="card-title">Specific Task</h3>
                         </div>
                         <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <table class="table table-head-fixed text-nowrap table-hover table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Request From</th>
-                                        <th>Description</th>
-                                        <th>Date of Request</th>
-                                        <th>Location</th>
-                                        <th>Category</th>
-                                        <th>Equipment Required</th>
-                                        <th>Persons Assigned</th>
-                                        <th>Submission Date</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>{{ task_assignment.requested_by }}</td>
-                                        <td>{{ task_assignment.assignment }}</td>
-                                        <td>{{ task_assignment.date }}</td>
-                                        <td>{{ task_assignment.location }}</td>
-                                        <td>{{ task_assignment.category }}</td>
-                                        <td>
-                                            {% for detail in equipment_details %}
-                                                {{ detail.equipment }} (Quantity: {{ detail.quantity }})
-                                                {% if not forloop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>
-                                            {% for person in task_assignment.persons_assigned.all %}
-                                                {{ person.username }}
-                                                {% if not forloop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </td>
-                                        <td>{{ task_assignment.submission_date }}</td>
-                                        <td>{{ task_assignment.status }}</td>
-                                        <td>
-                                            {% if user_role == 'Production' and task_assignment.status == 'Pending' %}
-                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
-                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
-                                            
-                                            {% elif user_role == 'Technical' and task_assignment.status == 'Under Review' and task_assignment.production_approved %}
-                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
-                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
-                                                <a href="{% url 'equipment:confirm_return' task_assignment.id %}" class="btn btn-primary">Confirm Return</a>
-                                            
-                                            {% elif user_role == 'Treasurer' and task_assignment.status == 'Under Review' and task_assignment.production_approved and task_assignment.technical_approved %}
-                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
-                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
-                                            
-                                            {% elif user_role == 'Cashier' and task_assignment.status == 'Under Review' and task_assignment.production_approved and task_assignment.technical_approved and task_assignment.treasurer_approved %}
-                                                <a href="{% url 'equipment:approve_request' task_assignment.id %}" class="btn btn-success">Approve</a>
-                                                <a href="{% url 'equipment:reject_request' task_assignment.id %}" class="btn btn-danger">Reject</a>
-                                            
-                                            {% else %}
-                                                <button class="btn btn-success" disabled>Approve</button>
-                                                <button class="btn btn-danger" disabled>Reject</button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <form method="post">
+                                {% csrf_token %}
+                                <table class="table table-head-fixed text-nowrap table-hover table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Request From</th>
+                                            <th>Description</th>
+                                            <th>Date of Request</th>
+                                            <th>Location</th>
+                                            <th>Category</th>
+                                            <th>Equipment Required</th>
+                                            <th>Persons Assigned</th>
+                                            <th>Submission Date</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                            <th>Approved By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ task_assignment.requested_by }}</td>
+                                            <td>{{ task_assignment.assignment }}</td>
+                                            <td>{{ task_assignment.date }}</td>
+                                            <td>{{ task_assignment.location }}</td>
+                                            <td>{{ task_assignment.category }}</td>
+                                            <td>
+                                                {% for detail in equipment_details %}
+                                                    {{ detail.equipment }} (Quantity: {{ detail.quantity }})
+                                                    {% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for person in task_assignment.persons_assigned.all %}
+                                                    {{ person.username }}
+                                                    {% if not forloop.last %}, {% endif %}
+                                                {% endfor %}
+                                            </td>
+                                            <td>{{ task_assignment.submission_date }}</td>
+                                            <td>{{ task_assignment.status }}</td>
+                                            <td>
+                                                {% if task_assignment.status == 'Approved' or task_assignment.status == 'Rejected' %}
+                                                    <!-- No actions should be available -->
+                                                {% else %}
+                                                    {% if user_role == 'Production' and task_assignment.status == 'Pending' %}
+                                                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                                                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                                                    {% elif user_role == 'Technical' and task_assignment.status == 'Under Review' and task_assignment.production_approved %}
+                                                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                                                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                                                    {% elif user_role == 'Treasurer' and task_assignment.status == 'Under Review' and task_assignment.production_approved and task_assignment.technical_approved %}
+                                                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                                                        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                                                    {% elif user_role == 'Technical' and task_assignment.status == 'Approved' %}
+                                                        <button type="submit" name="confirm_return" value="confirm" class="btn btn-primary">Confirm Return</button>
+                                                    {% else %}
+                                                        <button class="btn btn-success" disabled>Approve</button>
+                                                        <button class="btn btn-danger" disabled>Reject</button>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if task_assignment.production_approved %}
+                                                    <p>{{ task_assignment.production_approver.username }} (Production)</p>
+                                                {% endif %}
+                                                {% if task_assignment.technical_approved %}
+                                                    <p>{{ task_assignment.technical_approver.username }} (Technical)</p>
+                                                {% endif %}
+                                                {% if task_assignment.treasurer_approved %}
+                                                    <p>{{ task_assignment.treasurer_approver.username }} (Treasurer)</p>
+                                                {% endif %}
+                                                {% if task_assignment.cashier_approved %}
+                                                    <p>{{ task_assignment.cashier_approver.username }} (Cashier)</p>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                     </div>
                 </div>

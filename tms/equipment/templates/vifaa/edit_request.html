@@ -35,13 +35,12 @@
                             <form method="post" enctype="multipart/form-data">
                                 <div class="card-body">
                                     {% csrf_token %}
-                                    
+
                                     <div class="form-group">
                                         <label for="id_assignment">Assignment</label>
                                         <input type="text" class="form-control" id="id_assignment" name="assignment" value="{{ task_assignment.assignment }}" required>
                                     </div>
 
-                                   
                                     <div class="form-group">
                                         <label for="id_location">Location of the Assignment</label>
                                         <input type="text" class="form-control" id="id_location" name="location" value="{{ task_assignment.location }}" required>
@@ -108,7 +107,6 @@
                                             {% endfor %}
                                         </select>
                                     </div>
-                                    
 
                                     <div class="form-group">
                                         <button type="submit" class="btn btn-primary">Update Task Assignment</button>
@@ -122,4 +120,89 @@
             </div>
         </section>
     </div>
+
+    <!-- JavaScript to set the min date and manage equipment fields -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var submissionDateInput = document.getElementById("id_submission_date");
+
+            // Set the minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            submissionDateInput.setAttribute('min', today);
+
+            // Logic to show/hide new category and new detail inputs
+            var categorySelect = document.getElementById("id_category");
+            var detailSelect = document.getElementById("id_details");
+            var newCategoryInput = document.getElementById("new_category_input");
+            var newDetailInput = document.getElementById("new_detail_input");
+
+            categorySelect.addEventListener("change", function() {
+                if (categorySelect.value === "__add__") {
+                    newCategoryInput.style.display = "block";
+                } else {
+                    newCategoryInput.style.display = "none";
+                }
+            });
+
+            detailSelect.addEventListener("change", function() {
+                var selectedOptions = Array.from(detailSelect.selectedOptions).map(option => option.value);
+                if (selectedOptions.includes("__add__")) {
+                    newDetailInput.style.display = "block";
+                } else {
+                    newDetailInput.style.display = "none";
+                }
+            });
+
+            // Logic for equipment fields
+            var addEquipmentButton = document.getElementById("add-equipment-field");
+            var equipmentFields = document.getElementById("equipment-fields");
+            var allEquipmentSelects = document.querySelectorAll(".equipment-select");
+
+            function updateEquipmentSelects() {
+                allEquipmentSelects.forEach(function(select) {
+                    var selectedOptions = Array.from(allEquipmentSelects)
+                        .filter(s => s !== select && s.value === select.value)
+                        .map(s => s.value);
+
+                    select.querySelectorAll("option").forEach(function(option) {
+                        option.disabled = selectedOptions.includes(option.value) && option.value !== select.value;
+                    });
+                });
+            }
+
+            allEquipmentSelects.forEach(function(select) {
+                select.addEventListener("change", updateEquipmentSelects);
+            });
+
+            updateEquipmentSelects();
+
+            addEquipmentButton.addEventListener("click", function() {
+                var newEquipmentField = document.createElement("div");
+                newEquipmentField.className = "equipment-field";
+
+                newEquipmentField.innerHTML = `
+                    <div class="form-group">
+                        <label for="id_equipment">Equipment Required</label>
+                        <select class="form-control equipment-select" name="equipment[]" required>
+                            <option value="" disabled selected>Select Equipment</option>
+                            {% for equipment in all_equipments %}
+                            <option value="{{ equipment.id }}">{{ equipment.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="id_quantity">Quantity</label>
+                        <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" min="1" value="1">
+                    </div>
+                `;
+
+                equipmentFields.appendChild(newEquipmentField);
+
+                var newSelect = newEquipmentField.querySelector(".equipment-select");
+                newSelect.addEventListener("change", updateEquipmentSelects);
+
+                updateEquipmentSelects();
+            });
+        });
+    </script>
 {% endblock %}

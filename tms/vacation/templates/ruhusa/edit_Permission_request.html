@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Permission Request</title>
+</head>
+<body>
+    <h1>Edit Permission Request</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" value="{{ permission_request.address }}" required>
+        </div>
+        <div>
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" value="{{ permission_request.start_date }}" required>
+        </div>
+        <div>
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" value="{{ permission_request.end_date }}" required>
+        </div>
+        <div>
+            <label for="place">Place:</label>
+            <input type="text" id="place" name="place" value="{{ permission_request.place }}" required>
+        </div>
+        <!-- Include other fields if needed -->
+        <button type="submit">Update Request</button>
+    </form>
+
+    <a href="{% url 'vacation:view_permission_request' %}">Back to Request List</a>
+</body>
+</html>
