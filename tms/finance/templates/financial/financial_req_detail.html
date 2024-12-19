@@ -7,194 +7,429 @@
 
 {% block content %}
 <div class="content-wrapper">
-    <section class="content-header">
+    <section class ="content-header">
         <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Financial Requests</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Financial Request</a></li>
-                        <li class="breadcrumb-item active">Submitted Requests</li>
-                    </ol>
-                </div>
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Financial Requests</h1>
             </div>
-        </div>
-    </section>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Financial Request</a></li>
+                <li class="breadcrumb-item active">Submited Requests</li>
+              </ol>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+
       
-    <section class="content">
+    <section class="content ">
+
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            {% if messages %}
-                                {% for message in messages %}
-                                    {{ message }}
-                                {% endfor %}
-                            {% endif %}
+         <!-- /.row -->
+         <div class="row">
+          <div class="col-12">
 
-                            <h3 class="card-title">My Financial Requests</h3>
+               <!-- Display the switch only for non-Presenter, non-Technical users -->
+               {% if user_role != 'Technical' and user_role != 'Radio / TV Presenter' and user_role != 'Editor' and user_role != 'Marketing Officer' %}
+               <div class="mb-3">
+                   <div class="row">
+                       <!-- Button 1: My Financial Requests -->
+                       <div class="col-12 col-md-4 mb-2 mb-md-0">
+                           <button id="toggle-my-requests-btn" class="btn btn-primary btn-block" onclick="showMyRequests()">
+                               View My Financial Requests
+                           </button>
+                       </div>
+                       <!-- Button 2: General Requests -->
+                       <div class="col-12 col-md-4 mb-2 mb-md-0">
+                           <button id="toggle-general-requests-btn" class="btn btn-secondary btn-block" onclick="showGeneralRequests()">
+                               View Request Made
+                           </button>
+                       </div>
+                       <!-- Button 3: Approved Requests -->
+                       <div class="col-12 col-md-4">
+                           <button id="toggle-approved-requests-btn" class="btn btn-info btn-block" onclick="showApprovedRequests()">
+                               View Requests Approved
+                           </button>
+                       </div>
+                   </div>
+               </div>
+           {% endif %}
+           
+           
+           
+            <div class="card ">
+                <div id="my-requests-table" class="card" style="display: block;">
+              <div class="card-header ">
+                    {% if messages %}
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    {% endif %}
 
-                            {% if user_requests %}
-                            <div class="card-tools">
-                                <div class="input-group input-group-sm" style="width: 150px;">
-                                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-default">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                    {% comment %} <a href="{% url 'finance:all_financial_request' %}">View Financial Requests</a> {% endcomment %}
+
+                    <h3 class="card-title ">My Financial Requests</h3>
+               
+               
+                    {% if user_requests %}
+                    <div class="card-tools">
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                            <input type="date" id="table-search-date" class="form-control float-right" placeholder="Search by date">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-default" onclick="filterByDate()">
+                                    <i class="fas fa-search"></i>
+                                </button>
                             </div>
                         </div>
-                        
-                        <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <table class="table table-head-fixed text-nowrap table-hover table-striped">
-                                <thead>
+                    </div>
+                    
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body table-responsive p-0" >
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" >
+                <thead>
                                     <tr>
-                                        <th>Amount Requested</th>
-                                        <th>Date Requested</th>
-                                        <th>Purpose</th>
-                                        <th>Description</th>
-                                        <th>Account to be Charged</th>
-                                        <th>Status</th>
-                                        <th>Approval Stage</th>
-                                        <th>Action</th>
+                                       <th scope="col">Purpose</th>
+                                        <th scope="col">Date Requested</th>
+                                        
+                                        <th scope="col">Status</th>
+                                        
+                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="my-requests-table-body">
                                     {% for request in user_requests %}
-                                    <tr>
-                                        <td>{{ request.amount_numeric }} ({{ request.amount_words }})</td>
-                                        <td>{{ request.created_at|date:'Y-m-d' }}</td>
-                                        <td>{{ request.purpose }}</td>
-                                        <td>
-                                            <table class="table table-sm">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Item</th>
-                                                        <th>Quantity</th>
-                                                        <th>Price</th>
-                                                        <th>Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for item in request.items.all %}
-                                                    <tr>
-                                                        <td>{{ item.item_name }}</td>
-                                                        <td>{{ item.quantity }}</td>
-                                                        <td>{{ item.price }}</td>
-                                                    </tr>
-                                                    {% endfor %}
-                                                    <tr>
-                                                        <td colspan="3"></td>
-                                                        <td>{{ request.total_amount }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        
-                                        <td>
-                                            {% if request.approved_by_cashier %}
-                                                {{ request.account_to_charge }}
-                                            {% else %}
-                                                Waiting for Cashier's Approval
-                                            {% endif %}
-                                        </td>
-
-                                        <td class="{% if request.status == 'Pending' %}text-warning{% elif request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">
-                                            {{ request.status }}
-                                        </td>
-
-                                        <td>
-                                            {% if request.approved_by_production %}
-                                                {{ request.approved_by_production.first_name }} {{ request.approved_by_production.last_name }}
-                                            {% elif request.approved_by_technical_manager %}
-                                                {{ request.approved_by_technical_manager.first_name }} {{ request.approved_by_technical_manager.last_name }}
-                                            {% elif request.approved_by_finance %}
-                                                {{ request.approved_by_finance.first_name }} {{ request.approved_by_finance.last_name }}
-                                            {% else %}
-                                                Not Approved
-                                            {% endif %}
-                                        </td>
-
-                                        <td>
-                                            {% if request.status == 'Pending' %}
-                                                <a href="{% url 'finance:update_request' request.id %}" class="btn btn-primary">Edit</a>
-                                                <form action="{% url 'finance:delete_request' request.id %}" method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ request.id }}')">Delete</button>
-                                                </form>
-                                            {% else %}
-                                                <button disabled class="btn btn-secondary">Edit</button>
-                                                <button disabled class="btn btn-secondary">Delete</button>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
+                                        <tr>
+                                             <td>{{ request.purpose }}</td>
+                                            {% comment %} <td>{{ request.amount_numeric }} ({{ request.amount_words }})</td> {% endcomment %}
+                                            <td>{{ request.created_at|date:'Y-m-d' }}</td>
+                                           
+                                            {% comment %} <td>
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Item</th>
+                                                            <th scope="col">Quantity</th>
+                                                            <th scope="col">Price</th>
+                                                            <th scope="col">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for item in request.items.all %}
+                                                            <tr>
+                                                                <td>{{ item.item_name }}</td>
+                                                                <td>{{ item.quantity }}</td>
+                                                                <td>{{ item.price }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                        <tr>
+                                                            <td colspan="3"></td>
+                                                            <td>{{ request.total_amount }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td> {% endcomment %}
+                                            {% comment %} <td>
+                                                {% if request.approved_by_cashier %}
+                                                    {{ request.account_to_charge }}
+                                                {% else %}
+                                                    Waiting for Cashier's Approval
+                                                {% endif %}
+                                            </td> {% endcomment %}
+                                            <td class="{% if request.status == 'Pending' %}text-warning{% elif request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">
+                                                {{ request.status }}
+                                            </td>
+                                            {% comment %} <td>
+                                                <!-- Display the approval stage -->
+                                                {% if request.approved_by_production %}
+                                                    {{ request.approved_by_production.first_name }} {{ request.approved_by_production.last_name }}
+                                                {% elif request.approved_by_technical_manager %}
+                                                    {{ request.approved_by_technical_manager.first_name }} {{ request.approved_by_technical_manager.last_name }}
+                                                {% elif request.approved_by_finance %}
+                                                    {{ request.approved_by_finance.first_name }} {{ request.approved_by_finance.last_name }}
+                                                {% else %}
+                                                    Not Approved
+                                                {% endif %}
+                                            </td> {% endcomment %}
+                                            <td>
+                                                <!-- View More button to trigger the modal -->
+                                                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#modal-lg-{{request.id}}">
+                                                    View More
+                                                  </button>
+                                            </td>
+                                        </tr>
                                     {% endfor %}
                                 </tbody>
+                                
                             </table>
+                               <!-- Pagination controls for My Financial Requests -->
+                               <div id="pagination-my-requests" class="pagination"></div>
                         </div>
-                        {% else %}
-                        <div class="card-header mt-5">
-                            <p class="card-title">You have not made any request.</p>
+                    {% else %}
+                    
+                        <div class="card-header mt-5 ">
+                        <p class="card-title" >You have not made any request.</p>
                         </div>
                         {% endif %}
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+    </div>
 
-    {% if user_role != 'Technical' and user_role != 'Presenter' %}
+
+
+
+{% for request in user_requests %}
+  <!-- Existing Modal Code for each Request -->
+<div class="modal fade" id="modal-lg-{{ request.id }}">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="card-title">
+                    <i class="nav-icon fas fa-coins"></i>
+                    {% if request.total_amount > 50000 %}
+                        Cheque request
+                    {% else %}
+                        Petty Request
+                    {% endif %}
+                </h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Amount Requested:</strong> {{ request.amount_numeric }} ({{ request.amount_words }})</p>
+                <p><strong>Date Requested:</strong> {{ request.created_at|date:'Y-m-d' }}</p>
+                <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+                <p><strong>Request Description (s):</strong></p>
+                <table class="table table-sm table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Item</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in request.items.all %}
+                            <tr>
+                                <td>{{ item.item_name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.price }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="3"></td>
+                            <td>{{ request.total_amount }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>Account to be Charged:</strong> 
+                    {% if request.approved_by_finance %}
+                        {{ request.account_to_charge }}
+                    {% else %}
+                        Waiting for Approval
+                    {% endif %}
+                </p>
+
+                <p><strong>Status:</strong> 
+                    <span class="{% if request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% elif request.status == 'Pending' %}text-warning{% elif request.status == 'Under Review' %}text-info{% endif %}">
+                        {{ request.status }}
+                    </span>
+                </p>     
+                <p><strong>Approved By:</strong></p>
+                <ul>
+                    {% if request.approved_by_production.exists %}
+                        <li>Production Manager: 
+                            {% for user in request.approved_by_production.all %}
+                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if request.approved_by_technical_manager.exists %}
+                        <li>Technical Manager: 
+                            {% for user in request.approved_by_technical_manager.all %}
+                                {{ user.get_full_name}}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if request.approved_by_finance.exists %}
+                        <li>Finance: 
+                            {% for user in request.approved_by_finance.all %}
+                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if request.approved_by_treasurer.exists %}
+                        <li>Treasurer: 
+                            {% for user in request.approved_by_treasurer.all %}
+                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if request.approved_by_assistant_treasurer.exists %}
+                        <li>Assistant Treasurer: 
+                            {% for user in request.approved_by_assistant_treasurer.all %}
+                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if request.approved_by_cashier.exists %}
+                        <li>Cashier: 
+                            {% for user in request.approved_by_cashier.all %}
+                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                </ul>
+
+                {% if request.approved_by_cashier %}
+                    <p><strong>WEF:</strong> {{ request.wef }}</p>
+                {% endif %}
+                
+                <!-- Show comment if the request is rejected -->
+                {% if request.status == 'Rejected' %}
+                    <p><strong>Rejection Comment:</strong> {{ request.rejection_comment }}</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer justify-content-between">
+                {% if request.status == 'Pending' %}
+                    <a href="{% url 'finance:update_request' request.id %}" class="btn btn-outline-primary">Update</a>
+                    <button type="button" class="btn btn-outline-danger" onclick="showDeleteOverlay({{ request.id }})">Delete</button>
+                {% else %}
+                    <button disabled class="btn btn-secondary">Update</button>
+                    <button disabled class="btn btn-secondary">Delete</button>
+                {% endif %}
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+    <!-- Delete Confirmation Overlay (Unique for Each Request) -->
+    <div id="deleteOverlay-{{ request.id }}" class="delete-overlay" style="display: none;">
+        <div class="overlay-content">
+            <h5>Confirm Deletion</h5>
+            <p>Are you sure you want to delete this request?</p>
+            <div class="overlay-actions d-flex justify-content-center">
+                <button type="button" class="btn btn-secondary" onclick="hideDeleteOverlay({{ request.id }})">Cancel</button>
+                <form id="deleteForm-{{ request.id }}" action="{% url 'finance:delete_request' request.id %}" method="post" class="ml-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+<!-- Add CSS for Overlay -->
+<style>
+    .delete-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .overlay-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        width: 500px; /* Adjust width for larger modal */
+    }
+
+    .overlay-actions {
+        margin-top: 15px;
+    }
+
+    .overlay-actions button {
+        margin-right: 10px;
+    }
+</style>
+
+<!-- JavaScript to Show/Hide Overlay -->
+<script type="text/javascript">
+    function showDeleteOverlay(requestId) {
+        document.getElementById('deleteOverlay-' + requestId).style.display = 'flex'; // Show the overlay
+    }
+
+    function hideDeleteOverlay(requestId) {
+        document.getElementById('deleteOverlay-' + requestId).style.display = 'none'; // Hide the overlay
+    }
+</script>
+
+{% if user_role != 'Technical' and user_role != 'Radio / TV Presenter' and user_role != 'Marketing Officer' and user_role != 'Editor' and user_role != 'Secretary' and user_role != 'Cook' and user_role != 'Driver' %}
+<div id="general-requests-table" class="card card-primary" style="display:none;">
     <div class="container-fluid">
         <div class="row mt-5">
             <div class="col-md-12">
                 <div class="card card-primary">
                     <div class="card-header">
-                        <h3 class="card-title">Request Made</h3>
-
+                        <h3 class="card-title">Requests Made</h3>
                         <div class="card-tools">
-                            <div class="input-group input-group-sm" style="width: 150px;">
-                                <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-default">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                </div>
+                            <div class="input-group input-group-sm">
+                                <input type="text" id="table-search" class="form-control float-right" placeholder="Search by name or date (YYYY-MM-DD)">
                             </div>
                         </div>
                     </div>
-                    
                     <div class="card-body">
                         {% if general_requests %}
-                        <div class="card-body table-responsive p-0" style="height: 300px;">
-                            <table class="table table-head-fixed text-nowrap table-hover table-striped">
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-head-fixed text-nowrap table-hover table-striped" id="general-requests-table">
                                 <thead>
                                     <tr>
                                         <th>Request From</th>
-                                        <th>Amount Requested</th>
                                         <th>Date Requested</th>
-                                        <th>Purpose</th>
+                                        <th>Status</th>
                                         <th>View Details</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="general-requests-table-body">
                                     {% for request in general_requests %}
                                     <tr>
-                                        <td>{{ request.user }}</td>
-                                        <td>{{ request.amount_numeric }} ({{ request.amount_words }})</td>
+                                        <td>{{ request.user.get_full_name }}</td>
                                         <td>{{ request.created_at|date:'Y-m-d' }}</td>
-                                        <td>{{ request.purpose }}</td>
+                                        <td class="{% if request.status == 'Pending' %}text-warning{% elif request.status == 'Approved' %}text-success{% elif request.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">
+                                            {{ request.status }}
+                                        </td>
                                         <td><a href="{% url 'finance:specific_detail' request.id %}" class="btn btn-primary">View</a></td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
+                        <div id="pagination-general-requests" class="pagination"></div>
+                        <div class="pagination-controls">
+                            <span class="step-links">
+                                {% if general_requests.has_previous %}
+                                    <a href="?page={{ general_requests.previous_page_number }}">previous</a>
+                                {% endif %}
+                                
+                                <span class="current">
+                                    Page {{ general_requests.number }} of {{ general_requests.paginator.num_pages }}.
+                                </span>
+                                
+                                {% if general_requests.has_next %}
+                                    <a href="?page={{ general_requests.next_page_number }}">next</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
                         {% else %}
                         <p>No financial requests found.</p>
                         {% endif %}
@@ -203,14 +438,229 @@
             </div>
         </div>
     </div>
-    {% endif %}
-</section>
+</div>
+{% endif %}
 
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    function confirmDelete(requestId) {
-        if (confirm("Are you sure you want to delete this request?")) {
-            document.getElementById("deleteForm" + requestId).submit();
+$(document).ready(function() {
+    // Handle pagination link clicks
+    $('.pagination-controls').on('click', 'a', function(e) {
+        e.preventDefault(); // Prevent default link behavior
+        const page = $(this).attr('href').split('=')[1]; // Get the page number from the URL
+        
+        $.ajax({
+            url: '?page=' + page, // Send the request to the server
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                // Update the table with new data
+                $('#general-requests-table-body').empty(); // Clear existing table rows
+
+                $.each(data.requests, function(index, request) {
+                    $('#general-requests-table-body').append(`
+                        <tr>
+                            <td>${request.request_from}</td>
+                            <td>${request.date_requested}</td>
+                            <td>${request.status}</td>
+                            <td><a href="${request.detail_url}" class="btn btn-primary">View</a></td>
+                        </tr>
+                    `);
+                });
+
+                // Update pagination controls
+                const paginationControls = $('.pagination-controls');
+                paginationControls.empty(); // Clear existing pagination links
+                
+                if (data.has_previous) {
+                    paginationControls.append(`<a href="?page=${data.previous_page_number}">previous</a>`);
+                }
+                paginationControls.append(`Page ${data.current_page_number} of ${data.total_pages}.`);
+                if (data.has_next) {
+                    paginationControls.append(`<a href="?page=${data.next_page_number}">next</a>`);
+                }
+            },
+            error: function() {
+                console.log('Error loading data.');
+            }
+        });
+    });
+});
+</script>
+
+<div id="approved-requests-table" style="display: none;">
+    <h2>Requests Approved</h2>
+    {% if archived_requests %}
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Amount (Numeric)</th>
+                    <th>Purpose</th>
+                    <th>Date Approved</th>
+                    <th>Created At</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody id='approved-requests-table-body'>
+                {% for request in archived_requests %}
+                    <tr>
+                        <td>{{ request.user.username }}</td>
+                        <td>{{ request.amount_numeric }}</td>
+                        <td>{{ request.purpose }}</td>
+                        <td>{{ request.date_approved }}</td>
+                        <td>{{ request.created_at }}</td>
+                        <td>
+                            <ul>
+                                {% for item in request.archived_items.all %}
+                                    <li>{{ item.item_name }} - Quantity: {{ item.quantity }}, Price: {{ item.price }}, Total: {{ item.total_request }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No approved requests available.</p>
+    {% endif %}
+</div>
+
+
+
+</div>
+</section>
+<script type="text/javascript">
+    const rowsPerPage = 5;  // Number of rows to display per page
+    let currentPage = 1;     // Track the current page number
+
+    // Common pagination function
+    function paginateTable(tableId, paginationId) {
+        const tableBody = document.getElementById(tableId);
+        const rows = tableBody.getElementsByTagName('tr');
+        const totalRows = rows.length;
+        const pageCount = Math.ceil(totalRows / rowsPerPage);
+
+        const pagination = document.getElementById(paginationId);
+        pagination.innerHTML = '';
+
+        // Create Previous Button
+        let prevBtn = document.createElement('button');
+        prevBtn.innerHTML = 'Previous';
+        prevBtn.className = 'btn btn-sm btn-secondary mx-1';
+        prevBtn.onclick = function () {
+            if (currentPage > 1) {
+                currentPage--;
+                displayPage(tableBody, rows, currentPage, pageCount);
+            }
+        };
+        pagination.appendChild(prevBtn);
+
+        // Create Page Number Buttons
+        for (let i = 1; i <= pageCount; i++) {
+            let btn = document.createElement('button');
+            btn.innerHTML = i;
+            btn.className = 'btn btn-sm btn-primary mx-1';
+            btn.onclick = function () {
+                currentPage = i;
+                displayPage(tableBody, rows, i, pageCount);
+            };
+            pagination.appendChild(btn);
+        }
+
+        // Create Next Button
+        let nextBtn = document.createElement('button');
+        nextBtn.innerHTML = 'Next';
+        nextBtn.className = 'btn btn-sm btn-secondary mx-1';
+        nextBtn.onclick = function () {
+            if (currentPage < pageCount) {
+                currentPage++;
+                displayPage(tableBody, rows, currentPage, pageCount);
+            }
+        };
+        pagination.appendChild(nextBtn);
+
+        // Display the first page by default
+        displayPage(tableBody, rows, currentPage, pageCount);
+    }
+
+    function displayPage(tableBody, rows, pageNumber, pageCount) {
+        let start = (pageNumber - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+
+        // Hide all rows and display only the rows for the current page
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].style.display = (i >= start && i < end) ? '' : 'none';
+        }
+
+        // Update the "Previous" and "Next" button states based on the current page
+        let pagination = tableBody.parentNode.nextElementSibling;
+        let prevBtn = pagination.querySelector('button:first-child');
+        let nextBtn = pagination.querySelector('button:last-child');
+
+        prevBtn.disabled = pageNumber === 1;
+        nextBtn.disabled = pageNumber === pageCount;
+    }
+
+    // Initialize pagination for each table
+    window.onload = function () {
+        paginateTable('my-requests-table-body', 'pagination-my-requests');
+        paginateTable('general-requests-table-body', 'pagination-general-requests'); // Check this line
+        paginateTable('approved-requests-table-body', 'pagination-approved-requests');
+    };
+    
+
+    // Switch between tables
+    function showMyRequests() {
+        document.getElementById('my-requests-table').style.display = 'block';
+        document.getElementById('general-requests-table').style.display = 'none';
+        document.getElementById('approved-requests-table').style.display = 'none';
+    }
+
+    function showGeneralRequests() {
+        document.getElementById('my-requests-table').style.display = 'none';
+        document.getElementById('general-requests-table').style.display = 'block';
+        document.getElementById('approved-requests-table').style.display = 'none';
+    }
+
+    function showApprovedRequests() {
+        document.getElementById('my-requests-table').style.display = 'none';
+        document.getElementById('general-requests-table').style.display = 'none';
+        document.getElementById('approved-requests-table').style.display = 'block';
+    }
+
+  // Attach dynamic event listener to the single search input
+document.getElementById('table-search').addEventListener('input', filterTable);
+
+function filterTable() {
+    const searchValue = document.getElementById('table-search').value.toLowerCase();  // Get the search value
+    const tableBody = document.getElementById('general-requests-table-body');
+    const rows = tableBody.getElementsByTagName('tr');
+
+    // Loop through all table rows and filter by both name and date
+    for (let i = 0; i < rows.length; i++) {
+        const nameCell = rows[i].getElementsByTagName('td')[0];  // Assuming name is in the 1st column (index 0)
+        const dateCell = rows[i].getElementsByTagName('td')[2];  // Assuming date is in the 3rd column (index 2)
+
+        const rowName = nameCell.innerText.toLowerCase().trim();  // Get the name text and convert to lowercase
+        const rowDate = dateCell.innerText.trim();  // Get the date text (keep as is)
+
+        // Check if the search value matches either the name or the date
+        const matchesName = rowName.includes(searchValue);  // Match name with search value
+        const matchesDate = rowDate.includes(searchValue);  // Match date with search value
+
+        // Display the row only if it matches either name or date
+        if (matchesName || matchesDate) {
+            rows[i].style.display = '';  // Show the row
+        } else {
+            rows[i].style.display = 'none';  // Hide the row
         }
     }
+}
+
+    
 </script>
+
+
 {% endblock %}

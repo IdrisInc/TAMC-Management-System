@@ -1,4 +1,3 @@
-<!-- finance/templates/finance/equipment_list.html -->
 {% extends "base/base.html" %}
 
 {% block title %}
@@ -7,8 +6,42 @@
 
 {% block style %}
 <style>
-    /* Add your custom CSS styles here */
+    #grid-view, #table-view {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    #grid-view.show, #table-view.show {
+        opacity: 1;
+    }
+
+    /* Style for Edit button */
+    .edit-btn {
+        background-color: #4CAF50; /* Green background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+
+    .edit-btn:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+
+    /* Style for Delete button */
+    .delete-btn {
+        background-color: #f44336; /* Red background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+    }
+
+    .delete-btn:hover {
+        background-color: #e41f1f; /* Darker red on hover */
+    }
 </style>
+
+
 {% endblock style %}
 
 {% block content %}
@@ -17,7 +50,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>All Equipments</h1>
+                    <h1>All Equipment</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -26,7 +59,7 @@
                     </ol>
                 </div>
             </div>
-        </div><!-- /.container-fluid -->
+        </div>
     </section>
 
     <section class="content">
@@ -35,15 +68,20 @@
                 <div class="col-12">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <button id="toggle-view-btn" class="btn btn-primary float-right">Switch to Table View</button>
+                            <button id="toggle-view-btn" class="btn btn-primary float-right">
+                                {% if view == 'grid' %}
+                                    Switch to Table View
+                                {% else %}
+                                    Switch to Grid View
+                                {% endif %}
+                            </button>
                         </div>
+
                         <div class="card-body">
-                            <!-- Grid View -->
-                            <!-- Display search form only in table view -->
-                            <div id="search-form" style="display: none;">
-                                <form method="get">
+                            <div id="search-form" style="{% if view == 'grid' %}display: none;{% else %}display: block;{% endif %}">
+                                <form method="get" id="search-form">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" name="q" id="searchInput" placeholder="Search by name or category">
+                                        <input type="text" class="form-control" name="q" id="searchInput" placeholder="Search by name or category" value="{{ request.GET.q }}">
                                         <div class="input-group-append">
                                             <button type="submit" class="btn btn-primary">Search</button>
                                         </div>
@@ -51,64 +89,9 @@
                                 </form>
                             </div>
 
-                            <!-- Grid view -->
-                            <div id="grid-view" style="display: grid;">
-                                <div class="btn-group w-100 mb-2">
-                                    <a class="btn btn-info active" href="javascript:void(0)" data-filter="all">All items</a>
-                                    {% for category in categories %}
-                                    <a class="btn btn-info" href="javascript:void(0)" data-filter="{{ category }}">{{ category }}</a>
-                                    {% endfor %}
-                                </div>
-                                
-                                <!-- Filtered items -->
-                                <div class="filter-container p-0 row">
-                                    {% for equipment in equipment %}
-                                    <div class="filtr-item col-lg-3 col-md-4 col-sm-6 col-12 mb-4" data-category="{{ equipment.category }}" data-sort="sample">
-                                        <a href="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}#{% endif %}" data-toggle="lightbox" data-title="{{ equipment.name }}">
-                                            <img src="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}https://via.placeholder.com/300{% endif %}" class="img-fluid mb-2" alt="{{ equipment.name }}">
-                                            <p>Name: {{ equipment.name }}</p>
-                                            <p>Serial Number: {{ equipment.serial_number }}</p>
-                                        </a>
-                                    </div>
-                                    {% empty %}
-                                    <p class="col-12">No equipment found.</p>
-                                    {% endfor %}
-                                </div>
-                            </div>
-
-                            <!-- Table view -->
-                            <div class="card-body table-responsive p-0" style="height: 300px; display: none;" id="table-view">
-                                <table class="table table-head-fixed text-nowrap table-hover table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Category</th>
-                                            <th>Type/Model</th>
-                                            <th>Quantity</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for equipment in equipment %}
-                                        <tr class="search-results">
-                                            <td>{{ equipment.name }}</td>
-                                            <td>{{ equipment.category }}</td>
-                                            <td>{{ equipment.type_model }}</td>
-                                            <td>{{ equipment.quantity }}</td>
-                                            <td>{{ equipment.status }}</td>
-                                            <td>
-                                                <a href="{% url 'equipment:edit_equipment' equipment.id %}">Edit</a>
-                                                <a href="{% url 'equipment:delete_confirmation' equipment.id %}">Delete</a>
-                                            </td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr>
-                                            <td colspan="6">No equipment found.</td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                            <!-- Dynamic content (grid or table) -->
+                            <div id="equipment-content">
+                                {% include 'vifaa/equipment_list_partial.html' %}
                             </div>
                         </div>
                     </div>
@@ -119,7 +102,6 @@
 </div>
 
 <script>
-    // Toggle between grid and table view
     document.getElementById('toggle-view-btn').addEventListener('click', function() {
         var gridView = document.getElementById('grid-view');
         var tableView = document.getElementById('table-view');
@@ -127,13 +109,11 @@
         var btn = document.getElementById('toggle-view-btn');
 
         if (gridView.style.display === 'none') {
-            // Switch to grid view
             gridView.style.display = 'grid';
             tableView.style.display = 'none';
             searchForm.style.display = 'none'; // Hide search form in grid view
             btn.textContent = 'Switch to Table View';
         } else {
-            // Switch to table view
             gridView.style.display = 'none';
             tableView.style.display = 'block';
             searchForm.style.display = 'block'; // Show search form in table view
@@ -141,36 +121,42 @@
         }
     });
 
-    // Filter functionality for grid view
-    document.querySelectorAll('.btn-group a').forEach(function(button) {
-        button.addEventListener('click', function() {
-            var filter = this.getAttribute('data-filter');
-            document.querySelectorAll('.filtr-item').forEach(function(item) {
-                if (filter === 'all' || item.getAttribute('data-category') === filter) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-            // Remove active class from all buttons and add it to the clicked button
-            document.querySelectorAll('.btn-group a').forEach(function(btn) {
-                btn.classList.remove('active');
-            });
-            this.classList.add('active');
-        });
+    function loadPage(pageNumber) {
+        var query = document.getElementById('searchInput').value;  // Search query (if any)
+        var view = '{{ view }}'; // Current view
+        var url = '/ems/equipment-list/?page=' + pageNumber;
+
+        if (query) {
+            url += '&q=' + encodeURIComponent(query);
+        }
+
+        if (view) {
+            url += '&view=' + view;
+        }
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('equipment-content').innerHTML = data;
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    document.addEventListener('click', function(event) {
+        if (event.target.matches('.pagination-link')) {
+            event.preventDefault();
+            var pageNumber = event.target.getAttribute('data-page');
+            loadPage(pageNumber);
+        }
     });
 
-    // Search functionality
     document.getElementById('searchInput').addEventListener('input', function() {
-        var searchQuery = this.value.toLowerCase();
-        var searchResults = document.querySelectorAll('.search-results');
-
-        searchResults.forEach(function(result) {
-            var equipmentName = result.querySelector('td:first-child').textContent.toLowerCase();
-            var equipmentCategory = result.querySelector('td:nth-child(2)').textContent.toLowerCase();
-            var isMatch = equipmentName.includes(searchQuery) || equipmentCategory.includes(searchQuery);
-            result.style.display = isMatch ? 'table-row' : 'none';
-        });
+        loadPage(1);  // Re-load page with search results
     });
 </script>
-{% endblock %}
+{% endblock content %}

@@ -1,4 +1,3 @@
-<!-- finance/templates/finance/edit_equipment.html -->
 {% extends "base/base.html" %}
 
 {% block title %}
@@ -31,7 +30,7 @@
                 <!-- left column -->
                 <div class="col-md-9">
                     <!-- general form elements -->
-                    <div class="card card-primary">
+                    <div class="card card-primary ml-5">
                         <div class="card-header">
                             <h3 class="card-title">Equipment</h3>
                         </div>
@@ -75,10 +74,11 @@
                                     <div class="input-group">
                                         <div class="custom-file">
                                             <input type="file" class="custom-file-input" id="id_equipment_image"
-                                                name="equipment_image">
+                                                name="equipment_image" onchange="displayFileName(this)">
                                             <label class="custom-file-label" for="id_equipment_image">Choose file</label>
                                         </div>
                                     </div>
+                                    <small id="file-name" class="form-text text-muted"></small> <!-- Display the selected file name -->
                                 </div>
                             </div>
                             <!-- /.card-body -->
@@ -97,4 +97,16 @@
     <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
+
+<!-- JavaScript to display the name of the uploaded file -->
+<script>
+function displayFileName(input) {
+    var fileNameField = document.getElementById("file-name");
+    if (input.files.length > 0) {
+        fileNameField.textContent = "Selected File: " + input.files[0].name;
+    } else {
+        fileNameField.textContent = ""; // Clear if no file is selected
+    }
+}
+</script>
 {% endblock content %}

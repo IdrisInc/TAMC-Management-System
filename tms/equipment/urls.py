@@ -18,14 +18,12 @@ urlpatterns = [
     path('view-task-assignment/', views.view_assignments, name='view_assignments'),
     path('specific-request/<int:task_id>/', views.specific_request_view, name='specific_request'),
 
-
- path('edit-task/<int:task_id>/', views.edit_task_assignment, name='edit_task_assignment'),
+  path('edit-task/<int:task_id>/', views.edit_task_assignment, name='edit_task_assignment'),
     path('delete-task/<int:task_id>/', views.delete_task_assignment, name='delete_task_assignment'),
-path('approve/<int:task_id>/', views.approve_request, name='approve_request'),
-path('reject/<int:task_id>/', views.reject_request, name='reject_request'),
+    path('approve/<int:task_id>/', views.approve_request, name='approve_request'),
+    path('reject/<int:task_id>/', views.reject_request, name='reject_request'),
 path('approved-requests/', views.view_approved_requests, name='view_approved_requests'),
- path('confirm-return/<int:task_id>/', views.confirm_return, name='confirm_return'), # New URL pattern
- 
+      path('confirm-return/<int:task_id>/', views.confirm_return, name='confirm_return'),
  
     # Add other paths as needed
 ] 

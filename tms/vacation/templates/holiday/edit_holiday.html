@@ -1,232 +1,398 @@
+{% extends "base/base.html" %}
 {% load custom_filters %}
 
+{% block title %}
+<title>TAMC | Edit Holiday Request</title>
+{% endblock title %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Holiday Request</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+{% block styles %}
+<style>
+    h1 {
+        text-align: center;
+        color: #333;
+    }
 
-        h1 {
-            text-align: center;
-            color: #333;
-        }
+    .form-step {
+        display: none; /* Hide all steps initially */
+    }
 
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-        }
+    .form-step.active {
+        display: block; /* Show the active step */
+    }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: bold;
-        }
+    form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 100%;
+    }
 
-        input[type="text"],
-        input[type="date"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: bold;
+    }
 
-        textarea {
-            height: 80px;
-        }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+    textarea {
+        height: 80px;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    button {
+        width: 48%;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-right: 4%;
+    }
 
-        #custom_holiday_field {
-            display: none;
-        }
-    </style>
-</head>
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    .navigation {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .error {
+        color: red;
+        font-size: 0.9em;
+        margin-top: -10px; /* Adjust margin to bring error message closer to input */
+    }
+
+    .message {
+        display: none;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 15px 0;
+        text-align: center;
+    }
+
+    .message.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .message.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock styles %}
+
 <body>
-    <h1>Edit Holiday Request</h1>
-    <form method="post">
-        {% csrf_token %}
-    
-        <!-- Address -->
-        <label for="address">Address:</label>
-        <textarea id="address" name="address" required>{{ holiday.address }}</textarea><br><br>
-    
-        <!-- Working Holiday Type -->
-        <label for="working_holiday">Select a Holiday Type:</label>
-        <select id="working_holiday" name="working_holiday" required>
-            <option value="">Select...</option>
-            {% for code, name in holiday.HOLIDAY_TYPE_CHOICES %}
-                <option value="{{ code }}" {% if code == holiday.working_holiday %}selected{% endif %}>{{ name }}</option>
-            {% endfor %}
-            <option value="other" {% if holiday.working_holiday == 'other' %}selected{% endif %}>Other (Please specify)</option>
-        </select><br><br>
-    
-        <!-- Custom Holiday Type Field -->
-        <div id="custom_holiday_field">
-            <label for="custom_holiday">Custom Holiday Type:</label>
-            <input type="text" id="custom_holiday" name="custom_holiday" value="{% if holiday.custom_holiday_type %}{{ holiday.custom_holiday_type.name }}{% endif %}" placeholder="Enter your custom holiday type"><br><br>
-        </div>
-        
-        <!-- Start Date -->
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ holiday.start_date|date:'Y-m-d' }}" required><br><br>
-    
-        <!-- End Date -->
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ holiday.end_date|date:'Y-m-d' }}" required><br><br>
-    
-        <!-- My Last Holiday Start -->
-        <label for="my_last_holiday_start">My Last Holiday Start Date:</label>
-        <input type="date" id="my_last_holiday_start" name="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|date:'Y-m-d' }}" required><br><br>
-    
-        <!-- My Last Holiday End -->
-        <label for="my_last_holiday_end">My Last Holiday End Date:</label>
-        <input type="date" id="my_last_holiday_end" name="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|date:'Y-m-d' }}" required><br><br>
-    
-        <!-- Current Address -->
-        <label for="current_address">Current Address:</label>
-        <textarea id="current_address" name="current_address" required>{{ holiday.current_address }}</textarea><br><br>
-    
-        <!-- Delegatee -->
-        <label for="delegatee">Select Delegatee:</label>
-        <select id="delegatee" name="delegatee" required>
-            <option value="">Select...</option>
-            {% for user in users_in_same_group %}
-                <option value="{{ user.id }}" {% if user.id == holiday.delegatee.id %}selected{% endif %}>{{ user.get_full_name }}</option>
-            {% endfor %}
-        </select><br><br>
-    
-        {% if is_presenter_or_production %}
-        <label for="programs">Select Programs:</label>
-        <select id="programs" name="programs" multiple>
-            {% for program in programs %}
-                <option value="{{ program.program_name }}" {% if program.program_name in selected_programs %}selected{% endif %}>{{ program.program_name }}</option>
-            {% endfor %}
-        </select><br><br>
+    {% block content %}
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Edit Holiday Request</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Task Assignment</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <!-- Program Counts -->
-        <div id="program-counts">
-            {% for program_name, count in program_counts_list %}
-                <label for="count_{{ program_name }}">Count for {{ program_name }}:</label>
-                <input type="number" id="count_{{ program_name }}" name="count_{{ program_name }}" min="0" value="{{ count }}">
-                <br><br>
-            {% endfor %}
-        </div>
-        {% endif %}
-    
-        <!-- Submit Button -->
-        <button type="submit">Update Request</button>
-    </form>
-    
-    <script>
-        // Function to toggle the custom holiday field based on selection
-        function toggleCustomHolidayField() {
-            var holidayTypeSelect = document.getElementById('working_holiday');
-            var customHolidayField = document.getElementById('custom_holiday_field');
-            var customHolidayInput = document.getElementById('custom_holiday');
-            
-            if (holidayTypeSelect.value === 'other') {
-                customHolidayField.style.display = 'block';
-                customHolidayInput.required = true;  // Make sure the field is required when visible
-            } else {
-                customHolidayField.style.display = 'none';
-                customHolidayInput.required = false; // Remove the required attribute when hidden
-                customHolidayInput.value = ''; // Clear the custom holiday input field
-            }
-        }
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-md-9">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Vacation Edit Form</h3>
+                            </div>
+                            <form id="multi-step-form" method="post" onsubmit="return validateForm();">
+                                {% csrf_token %}
+                            
+                                <!-- Message Display -->
+                                <div id="message" class="message"></div>
+                            
+                                <!-- Step 1: Basic Information -->
+                                <div class="form-step active">
+                                    <label for="address">Address:</label>
+                                    <textarea id="address" name="address" required>{{ holiday.address }}</textarea>
+                                    <span id="address_error" class="error"></span>
+                            
+                                    <label for="working_holiday">Select a Holiday Type:</label>
+                                    <select id="working_holiday" name="working_holiday" required onchange="toggleCustomHolidayField()">
+                                        <option value="">Select...</option>
+                                        {% for code, name in holiday.HOLIDAY_TYPE_CHOICES %}
+                                            <option value="{{ code }}" {% if code == holiday.working_holiday %}selected{% endif %}>{{ name }}</option>
+                                        {% endfor %}
+                                        <option value="other" {% if holiday.working_holiday == 'other' %}selected{% endif %}>Other (Please specify)</option>
+                                    </select>
+                                    <span id="working_holiday_error" class="error"></span>
+                            
+                                    <div id="custom_holiday_field" style="display: {% if holiday.working_holiday == 'other' %}block{% else %}none{% endif %};">
+                                        <label for="custom_holiday">Custom Holiday Type:</label>
+                                        <input type="text" id="custom_holiday" name="custom_holiday" value="{% if holiday.custom_holiday_type %}{{ holiday.custom_holiday_type.name }}{% endif %}" placeholder="Enter your custom holiday type">
+                                    </div>
+                            
+                                    <div class="navigation">
+                                        <button type="button" onclick="nextStep()">Next</button>
+                                    </div>
+                                </div>
+                            
+                                <!-- Step 2: Dates -->
+                                <div class="form-step">
+                                    <label for="start_date">Start Date:</label>
+                                    <input type="date" id="start_date" name="start_date" value="{{ holiday.start_date|date:'Y-m-d' }}" required>
+                                    <span id="start_date_error" class="error"></span>
+                            
+                                    <label for="end_date">End Date:</label>
+                                    <input type="date" id="end_date" name="end_date" value="{{ holiday.end_date|date:'Y-m-d' }}" required>
+                                    <span id="end_date_error" class="error"></span>
+                            
+                                    <label for="my_last_holiday_start">My Last Holiday Start Date:</label>
+                                    <input type="date" id="my_last_holiday_start" name="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|date:'Y-m-d' }}" required>
+                                    <span id="my_last_holiday_start_error" class="error"></span>
+                            
+                                    <label for="my_last_holiday_end">My Last Holiday End Date:</label>
+                                    <input type="date" id="my_last_holiday_end" name="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|date:'Y-m-d' }}" required>
+                                    <span id="my_last_holiday_end_error" class="error"></span>
+                            
+                                    <div class="navigation">
+                                        <button type="button" onclick="prevStep()">Back</button>
+                                        <button type="button" onclick="nextStep()">Next</button>
+                                    </div>
+                                </div>
+                            
+                                <!-- Step 3: Additional Information -->
+                                <div class="form-step">
+                                    <label for="current_address">Current Address:</label>
+                                    <textarea id="current_address" name="current_address" required>{{ holiday.current_address }}</textarea>
+                                    <span id="current_address_error" class="error"></span>
+                            
+                                    <label for="delegatee">Select Delegatee:</label>
+                                    <select id="delegatee" name="delegatee" required>
+                                        <option value="">Select...</option>
+                                        {% for user in users_in_same_group %}
+                                            <option value="{{ user.id }}" {% if user.id == holiday.delegatee.id %}selected{% endif %}>{{ user.get_full_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span id="delegatee_error" class="error"></span>
+                            
+                                    <div class="form-group">
+                                        <label for="my_tasks">My Tasks:</label>
+                                        <div id="my-tasks-container">
+                                            <!-- Existing tasks pre-filled -->
+                                            {% for task in existing_tasks %}
+                                            <div class="my-task-field">
+                                                <input type="text" class="form-control my-task" name="my_tasks[]" value="{{ task }}" placeholder="Enter a task" required>
+                                                <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
+                                            </div>
+                                            {% endfor %}
+                                            <!-- If no existing tasks, show one empty task field -->
+                                            {% if not existing_tasks %}
+                                            <div class="my-task-field">
+                                                <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
+                                                <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <button type="button" class="btn btn-secondary" id="add-my-task-field">Add Another Task</button>
+                                    </div>
+                                    
+                                    <div class="navigation">
+                                        <button type="button" onclick="prevStep()">Back</button>
+                                        <button type="submit">Update Request</button>
+                                    </div>
+                                </div>
+                            </form>
+                            
+                            <script>
+                                // JavaScript for adding and removing task fields
+                                document.getElementById('add-my-task-field').addEventListener('click', function () {
+                                    const container = document.getElementById('my-tasks-container');
+                                    const newTaskField = document.createElement('div');
+                                    newTaskField.classList.add('my-task-field');
+                                    newTaskField.innerHTML = `
+                                        <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
+                                        <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
+                                    `;
+                                    container.appendChild(newTaskField);
+                                });
+                            
+                                // Event delegation to handle removing task fields
+                                document.getElementById('my-tasks-container').addEventListener('click', function (e) {
+                                    if (e.target.classList.contains('remove-my-task-field')) {
+                                        e.target.parentElement.remove();
+                                    }
+                                });
+                            </script>
+                            
 
-        // Set up event listener for the holiday type dropdown
-        document.getElementById('working_holiday').addEventListener('change', toggleCustomHolidayField);
+                            <script>
+                                // Function to toggle the custom holiday field based on selection
+                                function toggleCustomHolidayField() {
+                                    var holidayTypeSelect = document.getElementById('working_holiday');
+                                    var customHolidayField = document.getElementById('custom_holiday_field');
+                                    var customHolidayInput = document.getElementById('custom_holiday');
 
-        // Initialize the field display based on the current value
-        window.onload = toggleCustomHolidayField;
-    </script>
+                                    if (holidayTypeSelect.value === 'other') {
+                                        customHolidayField.style.display = 'block';
+                                    } else {
+                                        customHolidayField.style.display = 'none';
+                                        customHolidayInput.value = ''; // Clear custom field if not selected
+                                    }
+                                }
+
+                                // Multi-step form navigation
+                                var currentStep = 0;
+                                var steps = document.getElementsByClassName('form-step');
+
+                                function showStep(step) {
+                                    for (var i = 0; i < steps.length; i++) {
+                                        steps[i].classList.remove('active'); // Hide all steps
+                                    }
+                                    steps[step].classList.add('active'); // Show the current step
+                                }
+
+                                function nextStep() {
+                                    if (validateStep(currentStep)) {
+                                        currentStep++;
+                                        if (currentStep >= steps.length) {
+                                            currentStep = steps.length - 1; // Stay on the last step
+                                        }
+                                        showStep(currentStep);
+                                    }
+                                }
+
+                                function prevStep() {
+                                    currentStep--;
+                                    if (currentStep < 0) {
+                                        currentStep = 0; // Stay on the first step
+                                    }
+                                    showStep(currentStep);
+                                }
+
+                                function validateForm() {
+                                    var isValid = true;
+                                    for (var i = 0; i < steps.length; i++) {
+                                        if (!validateStep(i)) {
+                                            isValid = false;
+                                        }
+                                    }
+                                    return isValid; // Prevent form submission if validation fails
+                                }
+
+                                function validateStep(step) {
+                                    var isValid = true;
+                                    // Example validation for each step's inputs
+                                    switch (step) {
+                                        case 0: // Step 1
+                                            var address = document.getElementById('address').value;
+                                            if (!address) {
+                                                document.getElementById('address_error').innerText = 'Address is required.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('address_error').innerText = '';
+                                            }
+
+                                            var holidayType = document.getElementById('working_holiday').value;
+                                            if (!holidayType) {
+                                                document.getElementById('working_holiday_error').innerText = 'Holiday type is required.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('working_holiday_error').innerText = '';
+                                            }
+                                            break;
+
+                                        case 1: // Step 2
+                                            var startDate = new Date(document.getElementById('start_date').value);
+                                            var endDate = new Date(document.getElementById('end_date').value);
+                                            var myLastStartDate = new Date(document.getElementById('my_last_holiday_start').value);
+                                            var myLastEndDate = new Date(document.getElementById('my_last_holiday_end').value);
+
+                                            if (startDate <= new Date()) {
+                                                document.getElementById('start_date_error').innerText = 'Start date must be after today.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('start_date_error').innerText = '';
+                                            }
+
+                                            if (endDate <= startDate) {
+                                                document.getElementById('end_date_error').innerText = 'End date must be after start date.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('end_date_error').innerText = '';
+                                            }
+
+                                            if (myLastStartDate >= new Date()) {
+                                                document.getElementById('my_last_holiday_start_error').innerText = 'Last holiday start date must be before today.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('my_last_holiday_start_error').innerText = '';
+                                            }
+
+                                            if (myLastEndDate <= myLastStartDate || myLastEndDate >= new Date()) {
+                                                document.getElementById('my_last_holiday_end_error').innerText = 'Last holiday end date must be before today and after the start date.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('my_last_holiday_end_error').innerText = '';
+                                            }
+                                            break;
+
+                                        case 2: // Step 3
+                                            var currentAddress = document.getElementById('current_address').value;
+                                            if (!currentAddress) {
+                                                document.getElementById('current_address_error').innerText = 'Current address is required.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('current_address_error').innerText = '';
+                                            }
+
+                                            var delegatee = document.getElementById('delegatee').value;
+                                            if (!delegatee) {
+                                                document.getElementById('delegatee_error').innerText = 'Delegatee is required.';
+                                                isValid = false;
+                                            } else {
+                                                document.getElementById('delegatee_error').innerText = '';
+                                            }
+                                            break;
+                                    }
+                                    return isValid;
+                                }
+
+                              
+
+                                // Show the initial step
+                                showStep(currentStep);
+                            </script>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var select = document.getElementById('programs');
-            var programCountsDiv = document.getElementById('program-counts');
-            var currentValues = {};  // Object to store current values
-        
-            function updateProgramCounts() {
-                var selectedOptions = Array.from(select.selectedOptions);
-        
-                // Preserve current values for selected options
-                selectedOptions.forEach(function(option) {
-                    var programName = option.value;
-                    var countName = 'count_' + programName;
-                    var existingInput = programCountsDiv.querySelector('input[name="' + countName + '"]');
-        
-                    if (existingInput) {
-                        currentValues[countName] = existingInput.value;
-                    }
-                });
-        
-                programCountsDiv.innerHTML = '';  // Clear previous counts
-        
-                selectedOptions.forEach(function(option) {
-                    var programName = option.value;
-                    var countName = 'count_' + programName;
-        
-                    var input = document.createElement('input');
-                    input.type = 'number';
-                    input.name = countName;
-                    input.min = 0;
-                    input.value = currentValues[countName] || 0; // Use stored value or default to 0
-                    input.placeholder = 'Number of ' + programName;
-        
-                    var label = document.createElement('label');
-                    label.textContent = 'Count for ' + programName + ': ';
-                    label.appendChild(input);
-        
-                    var br = document.createElement('br');
-                    programCountsDiv.appendChild(label);
-                    programCountsDiv.appendChild(br);
-                });
-            }
-        
-            // Update program counts when a selection changes
-            select.addEventListener('change', updateProgramCounts);
-        
-            // Initialize the field display based on the current selections
-            updateProgramCounts();
-        });
-        
-    </script>
+                           
+                                
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    {% endblock content %}
 </body>
-</html>
-</body>
-</html>

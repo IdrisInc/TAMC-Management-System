@@ -5,9 +5,9 @@ import io
 from PIL import Image
 
 class EquipmentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'type_model', 'quantity', 'equipment_image', 'slug','status')
+    list_display = ('name', 'category', 'type_model', 'registered_date', 'equipment_image', 'slug','status')
     search_fields = ['name', 'category', 'type_model']  # Add search functionality
-    list_filter = ['category', 'type_model']  # Add filtering options
+    list_filter = ['category', 'type_model','status']  # Add filtering options
 
     def save_model(self, request, obj, form, change):
         # Convert uploaded image to JPEG format and resize
@@ -74,7 +74,7 @@ class EquipmentAdmin(admin.ModelAdmin):
         )
         return actions
 class AssignmentDetailAdmin(admin.ModelAdmin):
-    list_display = ('detail',)
+    list_display = ('detail',) 
     
 class AssignmentEquipmentAdmin(admin.ModelAdmin):
     list_display = ('task_assignment', 'equipment', 'quantity')

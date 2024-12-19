@@ -1,14 +1,11 @@
 {% extends 'base/base.html' %}
-
+{% block title %}
+    <title> TAMC | Vacation Request Form </title>
+{% endblock title %}
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holiday Form</title>
-    
-</head>
+
 <body>
     <div class="content-wrapper">
         <section class="content-header">
@@ -31,16 +28,15 @@
     <div id="overlay">
         <div id="overlay-content">
             <h2 id="important-note">IMPORTANT!</h2>
-            {% if overlay and overlay.descriptions.all %}
+          
             <ul>
                 {% for desc in overlay.descriptions.all %}
                     <li>{{ desc.description }}</li>
                 {% endfor %}
             </ul>
-            {% else %}
-                <p>No description available.</p>
-            {% endif %}
-            <button id="close-overlay">Close</button>
+          
+            
+            <button id="close-overlay" class = 'btn btn-primary'>Close</button>
         </div>
     </div>
 
@@ -101,7 +97,7 @@
                                 <input type="date" class="form-control" id="end_date" name="end_date" required value="{{ holiday.end_date|default:'' }}">
                             </div>
                 
-                            {% if not has_approved_holiday %}
+                            {% comment %} {% if not has_approved_holiday %} {% endcomment %}
                             <div class="form-group">
                                 <label for="my_last_holiday_start">My Last Holiday Start:</label>
                                 <input type="date" class="form-control" name="my_last_holiday_start" id="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|default_if_none:'' }}">
@@ -111,7 +107,7 @@
                                 <label for="my_last_holiday_end">My Last Holiday End:</label>
                                 <input type="date" class="form-control" name="my_last_holiday_end" id="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|default_if_none:'' }}">
                             </div>
-                            {% endif %}
+                            {% comment %} {% endif %} {% endcomment %}
                 
                             <button type="button" class="btn btn-secondary" id="prev-step">Previous Step</button>
                             <button type="button" class="btn btn-primary" id="next-step-2">Next Step</button>
@@ -137,18 +133,127 @@
                                 </select>
                             </div>
                 
-                            {% if is_presenter_or_production %}
-                            <div class="form-group">
-                                <h2>Programs</h2>
-                                <label for="programs">Select Programs:</label>
-                                <select id="programs" name="programs" class="form-control" multiple required>
-                                    {% for program_name in programs %}
-                                        <option value="{{ program_name }}" {% if program_name in selected_programs %}selected{% endif %}>{{ program_name }}</option>
-                                    {% endfor %}
-                                </select>
+                            {% comment %} {% if is_presenter_or_production %} {% endcomment %}
+                            {% comment %} <div class="form-group">
+                                <label for="programs">Program Names:</label>
+                                <div id="programs-container">
+                                    <!-- Initial input field for program name -->
+                                    <div class="program-field">
+                                        <input type="text" class="form-control program-name" name="programs[]" placeholder="Enter program name" required>
+                                        <!-- Only show the number input if the user is Production or Presenter -->
+                                        {% if is_presenter_or_production %}
+                                        <input type="number" class="form-control program-number" name="program_numbers[]" placeholder="Enter program number" >
+                                        {% endif %}
+                                        <button type="button" class="btn btn-danger remove-program-field">Remove</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" id="add-program-field">Add Another Program</button>
                             </div>
-                            {% endif %}
-                
+                            
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const programsContainer = document.getElementById('programs-container');
+                                    const addProgramButton = document.getElementById('add-program-field');
+                                    const isPresenterOrProduction = {{ is_presenter_or_production|yesno:"true,false" }};  // Pass boolean from backend
+                            
+                                    // Function to add a new program field
+                                    function addProgramField() {
+                                        const programField = document.createElement('div');
+                                        programField.className = 'program-field';
+                            
+                                        // Input for program name
+                                        const programNameInput = document.createElement('input');
+                                        programNameInput.type = 'text';
+                                        programNameInput.className = 'form-control program-name';
+                                        programNameInput.name = 'programs[]';
+                                        programNameInput.placeholder = 'Enter program name';
+                                        programNameInput.required = true;
+                                        programField.appendChild(programNameInput);
+                            
+                                        // Conditionally add input for program number if the user is a presenter or production
+                                        if (isPresenterOrProduction) {
+                                            const programNumberInput = document.createElement('input');
+                                            programNumberInput.type = 'number';
+                                            programNumberInput.className = 'form-control program-number';
+                                            programNumberInput.name = 'program_numbers[]';
+                                            programNumberInput.placeholder = 'Enter program number';
+                                            programNumberInput.required = true;
+                                            programField.appendChild(programNumberInput);
+                                        }
+                            
+                                        // Add a "Remove" button to the field
+                                        const removeButton = document.createElement('button');
+                                        removeButton.type = 'button';
+                                        removeButton.className = 'btn btn-danger remove-program-field';
+                                        removeButton.textContent = 'Remove';
+                                        programField.appendChild(removeButton);
+                            
+                                        // Append the new program field to the container
+                                        programsContainer.appendChild(programField);
+                            
+                                        // Attach event listener to the "Remove" button
+                                        removeButton.addEventListener('click', function () {
+                                            programField.remove();
+                                        });
+                                    }
+                            
+                                    // Add event listener to the "Add Another Program" button
+                                    addProgramButton.addEventListener('click', addProgramField);
+                            
+                                    // Attach remove event listener for the initial field
+                                    const initialRemoveButton = programsContainer.querySelector('.remove-program-field');
+                                    initialRemoveButton.addEventListener('click', function () {
+                                        initialRemoveButton.parentElement.remove();
+                                    });
+                                });
+                            </script>
+                             {% endcomment %}
+                        {% comment %} {% endif %} {% endcomment %}
+                        
+                        <div class="form-group">
+                            <label for="my_tasks">My Tasks:</label>
+                            <div id="my-tasks-container">
+                                <!-- Initial input field for My Tasks -->
+                                <div class="my-task-field">
+                                    <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
+                                    <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary" id="add-my-task-field">Add Another Task</button>
+                        </div>
+                        
+                        
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const addMyTaskFieldButton = document.getElementById('add-my-task-field');
+                                const myTasksContainer = document.getElementById('my-tasks-container');
+                            
+                                // Event listener to add new My Task field
+                                addMyTaskFieldButton.addEventListener('click', function() {
+                                    const newField = document.createElement('div');
+                                    newField.classList.add('my-task-field');
+                                    newField.innerHTML = `
+                                        <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
+                                        <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
+                                    `;
+                                    myTasksContainer.appendChild(newField);
+                            
+                                    // Attach event listener for remove button
+                                    newField.querySelector('.remove-my-task-field').addEventListener('click', function() {
+                                        myTasksContainer.removeChild(newField);
+                                    });
+                                });
+                            
+                                // Event listener to remove existing My Task field
+                                myTasksContainer.querySelectorAll('.remove-my-task-field').forEach(function(button) {
+                                    button.addEventListener('click', function() {
+                                        const fieldToRemove = button.parentElement;
+                                        myTasksContainer.removeChild(fieldToRemove);
+                                    });
+                                });
+                            });
+                            
+                        </script>                            
                             <button type="button" class="btn btn-secondary" id="prev-step-2">Previous Step</button>
                             <button type="submit" class="btn btn-success">Submit</button>
                         </div>
@@ -339,19 +444,27 @@
             });
 
             // Show the overlay based on a query parameter
-            var urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('show_overlay')) {
-                overlay.style.display = 'flex';
-                setTimeout(() => {
-                    overlayContent.classList.add('show');
-                }, 100); // Delay to ensure overlay is displayed before animation
-            } else {
-                overlay.style.display = 'none';
-            }
-
-            // Initialize date validation
-            setupDateValidation();
+           
         });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const overlay = document.getElementById('overlay');
+            const closeOverlayButton = document.getElementById('close-overlay');
+            const holidayForm = document.getElementById('holiday-form');
+        
+            // Show the overlay when the page loads
+            overlay.style.display = 'flex';
+        
+            // Add an event listener to the close button
+            closeOverlayButton.addEventListener('click', function () {
+                // Hide the overlay
+                overlay.style.display = 'none';
+                
+                // Show the form after the overlay is closed
+                holidayForm.style.display = 'block';
+            });
+        });
+        
     </script>
 {% endblock content %}
     {% block styles %}
@@ -398,7 +511,7 @@
         }
 
         .form-step.disabled {
-            opacity: 0.1;
+            opacity: 0.5;
             pointer-events: none; /* Disable interactions */
         }
 
@@ -441,48 +554,7 @@
             background-color: #0056b3;
         }
 
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none; /* Start hidden */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s ease;
-        }
-
-        #overlay-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            transform: translateY(-50px);
-            opacity: 0;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        #overlay-content.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        #overlay-content ul {
-            list-style-type: decimal; /* Numbering for list items */
-            padding-left: 20px;
-            text-align: left;
-        }
-
-        #important-note {
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
+       
         .error {
             color: red;
             margin-bottom: 15px;
@@ -490,45 +562,89 @@
 
 
           /* Responsive Styles */
-          @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            .buttons {
-                flex-direction: column;
-            }
-            .buttons button {
-                margin-bottom: 10px;
-            }
-            #overlay-content {
-                max-width: 95%;
-                max-height: 80%;
-            }
-            #close-overlay {
-                width: 35px;
-                height: 35px;
-                padding: 8px;
-                font-size: 16px;
-            }
+     
+           
+        
+
+
+        #holiday-form {
+            display: none; /* Hide the form initially */
         }
-        @media (max-width: 480px) {
-            .container {
-                padding: 10px;
-            }
-            h2 {
-                font-size: 18px;
-            }
-            #overlay-content {
-                padding: 15px;
-            }
-            #close-overlay {
-                width: 30px;
-                height: 30px;
-                padding: 6px;
-                font-size: 14px;
-            }
-        }
+        
+      /* Basic Overlay Styling */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+}
+
+/* Overlay Content */
+#overlay-content {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px; /* Set a max-width for larger screens */
+    box-sizing: border-box;
+    margin: auto; /* Center vertically with any extra space removed */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between elements without extra padding */
+}
+
+/* Close Button */
+#close-overlay {
+    align-self: flex-end; /* Align close button to the right */
+    margin-top: 10px;
+    padding: 8px 16px;
+    
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    #overlay-content {
+        padding: 12px;
+        max-width: 500px;
+        margin:15px;
+    }
+}
+
+@media (max-width: 480px) {
+    #overlay-content {
+        padding: 8px;
+        max-width: 320px;
+        
+    }
+    
+    #overlay h2 {
+        font-size: 18px;
+    }
+
+    #overlay ul {
+        font-size: 14px;
+        margin: 8px; /* Remove any list margins */
+        padding: 0; /* Remove any list padding */
+    }
+}
+
+        
     </style>
+
+
+    
     {% endblock styles %}
 
     

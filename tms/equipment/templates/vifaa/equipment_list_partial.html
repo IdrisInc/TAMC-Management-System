@@ -1,0 +1,142 @@
+{% block style %}
+<style>
+    /* Style for Edit button */
+    .edit-btn {
+        background-color: #4CAF50; /* Green background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .edit-btn:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+
+    /* Style for Delete button */
+    .delete-btn {
+        background-color: #f44336; /* Red background */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .delete-btn:hover {
+        background-color: #e41f1f; /* Darker red on hover */
+    }
+
+    /* General styling for the table */
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1; /* Light gray background on row hover */
+    }
+
+    /* Style for the grid item */
+    .filtr-item {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .filtr-item img {
+        max-width: 100%;
+        height: auto;
+    }
+</style>
+{% endblock style %}
+
+<!-- Grid View -->
+<div id="grid-view" class="{% if view == 'grid' %}show{% else %}hidden{% endif %}">
+    <div class="btn-group w-100 mb-2">
+        <a class="btn btn-info active" href="javascript:void(0)" data-filter="all">All items</a>
+        {% for category in categories %}
+        <a class="btn btn-info" href="javascript:void(0)" data-filter="{{ category }}">{{ category }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- Display total equipment count in the grid view -->
+    <div class="mb-2">
+        <strong>Total Equipment: {{ total_equipment_count }}</strong>
+    </div>
+
+    <div class="filter-container p-0 row">
+        {% for equipment in equipment %}
+        <div class="filtr-item col-lg-3 col-md-4 col-sm-6 col-12 mb-4" data-category="{{ equipment.category }}" data-sort="sample">
+            <a href="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}#{% endif %}" data-toggle="lightbox" data-title="{{ equipment.name }}">
+                <img src="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}https://via.placeholder.com/300{% endif %}" class="img-fluid mb-2" alt="{{ equipment.name }}">
+                <p>Name: {{ equipment.name }}</p>
+                <p>Serial Number: {{ equipment.serial_number }}</p>
+            </a>
+           
+        </div>
+        {% empty %}
+        <p class="col-12">No equipment found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Table View -->
+<div id="table-view" class="{% if view == 'table' %}show{% else %}hidden{% endif %}">
+    <!-- Display total equipment count in the table view -->
+    <div class="mb-2">
+        <strong>Total Equipment: {{ total_equipment_count }}</strong>
+    </div>
+
+    <table class="table table-head-fixed text-nowrap table-hover table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Type/Model</th>
+                <th>Registered Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipment in equipment %}
+            <tr>
+                <td>{{ equipment.name }} - {{ equipment.serial_number }}</td>
+                <td>{{ equipment.category }}</td>
+                <td>{{ equipment.type_model }}</td>
+                <td>{{ equipment.registered_date|date:"Y-m-d H:i" }}</td>
+                <td>{{ equipment.status }}</td>
+             
+                <td>
+                    <!-- Edit button with custom background color -->
+                    <a href="{% url 'equipment:edit_equipment' equipment.id %}" class="edit-btn">Edit</a>
+                    
+                    <!-- Delete button with custom background color -->
+                    <a href="{% url 'equipment:delete_confirmation' equipment.id %}" class="delete-btn">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No equipment found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination controls -->
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&q={{ request.GET.q }}&view={{ view }}">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&view={{ view }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&view={{ view }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&view={{ view }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>

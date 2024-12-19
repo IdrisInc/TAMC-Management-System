@@ -7,7 +7,9 @@
 
   {% block title %}{% endblock title %}
     <!-- Meta tags, title, and other head content here -->
-
+ <!-- Link to Magnific Popup CSS -->
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
+ <!-- Include your own styles here -->
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
 
@@ -59,10 +61,10 @@
   <link rel="stylesheet" href="path/to/bootstrap.min.css">
   <!-- Include Summernote CSS -->
   <link rel="stylesheet" href="path/to/summernote.min.css">
+  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
   
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
 
    
 </head>
@@ -127,7 +129,7 @@
 
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="index3.html" class="brand-link">
+      <a href="" class="brand-link">
           <img src="{% static 'dist/img/hope.png' %}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
           <span class="brand-text font-weight-light">TAMC {% now 'D-Y' %}</span>
       </a>
@@ -138,7 +140,7 @@
           <div class="user-panel mt-3 pb-3 mb-3 d-flex">
               <!-- User panel content here -->
               <div class="info">
-                <a href="#" class="d-block">{{user.first_name}} {{user.last_name}}</a>
+                <a href="#" class="d-block">{{user.get_full_name}}</a>
               </div>
           </div>
 
@@ -183,7 +185,7 @@
                         <i class="nav-icon fas fa-coins"></i>
 
                           <p>
-                              Finance
+                              Financial Request
                               <i class="fas fa-angle-left right"></i>
                               <span class="badge badge-info right">2</span>
                           </p>
@@ -323,20 +325,20 @@
                           <li class="nav-item">
                               <a href="{% url 'vacation:holiday_create' %}" class="nav-link">
                                   <i class="far fa-circle nav-icon"></i>
-                                  <p>Vacation</p>
+                                  <p>Holiday Form</p>
                               </a>
                           </li>
                          
                           <li class="nav-item">
                               <a href="{% url 'vacation:view_holidays' %}" class="nav-link">
                                   <i class="far fa-circle nav-icon"></i>
-                                  <p>request</p>
+                                  <p>Holiday Request</p>
                               </a>
                           </li>
                           <li class="nav-item">
                               <a href="{% url 'vacation:permission_request' %}" class="nav-link">
                                   <i class="far fa-circle nav-icon"></i>
-                                  <p>Permission</p>
+                                  <p>Permission Form</p>
                               </a>
                           </li>
                           <li class="nav-item">
@@ -443,7 +445,11 @@
     
 
 <!-- Bootstrap JS -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script> 
+
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
 <!-- Other necessary plugins -->
 <script src="{% static 'plugins/jquery-mousewheel/jquery.mousewheel.js' %}"></script>
@@ -460,13 +466,17 @@
 <script src="{% static 'plugins/bs-stepper/js/bs-stepper.min.js' %}"></script>
 <script src="{% static 'plugins/dropzone/min/dropzone.min.js' %}"></script>
 <script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
-<script src="{% static 'dist/js/adminlte.js' %}"></script>
-<script src="{% static 'dist/js/demo.js' %}"></script>
+
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+
+<!-- Page-specific scripts -->
 <script src="{% static 'dist/js/pages/dashboard.js' %}"></script>
+
+<!-- DataTables -->
 <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
 <script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
@@ -475,9 +485,18 @@
 <script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
 <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<script src="{% static 'plugins/summernote/summernote-bs4.min.js' %}"></script>
 
 <!-- FullCalendar -->
 <script src="{% static 'plugins/fullcalendar/main.js' %}"></script>
+
+
+<script>
+  $(document).ready(function() {
+    $('[data-widget="pushmenu"]').PushMenu();
+  });
+</script>
+
 
 
     <script>
@@ -760,6 +779,9 @@
 #content-wrapper {
     visibility: hidden;
 }
+
+
+
 </style>
 
 {% endblock styles %}
@@ -838,11 +860,8 @@
 </script>
 
 <!-- Include jQuery -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Include Summernote JS -->
-<script src="path/to/summernote.min.js"></script>
-<!-- Your other scripts -->
-<script src="path/to/your/dashboard.js"></script>
+{% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> {% endcomment %}
+
 </div>
 
 </body>

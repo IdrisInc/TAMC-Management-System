@@ -35,7 +35,7 @@
               <div class="card-body">
                 <div class="form-group">
                   <label for="amountNumeric">Numeric Amount</label>
-                  <input type="number" class="form-control" id="amountNumeric" placeholder="eg 2000" name="amount_numeric" required oninput="convertAmountToWords()">
+                  <input type="number" class="form-control" id="amountNumeric" placeholder="eg 2000" name="amount_numeric" readonly>
                 </div>
                 <div class="form-group">
                   <label for="amountWords">Amount in Words</label>
@@ -122,6 +122,10 @@
       totalRequest += total;
     });
     $('#totalRequest').val(totalRequest.toFixed(2));
+
+    // Update the amountNumeric field dynamically
+    $('#amountNumeric').val(totalRequest.toFixed(2));
+    convertAmountToWords();  // Update the amount in words
   }
 
   function validateForm() {

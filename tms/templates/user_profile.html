@@ -50,7 +50,7 @@
   
    
         <!-- Display user information -->
-        <h3 class="profile-username text-center"> {{ user.username }}  </h3>
+        <h3 class="profile-username text-center"> {{ request.user.get_full_name }}  </h3>
         <p class="text-muted text-center"> {% if user.groups.exists %}
             {{ user.groups.first.name }}
         {% else %}
@@ -58,7 +58,7 @@
         {% endif %}</p>
         <ul class="list-group list-group-unbordered mb-3">
             <li class="list-group-item"><b>Email</b> <p class="float-right"> {{ user.email }}</p></li>
-            <li class="list-group-item"><b>Full Name</b> <p class="float-right">{{ user.first_name }} {{ user.last_name }}</p></li>
+            {% comment %} <li class="list-group-item"><b>Full Name</b> <p class="float-right">{{ user.first_name }} {{ user.last_name }}</p></li> {% endcomment %}
                 {% comment %} <li class="list-group-item"> <b>Last Name:</b> <p class="float-right">{{ user.last_name }}</p></li> {% endcomment %}
 
         <!-- Display user profile information -->

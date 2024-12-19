@@ -1,35 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Permission Request</title>
-</head>
-<body>
-    <h1>Edit Permission Request</h1>
+{% extends "base/base.html" %}
 
-    <form method="POST">
-        {% csrf_token %}
-        <div>
-            <label for="address">Address:</label>
-            <input type="text" id="address" name="address" value="{{ permission_request.address }}" required>
+{% block content %}
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Edit Permission Request</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Permission Form</li>
+                    </ol>
+                </div>
+            </div>
         </div>
-        <div>
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" value="{{ permission_request.start_date }}" required>
-        </div>
-        <div>
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" value="{{ permission_request.end_date }}" required>
-        </div>
-        <div>
-            <label for="place">Place:</label>
-            <input type="text" id="place" name="place" value="{{ permission_request.place }}" required>
-        </div>
-        <!-- Include other fields if needed -->
-        <button type="submit">Update Request</button>
-    </form>
+    </section>
 
-    <a href="{% url 'vacation:view_permission_request' %}">Back to Request List</a>
-</body>
-</html>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-md-9">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Edit Permission Form</h3>
+                        </div>
+
+                        <form id="editPermissionRequestForm" method="post" action="{% url 'vacation:edit_request' permission_request.id %}">
+                            {% csrf_token %}
+                            <div class="card-body">
+                            <!-- Address Field -->
+                            <div class="form-group">
+                                <label for="address">Your Address:</label>
+                                <input type="text" name="address" id="address" class="form-control" 
+                                       value="{{ permission_request.address }}" required>
+                            </div>
+                            
+                            <!-- Start Date and End Date -->
+                            <div class="form-group">
+                                <label for="start_date">Start Date:</label>
+                                <input type="date" id="start_date" name="start_date" class="form-control" 
+                                       value="{{ permission_request.start_date|date:'Y-m-d' }}" required>
+                                <label for="end_date">End Date:</label>
+                                <input type="date" id="end_date" name="end_date" class="form-control" 
+                                       value="{{ permission_request.end_date|date:'Y-m-d' }}" required>
+                            </div>
+                            
+                            <!-- Place and Description -->
+                            <div class="form-group">
+                                <label for="place">Place Where You Are Going:</label>
+                                <input type="text" name="place" id="place" class="form-control" 
+                                       value="{{ permission_request.place }}" required>
+                                <label for="description">Permission Description:</label>
+                                <textarea name="description" id="description" class="form-control" 
+                                          rows="4" required>{{ permission_request.description }}</textarea>
+                            </div>
+                            
+                            <!-- Duties Fields (Allow multiple) -->
+                            <div class="form-group" id="duties-container">
+                                <label>Duties:</label>
+                                {% if permission_request.duties.all %}
+                                    {% for duty in request.get_duties_list %}
+                                        <div class="duty-field">
+                                            <input type="text" name="duties[]" class="form-control mb-2" 
+                                                   value="{{ duty }}" required>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <!-- Empty field if no existing duties -->
+                                    <div class="duty-field">
+                                        <input type="text" name="duties[]" class="form-control mb-2" placeholder="Enter duty" required>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" id="add-duty-button" class="btn btn-primary mb-3">Add Another Duty</button>
+
+                            <!-- Delegatee -->
+                            <div class="form-group">
+                                <label for="delegatee">Select Delegatee:</label>
+                                <select id="delegatee" name="delegatee" class="form-control" required>
+                                    <option value="">Select...</option>
+                                    {% for user in delegatees %}
+                                        <option value="{{ user.id }}" {% if user.id == selected_delegatee_id %}selected{% endif %}>
+                                            {{ user.get_full_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Reporting Date -->
+                            <div class="form-group">
+                                <label for="reporting_date">Reporting Back On:</label>
+                                <input type="date" id="reporting_date" name="reporting_date" class="form-control" 
+                                       value="{{ permission_request.reporting_date|date:'Y-m-d' }}" required>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-success">Save Changes</button>
+                        </form>
+
+                        <a href="{% url 'vacation:view_permission_request' %}" class="btn btn-primary mt-2.2">Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // JavaScript to add more Duties fields
+    document.getElementById('add-duty-button').addEventListener('click', function() {
+        const container = document.getElementById('duties-container');
+        const newDutyField = document.createElement('div');
+        newDutyField.classList.add('duty-field');
+        newDutyField.innerHTML = '<input type="text" name="duties[]" class="form-control mb-2" placeholder="Enter duty" required>';
+        container.appendChild(newDutyField);
+    });
+
+    document.getElementById('editPermissionRequestForm').addEventListener('submit', function(event) {
+        const startDate = new Date(document.getElementById('start_date').value);
+        const endDate = new Date(document.getElementById('end_date').value);
+        const reportingDate = new Date(document.getElementById('reporting_date').value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+
+        // Validate Start and End Date are different
+        if (startDate.getTime() === endDate.getTime()) {
+            alert("Error: Start date and end date cannot be the same.");
+            event.preventDefault();
+            return;
+        }
+
+        // Validate dates are not in the past
+        if (startDate < today || endDate < today || reportingDate < today) {
+            alert("Error: Dates cannot be in the past.");
+            event.preventDefault();
+            return;
+        }
+
+        // Reporting date should not match start or end date
+        if (reportingDate.getTime() === startDate.getTime() || reportingDate.getTime() === endDate.getTime()) {
+            alert("Error: Reporting date cannot be the same as start or end date.");
+            event.preventDefault();
+            return;
+        }
+
+        // Ensure required fields are filled
+        const requiredFields = ['address', 'place', 'description', 'delegatee'];
+        for (let field of requiredFields) {
+            if (!document.getElementById(field).value.trim()) {
+                alert("Error: All fields must be filled out.");
+                event.preventDefault();
+                return;
+            }
+        }
+    });
+</script>
+{% endblock %}

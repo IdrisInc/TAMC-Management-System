@@ -1,24 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Permission Request</title>
-    <style>
-        /* Basic Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends 'base/base.html' %}
+{% block title %}<title> TAMC | Create Permission </title>{% endblock title %}
 
-        /* Body */
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
+{% block styles %}
+    <style>
+       
+
+       
 
         /* Header */
         h1 {
@@ -27,17 +14,6 @@
         }
 
         /* Form */
-        form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* Steps */
         .step {
             display: none;
             opacity: 0;
@@ -49,7 +25,6 @@
             opacity: 1;
         }
 
-        /* Labels and Inputs */
         label {
             display: block;
             margin-bottom: 8px;
@@ -65,18 +40,6 @@
             margin-bottom: 16px;
             border: 1px solid #ddd;
             border-radius: 4px;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        /* Disabled Inputs */
-        input[disabled],
-        select[disabled],
-        textarea[disabled] {
-            background-color: #e9ecef;
-            cursor: not-allowed;
         }
 
         /* Navigation Buttons */
@@ -103,14 +66,9 @@
         }
 
         .submit-btn {
-            background-color: #5bc0de;
+            display: none; /* Initially hide the submit button */
         }
 
-        .submit-btn:hover {
-            background-color: #31b0d5;
-        }
-
-        /* Error Message */
         .error-message {
             display: none;
             color: #d9534f;
@@ -123,169 +81,103 @@
         .error-message.show {
             display: block;
         }
-
-        .error-message.hide {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .error-message.show.hide {
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .dynamic-duties {
-            margin-top: 10px;
-        }
-
-        .duty-item {
-            margin-bottom: 5px;
-        }
-
-        .remove-duty {
-            color: red;
-            cursor: pointer;
-        }
-
-        /* Overlay styles */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .overlay-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 800px;
-            width: 100%;
-        }
-
-        .overlay-content h2 {
-            margin-top: 0;
-        }
-
-        .close-btn {
-            background: #d9534f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            float: right;
-        }
-
-        .close-btn:hover {
-            background: #c9302c;
-        }
     </style>
-</head>
-<body>
+{% endblock styles %}
+
+{% block content %}
     <div class="content-wrapper">
         <section class="content-header">
-          <div class="container-fluid">
-            <div class="row mb-2">
-              <div class="col-sm-6">
-                <h1>Financial Request</h1>
-              </div>
-              <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                  <li class="breadcrumb-item"><a href="#">Home</a></li>
-                  <li class="breadcrumb-item active">Financial Form</li>
-                </ol>
-              </div>
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1>Permission Request</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active">Permission Form</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
-          </div>
         </section>
-         
-  <section class="content">
-    <div class="container-fluid">
-      <div class="row justify-content-center">
-        <div class="col-md-9">
-          <div class="card card-primary">
-            <div class="card-header">
-              <h3 class="card-title">Petty/Cheque</h3>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-md-9">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Permission Form</h3>
+                            </div>
+
+                            <form method="post" id="permissionForm">
+                                {% csrf_token %}
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <!-- Error Message -->
+                                        <div class="error-message"></div>
+
+                                        <!-- Step 1 -->
+                                        <div class="step active form-group">
+                                            <label for="address">Your Address:</label>
+                                            <input type="text" class="form-control" id="address" name="address" placeholder = "Enter Your Address" required>
+                                        </div>
+
+                                        <!-- Step 2 -->
+                                        <div class="step form-group">
+                                            <label for="start_date">Start Date:</label>
+                                            <input type="date" class="form-control" id="start_date" name="start_date"  required>
+
+                                            <label for="end_date">End Date:</label>
+                                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                        </div>
+
+                                        <!-- Step 3 -->
+                                        <div class="step form-group">
+                                            <label for="place">Place Where You Are Going:</label>
+                                            <input type="text" class="form-control" id="place" name="place" required>
+
+                                            <label for="description">Permission Description:</label>
+                                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                                        </div>
+
+                                        <!-- Step 4 -->
+                                        <div class="step form-group">
+                                            <label for="delegatee">Delegatee (If Applicable):</label>
+                                            <select id="delegatee" name="delegatee">
+                                                <option value="">No Delegatee</option>
+                                                {% for delegatee in delegatees %}
+                                                    <option value="{{ delegatee.id }}">{{ delegatee.get_full_name }}</option>
+                                                {% endfor %}
+                                            </select>
+
+                                            <label for="reporting_date">Reporting Back On:</label>
+                                            <input type="date" class="form-control" id="reporting_date" name="reporting_date" required>
+                                        </div>
+
+                                        <!-- Step 5: Duties Section -->
+                                        <div class="step form-group">
+                                            <label for="duties">Duties:</label>
+                                            <div id="dutyContainer" class="dynamic-duties">
+                                                <input type="text"  name = "duties[]"class="form-control" id="dutyInput" placeholder="Enter duty and press Add" />
+                                                <button type="button" id="addDuty">Add Duty</button>
+                                                <div id="dutyList"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Navigation Buttons -->
+                                        <button type="button" class="prev-btn" id="prevBtn" style="display: none;">Previous</button>
+                                        <button type="button" class="next-btn" id="nextBtn">Next</button>
+                                        <button type="submit" class="submit-btn">Submit</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-    <form method="post">
-        {% csrf_token %}
-        <div class="card-body">
-            <div class="form-group">
-        <!-- Error Message -->
-        <div class="error-message"></div>
-
-        <!-- Step 1 -->
-        <div class="step active">
-            <label for="address">Your Address:</label>
-            <input type="text" id="address" name="address" required>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="step">
-            <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" required>
-
-            <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" required>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="step">
-            <label for="place">Place Where You Are Going:</label>
-            <input type="text" id="place" name="place" required>
-
-            <label for="description">Permission Description:</label>
-            <textarea id="description" name="description" rows="4" required></textarea>
-        </div>
-
-        <!-- Step 4 -->
-        <div class="step">
-            <label for="delegatee">Delegatee (If Applicable):</label>
-            <select id="delegatee" name="delegatee">
-                <option value="">No Delegatee</option>
-                {% for delegatee in delegatees %}
-                    <option value="{{ delegatee.id }}">{{ delegatee.username }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="reporting_date">Reporting Back On:</label>
-            <input type="date" id="reporting_date" name="reporting_date" required>
-        </div>
-
-        <!-- Step 5: Duties Section -->
-        <div class="step">
-            <label for="duties">Duties:</label>
-            <div id="dutyContainer" class="dynamic-duties">
-                <input type="text" id="dutyInput" placeholder="Enter duty and press Add" />
-                <button type="button" id="addDuty">Add Duty</button>
-                <div id="dutyList"></div>
-            </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <button type="button" class="prev-btn" id="prevBtn">Previous</button>
-        <button type="button" class="next-btn" id="nextBtn">Next</button>
-        <button type="submit" class="submit-btn" style="display: none;">Submit</button>
-    </form>
-
-    <!-- Overlay for Detailed View -->
-    <div id="detailsOverlay" class="overlay">
-        <div class="overlay-content">
-            <button class="close-btn" id="closeOverlay">Close</button>
-            <h2>Request Details</h2>
-            <div id="overlayDetails">
-                <!-- Dynamic content will be inserted here -->
-            </div>
-        </div>
+        </section>
     </div>
 
     <script>
@@ -294,173 +186,147 @@
             const nextButton = document.getElementById("nextBtn");
             const prevButton = document.getElementById("prevBtn");
             const submitButton = document.querySelector(".submit-btn");
-            const form = document.querySelector("form");
             const errorMessage = document.querySelector(".error-message");
-        
+            const dutyInput = document.getElementById("dutyInput");
+            const dutyList = document.getElementById("dutyList");
             let currentStep = 0;
-            const today = new Date().toISOString().split('T')[0];
         
+            // Initialize date inputs
+            const today = new Date().toISOString().split('T')[0];
             function updateDateInputs() {
                 document.getElementById("start_date").setAttribute("min", today);
                 document.getElementById("end_date").setAttribute("min", today);
                 document.getElementById("reporting_date").setAttribute("min", today);
             }
         
+            // Validate fields in the current step
+            function validateCurrentStep() {
+                const inputs = steps[currentStep].querySelectorAll("input, textarea, select");
+                return Array.from(inputs).every(input => input.checkValidity());
+            }
+        
+            // Validate dates
             function validateDates() {
                 const startDate = document.getElementById("start_date").value;
                 const endDate = document.getElementById("end_date").value;
                 const reportingDate = document.getElementById("reporting_date").value;
         
-                if (endDate && new Date(endDate) <= new Date(startDate)) {
-                    return "End date must be after the start date.";
+                if (startDate && endDate && startDate === endDate) {
+                    showError("Start date and end date cannot be the same.");
+                    return false;
                 }
         
-                if (reportingDate && (new Date(reportingDate) <= new Date(startDate) || new Date(reportingDate) <= new Date(endDate))) {
-                    return "Reporting back date must be after both the start and end dates.";
+                if (startDate && endDate && startDate > endDate) {
+                    showError("Start date cannot be after end date.");
+                    return false;
                 }
         
-                return null;
+                if (reportingDate && (reportingDate === startDate || reportingDate === endDate)) {
+                    showError("Reporting back date cannot be the same as start or end date.");
+                    return false;
+                }
+        
+                return true;
             }
         
-            function updateEndDateMin() {
-                const startDate = document.getElementById("start_date").value;
-                const endDate = document.getElementById("end_date");
-                endDate.setAttribute("min", startDate);
-                if (endDate.value && new Date(endDate.value) <= new Date(startDate)) {
-                    showError("End date must be after the start date.");
-                    endDate.value = "";
-                }
-            }
-        
-            function showStep(stepIndex) {
-                steps.forEach((step, index) => {
-                    if (index === stepIndex) {
-                        step.classList.add("active");
-                        setTimeout(() => {
-                            step.style.opacity = 1;
-                        }, 10);
-                    } else {
-                        step.style.opacity = 0;
-                        setTimeout(() => {
-                            step.classList.remove("active");
-                        }, 500); // Match the opacity transition duration
-                    }
-                });
-        
-                // Toggle Previous and Submit Button Visibility
-                prevButton.style.display = stepIndex === 0 ? "none" : "inline-block";
-                submitButton.style.display = stepIndex === steps.length - 1 ? "inline-block" : "none";
-                nextButton.style.display = stepIndex === steps.length - 1 ? "none" : "inline-block";
-            }
-        
-            function validateStep(stepIndex) {
-                const step = steps[stepIndex];
-                const inputs = step.querySelectorAll("input[required], textarea[required], select[required]");
-                let isValid = true;
-                let errorMsg = '';
-        
-                inputs.forEach(input => {
-                    if (!input.checkValidity()) {
-                        isValid = false;
-                        errorMsg = getErrorMessage(stepIndex); // Update error message for missing required input
-                    }
-                });
-        
-                // Additional validation for step-specific requirements
-                if (stepIndex === 1 || stepIndex === 3) { 
-                    const dateError = validateDates();
-                    if (dateError) {
-                        isValid = false;
-                        errorMsg = dateError;
-                    }
-                }
-        
-                if (!isValid) {
-                    showError(errorMsg);
-                }
-        
-                return isValid;
-            }
-        
+            // Show error message with fading effect
             function showError(message) {
                 errorMessage.textContent = message;
                 errorMessage.classList.add("show");
                 setTimeout(() => {
                     errorMessage.classList.remove("show");
-                    errorMessage.classList.add("hide");
-                }, 5000); // Show error message for 5 seconds
+                    errorMessage.textContent = ""; // Clear the message after fading out
+                }, 5000);
             }
         
-            function getErrorMessage(stepIndex) {
-                switch (stepIndex) {
-                    case 0:
-                        return "Please fill out the required personal information.";
-                    case 1:
-                        return "Ensure that start date, end date, and reporting back date are valid.";
-                    case 2:
-                        return "Please provide a reason for your request.";
-                    case 3:
-                        return "Ensure all information is correct before submission.";
-                    default:
-                        return "Please complete all required fields.";
+            // Show/Hide steps with animation
+            function showStep(stepIndex) {
+                steps.forEach((step, index) => {
+                    if (index === stepIndex) {
+                        step.classList.add("active");
+                        step.classList.remove("fade-out");
+                        step.classList.add("fade-in");
+                    } else if (index === stepIndex - 1) {
+                        step.classList.remove("fade-in");
+                        step.classList.add("fade-out");
+                    } else {
+                        step.classList.remove("active", "fade-in", "fade-out");
+                    }
+                });
+                prevButton.style.display = stepIndex === 0 ? "none" : "inline-block"; // Hide on first step
+                nextButton.style.display = stepIndex === steps.length - 1 ? "none" : "inline-block"; // Hide on last step
+                submitButton.style.display = stepIndex === steps.length - 1 ? "inline-block" : "none"; // Show submit button on last step
+            }
+        
+            // Handle duty input and allow removal of duties
+            document.getElementById("addDuty").addEventListener("click", function() {
+                if (dutyInput.value.trim() !== "") {
+                    // Create a new div to hold the duty item and the delete button
+                    const dutyItem = document.createElement("div");
+                    dutyItem.className = "duty-item";
+                    dutyItem.textContent = dutyInput.value;
+            
+                    // Add a hidden input field to save the duty in the form
+                    const hiddenDutyInput = document.createElement("input");
+                    hiddenDutyInput.type = "hidden";
+                    hiddenDutyInput.name = "duties[]";  // This ensures the field will be submitted
+                    hiddenDutyInput.value = dutyInput.value;
+                    
+                    // Append the hidden input to the form so it will be submitted
+                    document.getElementById("permissionForm").appendChild(hiddenDutyInput);
+            
+                    // Create delete button for the duty item
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Remove";
+                    deleteButton.className = "delete-btn";
+                    deleteButton.addEventListener("click", function() {
+                        dutyItem.remove(); // Remove the duty item from the display
+                        hiddenDutyInput.remove(); // Remove the hidden input field from the form
+                    });
+            
+                    // Append delete button and duty item to the duty list
+                    dutyItem.appendChild(deleteButton);
+                    dutyList.appendChild(dutyItem);
+                    
+                    // Clear the duty input field after adding
+                    dutyInput.value = "";
                 }
-            }
+            });
+            
         
-            nextButton.addEventListener("click", () => {
-                if (validateStep(currentStep)) {
+            // Event Listeners for navigation
+            nextButton.addEventListener("click", function() {
+                if (validateCurrentStep() && validateDates()) {
                     currentStep++;
                     if (currentStep >= steps.length) {
                         currentStep = steps.length - 1;
                     }
                     showStep(currentStep);
+                } else {
+                    showError("Please fill all required fields correctly.");
                 }
             });
         
-            prevButton.addEventListener("click", () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    showStep(currentStep);
+            prevButton.addEventListener("click", function() {
+                currentStep--;
+                if (currentStep < 0) {
+                    currentStep = 0;
                 }
+                showStep(currentStep);
             });
         
-            form.addEventListener("submit", function(event) {
-                if (!validateStep(currentStep)) {
+            // Handle form submission
+            document.getElementById("permissionForm").addEventListener("submit", function(event) {
+                if (!validateCurrentStep() || !validateDates()) {
                     event.preventDefault();
-                    showError(getErrorMessage(currentStep));
+                    showError("Please fill all required fields correctly.");
                 }
             });
         
             updateDateInputs();
-        
-            // Handle date input changes
-            document.getElementById("start_date").addEventListener("change", updateEndDateMin);
-            document.getElementById("end_date").addEventListener("change", updateEndDateMin);
-        
-            // Dynamic Duties Management
-            const dutyInput = document.getElementById("dutyInput");
-            const addDutyButton = document.getElementById("addDuty");
-            const dutyList = document.getElementById("dutyList");
-        
-            addDutyButton.addEventListener("click", () => {
-                const dutyText = dutyInput.value.trim();
-                if (dutyText) {
-                    const dutyItem = document.createElement("div");
-                    dutyItem.classList.add("duty-item");
-                    dutyItem.innerHTML = `${dutyText} <span class="remove-duty">Remove</span>`;
-                    dutyList.appendChild(dutyItem);
-                    dutyInput.value = "";
-        
-                    // Add event listener to remove duty
-                    dutyItem.querySelector(".remove-duty").addEventListener("click", () => {
-                        dutyItem.remove();
-                    });
-                }
-            });
-        
-            showStep(currentStep); // Initialize the first step
+            showStep(currentStep);
         });
         
+        
     </script>
-    
-</body>
-</html>
+{% endblock content %}

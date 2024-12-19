@@ -1,7 +1,8 @@
 {% extends "base/base.html" %}
+{% load custom_filters %}
 
 {% block title %}
-  <title>TAMC | My Requests</title>
+<title>TAMC | My Requests</title>
 {% endblock title %}
 
 {% block content %}
@@ -21,152 +22,670 @@
       </div>
     </div>
   </section>
-
-  <div id="messages">
-    {% for message in user_messages %}
-      <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
+  {% for message in messages %}
+  <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+    {{ message }}
   </div>
-
-  <div class="text-center mb-3">
-    <a href="{% url 'equipment:view_approved_requests' %}" class="btn btn-primary">View Approved Requests</a>
-  </div>
-
-  <!-- Main content -->
+{% endfor %}
   <section class="content">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-12">
-          <!-- Requests Created by the User -->
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title">My Requests</h3>
-            </div>
-            {% if user_requests %}
-            <div class="card-body table-responsive p-0" style="height: 300px;">
-              <table class="table table-head-fixed text-nowrap table-hover table-striped">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Date of Request</th>
-                    <th>Location</th>
-                    <th>Category</th>
-                    <th>Equipment Required</th>
-                    <th>Submission Date</th>
-                    <th>Task Crew</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for task_assignment in user_requests %}
-                  <tr>
-                    <td>{{ task_assignment.assignment }}</td>
-                    <td>{{ task_assignment.date }}</td>
-                    <td>{{ task_assignment.location }}</td>
-                    <td>{{ task_assignment.category }}</td>
-                    <td>
-                      {% for detail in task_assignment.assignmentequipment_set.all %}
-                      {{ detail.equipment.name }} (Quantity: {{ detail.quantity }})
-                      {% if not forloop.last %}, {% endif %}
-                      {% endfor %}
-                    </td>
-                    <td>{{ task_assignment.submission_date }}</td>
-                    <td>
-                      {% for person in task_assignment.persons_assigned.all %}
-                        {{ person.username }}
-                        {% if not forloop.last %}, {% endif %}
-                      {% endfor %}
-                    </td>
-                    <td>{{ task_assignment.status }}</td>
-                    <td>
-                      <a href="{% url 'equipment:edit_task_assignment' task_assignment.id %}" class="btn btn-primary {% if task_assignment.status != 'Pending' %}disabled{% endif %}">Edit</a>
-                      <a href="{% url 'equipment:delete_task_assignment' task_assignment.id %}" class="btn btn-danger {% if task_assignment.status != 'Pending' %}disabled{% endif %}">Delete</a>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            {% else %}
-            <div class="card-header mt-5">
-              <p class="card-title">You have not made any requests.</p>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <div class="row mt-5">
-        <div class="col-12">
-          <!-- Requests Assigned to the User -->
-          <div class="card card-primary">
-            <div class="card-header">
-              <h3 class="card-title">Assigned Requests</h3>
-            </div>
-            {% if general_requests %}
-            <div class="card-body table-responsive p-0" style="height: 300px;">
-              <table class="table table-head-fixed text-nowrap table-hover table-striped">
-                <thead>
-                  <tr>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for task_assignment in general_requests %}
-                  <tr>
-                    <td>{{ task_assignment.assignment }}</td>
-                    <td>{{ task_assignment.date }}</td>
-                    <td>{{ task_assignment.location }}</td>
-                    <td>{{ task_assignment.status }}</td>
-                    <td><a href="{% url 'equipment:specific_request' task_assignment.id %}" class="btn btn-primary">View More</a></td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-            {% else %}
-            <div class="card-header mt-5">
-              <p class="card-title">You have not been assigned any requests.</p>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
+    
+    <div class="switch-container">
+        {% if user_role in "Production Manager, Technical Manager, Treasurer, Assistant Treasurer" %}
+            <!-- Production Manager-specific view options, including Approval Requests -->
+            <input type="radio" class="btn-check" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="view-user-requests">My Requests</label>
+    
+            <input type="radio" class="btn-check" name="view-switch" id="view-assigned-requests" autocomplete="off">
+            <label class="btn btn-outline-success" for="view-assigned-requests">Assigned Requests</label>
+    
+            <input type="radio" class="btn-check" name="view-switch" id="view-approval-requests" autocomplete="off">
+            <label class="btn btn-outline-warning" for="view-approval-requests">Approval Requests</label>
+    
+        {% elif user_role in "Radio / TV Presenter,Editor" %}
+            <!-- For other roles like Radio / TV Presenter and Editor -->
+            <input type="radio" class="btn-check" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="view-user-requests">My Requests</label>
+    
+            <input type="radio" class="btn-check" name="view-switch" id="view-assigned-requests" autocomplete="off">
+            <label class="btn btn-outline-success" for="view-assigned-requests">Assigned Requests</label>
+        {% else %}
+            <!-- Default option when no specified role matches -->
+            <input type="radio" class="btn-check" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="view-user-requests">My Requests</label>
+        {% endif %}
     </div>
-  </section>
-
-  <!-- Overlay -->
-  <div id="overlay">
-    <div id="specific-request-details">
-      <!-- Specific request details will be displayed here -->
-    </div>
-    <span class="close-btn" onclick="closeOverlay()">×</span>
+    
+  
+<div id="user-requests-div" style="display: {% if user_role in 'Radio / TV Presenter,Editor' %} block {% else %} none {% endif %};">
+  <!-- User's Own Requests -->
+  <div class="card">
+      <div class="card-header">
+          <div class="card-title">My Requests</div>
+      </div>
+      
+      <div class="card-body table-responsive p-0">
+          {% if user_requests %}
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" id="user-requests-table">
+                  <thead>
+                      <tr>
+                          <th>Description</th>
+                          <th>Date of Request</th>
+                          <th>Location</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for task_assignment in user_requests %}
+                      <tr 
+                          class="request-row" 
+                          data-id="{{ task_assignment.id }}" 
+                          data-category="{{ task_assignment.category }}" 
+                           data-submission-date="{{ task_assignment.submission_date }}"
+                           data-persons-assigned="{% for person in task_assignment.persons_assigned.all %}{{ person.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}"  
+                          data-equipment="{% for detail in task_assignment.assignmentequipment_set.all %}{{ detail.equipment.name }} (Quantity: {{ detail.quantity }}){% if not forloop.last %}, {% endif %}{% endfor %}"
+                          data-approved-by=" {% if task_assignment.production_approved %}
+                          <p>{{ task_assignment.production_approver.get_full_name }} (Production Manager)</p>
+                      {% endif %}
+                      {% if task_assignment.technical_manager_approved %}
+                          <p>{{ task_assignment.technical_manager_approver.get_full_name }} (Technical Manager)</p>
+                      {% endif %}
+                      {% if task_assignment.treasurer_approved %}
+                          <p>{{ task_assignment.treasurer_approver.get_full_name }} (Treasurer)</p>
+                      {% endif %}
+                      {% if task_assignment.assistant_treasurer_approved %}
+                          <p>{{ task_assignment.assistant_treasurer_approver.get_full_name }} (Assistant Treasurer)</p>
+                      {% endif %}
+                      {% if task_assignment.technical_approved %}
+                          <p>{{ task_assignment.technical_approver.get_full_name }} (Technical)</p>
+                      {% endif %}"
+                      data-return-date="{{ task_assignment.return_date|date:'Y-m-d H:i' }}"
+    data-return-confirmed-by="{% if task_assignment.status == 'Returned' %}{{ task_assignment.return_confirmed_by.get_full_name }}{% endif %}"
+>   
+                          <td>{{ task_assignment.assignment }}</td>
+                          <td>{{ task_assignment.date }}</td>
+                          <td>{{ task_assignment.location }}</td>
+                          <td>
+                              <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', true)">View More</button>
+                          </td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+              <div class="pagination-controls mt-3 ml-2" data-table="user-requests-table"></div>
+          {% else %}
+              <p class="text-center mt-3">You have not made any requests yet.</p>
+          {% endif %}
+      </div>
   </div>
+</div>
 
-  <script>
-    function displayOverlay(taskId) {
-      var overlay = document.getElementById('overlay');
-      var specificRequestDetails = document.getElementById('specific-request-details');
+<div id="approval-requests-div" style="display: {% if user_role not in 'Radio / TV Presenter,Editor' %} block {% else %} none {% endif %};">
+  <!-- Approval Requests (for non-presenter roles) -->
+  <div class="card card-warning mt-5">
+      <div class="card-header">
+          <h3 class="card-title">Pending Approval Requests</h3>
+      </div>
+  
+      {% if approval_requests %}
+      <div class="card-body table-responsive p-0">
+          <table class="table table-head-fixed text-nowrap table-hover table-striped" id="approval-requests-table">
+              <thead>
+                  <tr>
+                      <th>Description</th>
+                      <th>Date of Request</th>
+                      <th>Location</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for task_assignment in approval_requests %}
+                  <tr 
+                      class="request-row" 
+                      data-id="{{ task_assignment.id }}" 
+                      data-requested-by="{{ task_assignment.requested_by.get_full_name }}"
+                      data-category="{{ task_assignment.category }}" 
+                      data-persons-assigned="{% for person in task_assignment.persons_assigned.all %}{{ person.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}"  
+                      data-submission-date="{{ task_assignment.submission_date }}"
+                      data-equipment="{% for detail in task_assignment.assignmentequipment_set.all %}{{ detail.equipment.name }} (Quantity: {{ detail.quantity }}){% if not forloop.last %}, {% endif %}{% endfor %}"
+                      data-approved-by=" {% if task_assignment.production_approved %}<p>{{ task_assignment.production_approver.get_full_name }} (Production Manager)</p>{% endif %}{% if task_assignment.technical_manager_approved %}<p>{{ task_assignment.technical_manager_approver.get_full_name }} (Technical Manager)</p>{% endif %}{% if task_assignment.treasurer_approved %}<p>{{ task_assignment.treasurer_approver.get_full_name }} (Treasurer)</p>{% endif %}{% if task_assignment.assistant_treasurer_approved %}<p>{{ task_assignment.assistant_treasurer_approver.get_full_name }} (Assistant Treasurer)</p>{% endif %}{% if task_assignment.technical_approved %}<p>{{ task_assignment.technical_approver.get_full_name }} (Technical)</p>{% endif %}"
+                      data-return-date="{{ task_assignment.return_date|date:'Y-m-d H:i' }}"
+                      data-return-confirmed-by="{% if task_assignment.status == 'Returned' %}{{ task_assignment.return_confirmed_by.get_full_name }}{% endif %}"
+                  >
 
-      // Fetch specific request details
-      var specificRequest = document.getElementById('specific-request-' + taskId).innerHTML;
+                      <td>{{ task_assignment.assignment }}</td>
+                      <td>{{ task_assignment.submission_date }}</td>
+                      <td>{{ task_assignment.location }}</td>
+                      <td class="{% if task_assignment.status == 'Pending' %}text-warning{% elif task_assignment.status == 'Approved' %}text-success{% elif task_assignment.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">{{ task_assignment.status }}</td>
 
-      // Display specific request details in the overlay
-      specificRequestDetails.innerHTML = specificRequest;
-      overlay.style.display = 'block';
+                      <!-- Action Buttons based on approval flow -->
+                      <td>
+                        {% if user_role == 'Production Manager' and task_assignment.status == 'Pending' %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% elif user_role == 'Technical Manager' and task_assignment.status == 'Under Review' and task_assignment.production_approved %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% elif user_role == 'Treasurer' and task_assignment.status == 'Under Review' and task_assignment.technical_manager_approved %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% elif user_role == 'Assistant Treasurer' and task_assignment.status == 'Under Review' and task_assignment.technical_manager_approved %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% elif user_role == 'Technical' and task_assignment.status == 'Under Review' and task_assignment.treasurer_approved %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% elif user_role == 'Technical' and task_assignment.status == 'Approved' %}
+                            <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" 
+                                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, false, false, '{{ user_role }}')">
+                                View More
+                            </button>
+                        {% endif %}
+                    </td>
+                    
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+          
+          <div class="pagination-controls mt-3 ml-2" data-table="approval-requests-table"></div>
+      </div>
+
+      {% else %}
+      <div class="card-header mt-5">
+          <p class="card-title">No requests pending approval.</p>
+      </div>
+      {% endif %}
+  </div>
+</div>
+<!-- Button to trigger the modal -->
+
+<div class="modal fade" id="confirmReturnModal" tabindex="-1" role="dialog" aria-labelledby="confirmReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmReturnModalLabel">Confirm Return</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to confirm the return for this task?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="confirmReturnForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Confirm Return</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Assigned Requests -->
+<div id="assigned-requests-div" style="display: {% if user_role in 'Radio / TV Presenter,Editor' %} block {% else %} none {% endif %};">
+  <div class="card mt-5">
+      <div class="card-header">
+          <h3 class="card-title">Assigned Requests</h3>
+      </div>
+
+      {% if assigned_requests %}
+          <div class="card-body table-responsive p-0">
+              <table class="table table-head-fixed text-nowrap table-hover table-striped" id="assigned-requests-table">
+                  <thead>
+                      <tr>
+                          <th>Description</th>
+                          <th>Date of Request</th>
+                          <th>Location</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for task_assignment in assigned_requests %}
+                          <tr class="request-row" data-id="{{ task_assignment.id }}" 
+                          data-category="{{ task_assignment.category }}" 
+                          data-equipment="{{ task_assignment.equipment_details }}" 
+                          data-requested-by="{{ task_assignment.requested_by.get_full_name }}" 
+                          data-submission-date="{{ task_assignment.submission_date }}" 
+                          data-persons-assigned="{% for person in task_assignment.persons_assigned.all %}{{ person.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}"  
+                           data-approved-by=" {% if task_assignment.production_approved %}
+
+                          <p>{{ task_assignment.production_approver.get_full_name }} (Production Manager)</p>
+                      {% endif %}
+                      {% if task_assignment.technical_manager_approved %}
+                          <p>{{ task_assignment.technical_manager_approver.get_full_name }} (Technical Manager)</p>
+                      {% endif %}
+                      {% if task_assignment.treasurer_approved %}
+                          <p>{{ task_assignment.treasurer_approver.get_full_name }} (Treasurer)</p>
+                      {% endif %}
+                      {% if task_assignment.assistant_treasurer_approved %}
+                          <p>{{ task_assignment.assistant_treasurer_approver.get_full_name }} (Assistant Treasurer)</p>
+                      {% endif %}
+                      {% if task_assignment.technical_approved %}
+                          <p>{{ task_assignment.technical_approver.get_full_name }} (Technical)</p>
+                      {% endif %}"
+                      data-return-date="{{ task_assignment.return_date|date:'Y-m-d H:i' }}"
+                      data-return-confirmed-by="{% if task_assignment.status == 'Returned' %}{{ task_assignment.return_confirmed_by.get_full_name }}{% endif %}"
+                  >
+                              <td>{{ task_assignment.assignment }}</td>
+                              <td>{{ task_assignment.date }}</td>
+                              <td>{{ task_assignment.location }}</td>
+                              <td class="{% if task_assignment.status == 'Pending' %}text-warning{% elif task_assignment.status == 'Approved' %}text-success{% elif task_assignment.status == 'Rejected' %}text-danger{% else %}text-info{% endif %}">{{ task_assignment.status }}</td>
+                              <td>
+                                  <button class="btn btn-primary view-more" data-toggle="modal" data-target="#requestModal" onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', false, true, false, '{{ user_role }}')">View More</button>
+                              </td>
+                          </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+              <div class="pagination-controls mt-3" data-table="assigned-requests-table"></div>
+          </div>
+      {% else %}
+          <div class="card-header mt-5">
+              <p class="card-title">No assigned requests.</p>
+          </div>
+      {% endif %}
+  </div>
+</div>
+
+<!-- JavaScript for Pagination and Overlay -->
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const paginationControls = document.querySelectorAll('.pagination-controls');
+    
+        paginationControls.forEach(control => {
+            const tableId = control.getAttribute('data-table');
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tbody tr');
+    
+            const rowsPerPage = 5; // Change this as needed
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
+    
+            let currentPage = 1;
+    
+            function displayPage(page) {
+                const start = (page - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+    
+                // Hide all rows
+                rows.forEach((row, index) => {
+                    row.style.display = (index >= start && index < end) ? '' : 'none';
+                });
+    
+                updatePaginationControls();
+            }
+    
+            function updatePaginationControls() {
+                control.innerHTML = ''; // Clear existing controls
+    
+                for (let i = 1; i <= totalPages; i++) {
+                    const button = document.createElement('button');
+                    button.innerText = i;
+    
+                    // Disable button if it's the current page
+                    if (i === currentPage) {
+                        button.disabled = true;
+                    }
+    
+                    button.onclick = function() {
+                        currentPage = i;
+                        displayPage(currentPage);
+                    };
+    
+                    control.appendChild(button);
+                }
+            }
+    
+            displayPage(currentPage); // Display the first page
+        });
+    });
+    
+  
+    function showDetails(requestId, status, isOwnRequest, isAssignedRequest, isPendingApprovalRequest, userRole) {
+        const requestRow = document.querySelector(`.request-row[data-id="${requestId}"]`);
+        const modalBody = document.getElementById('modal-body-content');
+        const modalFooter = document.getElementById('modal-footer-content');
+    
+        if (!requestRow) {
+            console.error(`Request with ID ${requestId} not found`);
+            return;
+        }
+    
+        const requestedBy = requestRow.dataset.requestedBy || 'Not available';
+        const equipmentDetails = requestRow.dataset.equipment || 'None';
+        const personsAssigned = requestRow.dataset.personsAssigned || 'None';
+        const submissionDate = requestRow.dataset.submissionDate || 'Not available';
+        const approvedBy = requestRow.dataset.approvedBy || 'Not approved yet';
+    
+        // Populate modal body with request details
+       
+         modalBody.innerHTML = `
+        <div id="printable-content">
+            <p><strong>Request From:</strong> ${requestedBy}</p>
+            <p><strong>Description:</strong> ${requestRow.cells[0].innerText}</p>
+            <p><strong>Date of Request:</strong> ${requestRow.cells[1].innerText}</p>
+            <p><strong>Persons Assigned:</strong> ${personsAssigned}</p>
+            <p><strong>Location:</strong> ${requestRow.cells[2].innerText}</p>
+            <p><strong>Submission Date:</strong> ${submissionDate}</p>
+            <p><strong>Equipment:</strong> ${equipmentDetails}</p>
+            <p><strong>Status:</strong> ${status}</p>
+            <p><strong>Approved By:</strong> ${approvedBy}</p>
+        </div>
+    `;
+
+        // Clear any previous buttons in the footer
+        modalFooter.innerHTML = '';
+    
+        // Set the form action for confirm return
+        confirmReturnForm.action = `/ems/confirm-return/${requestId}/`; // Adjust the URL as necessary
+    
+        // If the request is pending and it's the user's own request, show Edit/Delete buttons
+        if (isOwnRequest && status === 'Pending') {
+            modalFooter.innerHTML += `
+                <button class="btn btn-warning" onclick="editRequest(${requestId})">Edit</button>
+                <button class="btn btn-danger" onclick="deleteRequest(${requestId})">Delete</button>
+            `;
+        }
+    
+        // Role-based approval buttons logic
+        if (status === 'Pending' && userRole === 'Production Manager') {
+            modalFooter.innerHTML += `<button class="btn btn-success" onclick="approveRequest(${requestId})">Approve</button>`;
+            modalFooter.innerHTML += `<button class="btn btn-danger" onclick="rejectRequest(${requestId})">Reject</button>`;
+        } else if (status === 'Under Review' && ['Technical Manager', 'Technical', 'Treasurer', 'Assistant Treasurer'].includes(userRole)) {
+            modalFooter.innerHTML += `<button class="btn btn-success" onclick="approveRequest(${requestId})">Approve</button>`;
+            modalFooter.innerHTML += `<button class="btn btn-danger" onclick="rejectRequest(${requestId})">Reject</button>`;
+        }
+    
+        // Confirm Return for Technical Role
+        if (status === 'Approved' && userRole === 'Technical') {
+            modalFooter.innerHTML += `
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmReturnModal">
+                    Confirm Return
+                </button>`;
+        }
+    
+        // Add Print button if status is "Returned"
+        if (status === 'Returned') {
+            modalFooter.innerHTML += `
+                <button class="btn btn-secondary" onclick="printDetails()">Print</button>`;
+        }
+    
+   
+        // Show the modal
+        $('#requestModal').modal('show');
+    }
+    
+    function printDetails() {
+        const printContents = document.getElementById('printable-content').innerHTML;
+        
+        // Open a new window
+        const printWindow = window.open('', '', 'height=500,width=800');
+    
+        // Add the HTML content to the new window, along with styling for print
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Print Request Details</title>
+                    <style>
+                        /* Add any additional styles for the print view here */
+                        body { font-family: Arial, sans-serif; }
+                        p { margin: 8px 0; }
+                        strong { font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <div>${printContents}</div>
+                </body>
+            </html>
+        `);
+    
+        // Trigger the print dialog
+        printWindow.document.close(); // Ensure document is fully loaded
+        printWindow.print();
+    
+        // Optionally, close the print window after printing
+        printWindow.onafterprint = () => printWindow.close();
+    }
+    
+    function handleConfirmReturn(requestId) {
+        const url = `/ems/confirm-return/${requestId}/`; // Adjust URL as necessary
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+        // Use fetch to send a POST request
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({}) // Sending an empty body since you're just confirming the return
+        })
+        .then(response => {
+            // Check if the response is OK
+            if (!response.ok) {
+                return response.json().then(errData => {
+                    throw new Error(errData.message || 'Network response was not ok');
+                });
+            }
+            return response.json(); // Return the parsed JSON response
+        })
+        .then(data => {
+            // Redirect to another page after success
+            window.location.href = '/ems/view-task-assignment/'; // Adjust the URL as necessary
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+            // You can still display an error message in the console
+        });
+    }
+    
+    
+    // Confirm Return button logic
+    document.getElementById('confirmReturnForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        const requestId = this.action.split('/').slice(-2)[0]; // Extract request ID from action URL
+        handleConfirmReturn(requestId);
+    });
+    
+    function updateRequestStatus(requestId, newStatus) {
+        const requestElement = document.querySelector(`.request-row[data-id="${requestId}"]`); // Adjust the selector as necessary
+    
+        if (requestElement) {
+            const statusElement = requestElement.querySelector('.request-status'); // Adjust this selector to match your HTML structure
+            statusElement.textContent = newStatus; // Update the status text
+    
+            // Optionally, change styling based on the new status
+            if (newStatus === 'Returned') {
+                requestElement.classList.add('returned-status'); // Example class for styling
+            }
+        } else {
+            console.warn(`Request element for ID ${requestId} not found.`);
+        }
+    }
+    
+
+function editRequest(requestId) {
+    // Redirect to the edit page or open an edit form modal
+    window.location.href = `/ems/edit-task/${requestId}/`;
+}
+
+
+function deleteRequest(requestId) {
+    handleRequest(`/ems/delete-task/${requestId}/`, 'POST', () => {
+        // Remove the request row from the table
+        document.querySelector(`.request-row[data-id="${requestId}"]`).remove();
+        // Close the modal after deletion
+        $('#requestModal').modal('hide');
+    });
+}
+
+  
+  document.addEventListener('DOMContentLoaded', function () {
+    
+    // Initial display setup based on selected radio button
+    const userRequestsDiv = document.getElementById('user-requests-div');
+    const approvalRequestsDiv = document.getElementById('approval-requests-div');
+    const assignedRequestsDiv = document.getElementById('assigned-requests-div');
+
+    // Function to handle the visibility of request sections
+    function toggleRequestSections() {
+        const userRequestsRadio = document.getElementById('view-user-requests');
+        const approvalRequestsRadio = document.getElementById('view-approval-requests');
+        const assignedRequestsRadio = document.getElementById('view-assigned-requests');
+
+        if (userRequestsRadio.checked) {
+            userRequestsDiv.style.display = 'block';
+            approvalRequestsDiv.style.display = 'none';
+            assignedRequestsDiv.style.display = 'none';
+        } else if (assignedRequestsRadio.checked) {
+            userRequestsDiv.style.display = 'none';
+            approvalRequestsDiv.style.display = 'none';
+            assignedRequestsDiv.style.display = 'block';
+        } else if (approvalRequestsRadio.checked) {
+            userRequestsDiv.style.display = 'none';
+            approvalRequestsDiv.style.display = 'block';
+            assignedRequestsDiv.style.display = 'none';
+        }
     }
 
-    function closeOverlay() {
-      var overlay = document.getElementById('overlay');
-      overlay.style.display = 'none';
-    }
-  </script>
+    // Event listeners for the radio buttons
+    const radios = document.querySelectorAll('input[name="view-switch"]');
+    radios.forEach(radio => {
+        radio.addEventListener('change', toggleRequestSections);
+    });
 
+    // Initial call to set visibility on page load
+    toggleRequestSections();
+  });
+</script>
+
+<!-- Example HTML structure -->
+<div id="requestModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="modalLabel">Request Details</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body" id="modal-body-content">
+              <!-- Request details will be populated here -->
+          </div>
+          <div class="modal-footer" id="modal-footer-content">
+              <!-- Action buttons will be populated here -->
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Add this in your HTML template -->
+<script type="text/javascript">
+  const csrfToken = "{{ csrf_token }}"; // Set global variable for CSRF token
+</script>
+
+
+
+
+  <style> 
+    .request-table {
+      width: 100%; /* Full width */
+      height: calc(100vh - 150px); /* Adjust height based on header/footer if present */
+      padding: 10px;
+    }
+    
+    .card {
+      margin: 0 auto;
+      border: 1px solid #ddd;
+      max-width: 100%;
+    }
+    
+    .table {
+      table-layout: auto;
+      width: 100%;
+    }
+    
+    .table-responsive {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+
+
+    .switch-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px; /* Space between buttons */
+  }
+  
+  .switch-container label {
+      flex-grow: 1; /* Make the buttons take up equal width */
+      text-align: center;
+      padding: 10px 15px;
+      font-size: 1rem;
+      white-space: nowrap;
+  }
+  
+  .btn-check {
+      display: none; /* Hide the radio buttons */
+  }
+
+  /* Optional: Responsive scaling */
+  @media (max-width: 600px) {
+      .switch-container label {
+          font-size: 0.9rem;
+          padding: 8px;
+      }
+  }
+  @media print {
+    body * {
+        display: none !important;
+    }
+    #printable-content {
+        display: block !important;
+    }
+}
+
+
+  /* confirm return */
+
+ /* CSS to ensure the Confirm Return modal appears above the Request Details modal */
+#confirmReturnModal {
+    z-index: 1060; /* Higher than the default Bootstrap modal */
+}
+
+#requestModal {
+    z-index: 1050; /* Default Bootstrap modal z-index */
+}
+
+.modal-backdrop {
+    z-index: 1040; /* Ensure backdrop is below the modals */
+}
+
+
+  </style>    
+</div>
 {% endblock content %}

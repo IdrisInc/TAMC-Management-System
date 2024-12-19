@@ -39,21 +39,28 @@
                             <div class="card-body">
                                 <!-- Pre-fill the form fields with existing request data -->
                                 <input type="hidden" name="request_id" value="{{ request.id }}">
+                                
+                                <!-- Amount Numeric Field (Read-only) -->
                                 <div class="form-group">
                                     <label for="amount_numeric">Amount in Numeric</label>
-                                    <input type="number" class="form-control" id="amount_numeric" name="amount_numeric" value="{{ request.amount_numeric }}" required oninput="convertAmountToWords()">
+                                    <input type="number" class="form-control" id="amount_numeric" name="amount_numeric" value="{{ request.amount_numeric }}" readonly required>
                                 </div>
+
+                                <!-- Amount in Words Field (Read-only) -->
                                 <div class="form-group">
                                     <label for="amount_words">Amount in Words</label>
                                     <input type="text" class="form-control" id="amount_words" name="amount_words" value="{{ request.amount_words }}" readonly required>
                                 </div>
+
+                                <!-- Purpose Field -->
                                 <div class="form-group">
                                     <label for="purpose">Purpose</label>
                                     <input type="text" class="form-control" id="purpose" name="purpose" value="{{ request.purpose }}" required>
                                 </div>
+
+                                <!-- Description of Request Table -->
                                 <div class="form-group">
                                     <label for="description">Description of Request</label>
-                                    <!-- Add dynamic rows for existing items -->
                                     <div class="table-responsive">
                                         <table class="table table-bordered" id="descriptionTable">
                                             <thead>
@@ -82,10 +89,13 @@
                                     <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
                                     <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
                                 </div>
+
+                                <!-- Total Request Field (Read-only) -->
                                 <div class="form-group">
                                     <label for="total_request">Total Request</label>
                                     <input type="text" class="form-control" id="total_request" name="total_request" value="{{ request.total_request }}" readonly>
                                 </div>
+
                                 <!-- Submit Button -->
                                 <button type="submit" class="btn btn-primary">Update Request</button>
                             </div>
@@ -131,6 +141,8 @@
             totalRequest += total;
         });
         $('#total_request').val(totalRequest.toFixed(2));
+        $('#amount_numeric').val(totalRequest.toFixed(2)); // Fill amount_numeric with total
+        convertAmountToWords(); // Update amount in words
     }
 
     function validateForm() {

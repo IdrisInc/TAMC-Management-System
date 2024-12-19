@@ -77,6 +77,7 @@
                                         <input type="date" class="form-control" id="id_submission_date" name="submission_date" value="{{ task_assignment.submission_date }}" required>
                                     </div>
 
+                                    <!-- Equipment Section -->
                                     <button type="button" id="add-equipment-field" class="btn btn-primary mb-3">Add Equipment</button>
 
                                     <div id="equipment-fields">
@@ -103,7 +104,7 @@
                                         <label for="id_persons_assigned">Task Crew</label>
                                         <select multiple class="form-control" id="id_persons_assigned" name="persons_assigned[]" required>
                                             {% for person in all_persons %}
-                                                <option value="{{ person.id }}" {% if person.id in task_assignment.persons_assigned.all %}selected{% endif %}>{{ person.username }}</option>
+                                                <option value="{{ person.id }}" {% if person.id in task_assignment.persons_assigned.all %}selected{% endif %}>{{ person.get_full_name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>

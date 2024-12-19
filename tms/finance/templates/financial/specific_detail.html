@@ -1,27 +1,31 @@
-{% extends 'base/base.html'%}
+{% extends 'base/base.html' %}
 
-<!-- Ensure 'total' variable is passed correctly and used -->
+{% block title %}
+    <title>TAMC | Specific Request</title>
+{% endblock title %}
+
 {% block content %}
     <div class="content-wrapper">
         <section class="content-header">
-            <!-- Header content -->
+            <!-- Optional header content -->
         </section>
 
         <section class="content">
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-9">
-                      {% for message in messages %}
-                      <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                        {{ message }}
-                      </div>
-                    {% endfor %}
-                        <div class="card card-primary">
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+
+                        <div class="card card-primary ml-5">
                             <div class="card-header">
                                 <h3 class="card-title">
                                     <i class="nav-icon fas fa-coins"></i>
                                     {% if financial_request.total_request > 50000 %}
-                                        Cheque request
+                                        Cheque Request
                                     {% else %}
                                         Petty Request
                                     {% endif %}
@@ -30,9 +34,8 @@
 
                             <div class="card-body" id="print-section">
                                 <dl class="row">
-                                    <!-- Display financial request details -->
                                     <dt class="col-sm-4">Request From</dt>
-                                    <dd class="col-sm-6">{{ financial_request.user.username }}</dd>
+                                    <dd class="col-sm-6">{{ financial_request.user.get_full_name }}</dd>
                                     <dt class="col-sm-4">Amount Requested</dt>
                                     <dd class="col-sm-8">{{ financial_request.amount_numeric }} ({{ financial_request.amount_words }})</dd>
                                     <dt class="col-sm-4">Date Requested</dt>
@@ -67,53 +70,62 @@
                                     </tbody>
                                 </table>
 
-                                <p><strong>Status:</strong> 
+                                <p><strong>Status:</strong>
                                     <span class="{% if financial_request.status == 'Approved' %}text-success{% elif financial_request.status == 'Rejected' %}text-danger{% elif financial_request.status == 'Pending' %}text-warning{% elif financial_request.status == 'Under Review' %}text-info{% endif %}">
                                         {{ financial_request.status }}
                                     </span>
                                 </p>
-
-                                <!-- Approvers -->
-                                <p><strong>Approvers:</strong></p>
+                                {% if financial_request.status == 'Rejected' %}
+                                <p><strong>Rejection Comment:</strong> {{ financial_request.rejection_comment }}</p>
+                            {% endif %}
+                                <!-- Display Approvers -->
+                                <p><strong>Approved By:</strong></p>
                                 <ul>
                                     {% if financial_request.approved_by_production.exists %}
-                                        <li>Production: 
+                                        <li>Production Manager: 
                                             {% for user in financial_request.approved_by_production.all %}
-                                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </li>
                                     {% endif %}
                                     {% if financial_request.approved_by_technical_manager.exists %}
                                         <li>Technical Manager: 
                                             {% for user in financial_request.approved_by_technical_manager.all %}
-                                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </li>
                                     {% endif %}
                                     {% if financial_request.approved_by_finance.exists %}
                                         <li>Finance: 
                                             {% for user in financial_request.approved_by_finance.all %}
-                                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </li>
                                     {% endif %}
                                     {% if financial_request.approved_by_treasurer.exists %}
                                         <li>Treasurer: 
                                             {% for user in financial_request.approved_by_treasurer.all %}
-                                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </li>
+                                    {% endif %}
+                                    {% if financial_request.approved_by_assistant_treasurer.exists %}
+                                        <li>Assistant Treasurer: 
+                                            {% for user in financial_request.approved_by_assistant_treasurer.all %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </li>
                                     {% endif %}
                                     {% if financial_request.approved_by_cashier.exists %}
                                         <li>Cashier: 
                                             {% for user in financial_request.approved_by_cashier.all %}
-                                                {{ user.username }}{% if not forloop.last %}, {% endif %}
+                                                {{ user.get_full_name }}{% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                         </li>
                                     {% endif %}
                                 </ul>
 
-                                {% if financial_request.approved_by_cashier %}
+                                {% if financial_request.approved_by_finance %}
                                     <dl class="row">
                                         <dt class="col-sm-4">Account to be Charged</dt>
                                         <dd class="col-sm-8">{{ financial_request.account_to_charge }}</dd>
@@ -121,97 +133,87 @@
                                         <dd class="col-sm-8">{{ financial_request.account_code }}</dd>
                                     </dl>
                                 {% endif %}
-                            </div>
-
-                            <!-- Approval Buttons -->
-                            <div class="col-md-6">
-                                <!-- Approval Button Logic for Production -->
-                                {% if user_role == 'Production' %}
-                                <div class="mt-3 no-print">
-                                    {% if financial_request.approved_by_production.exists %}
-                                        <button disabled class="btn btn-secondary mb-2">Production Approved</button>
-                                    {% else %}
-                                        <form action="{% url 'finance:approve_request' financial_request.id %}" method="post">
-                                            {% csrf_token %}
-                                            <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
-                                            <button type="submit" name="action" value="reject" class="btn btn-danger mb-2">Reject</button>
-                                        </form>
-                                    {% endif %}
-                                </div>
+                                {% if financial_request.approved_by_cashier.exists %}
+                                    <dt class="col-sm-4">WEF:</dt>
+                                    <dd class="col-sm-8">({{ financial_request.wef }})</dd>
                                 {% endif %}
-
-                                <!-- Approval Button Logic for Finance -->
-                                {% if user_role == 'Finance' %}
-                                <div class="mt-3 no-print">
-                                    {% if financial_request.approved_by_finance.exists %}
-                                        <button disabled class="btn btn-secondary mb-2">Finance Approved</button>
-                                    {% elif financial_request.approved_by_production.exists %}
-                                    <form action="{% url 'finance:approve_request' financial_request.id %}" method="post">
-                                        {% csrf_token %}
-                                        <div class="mb-3">
-                                            <label for="account_to_charge" class="form-label">Account to be Charged:</label>
-                                            <input type="text" name="account_to_charge" id="account_to_charge" class="form-control" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="account_code" class="form-label">Account Code:</label>
-                                            <input type="text" name="account_code" id="account_code" class="form-control" required>
-                                        </div>
-                                        <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
-                                        <button type="submit" name="action" value="reject" class="btn btn-danger mb-2">Reject</button>
-                                    </form>
+                            </div>
                                     
-                                        <form action="{% url 'finance:approve_request' financial_request.id %}" method="post">
-                                            {% csrf_token %}
-                                            <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
-                                            <button type="submit" name="action" value="reject" class="btn btn-danger mb-2">Reject</button>
-                                        </form>
+                            <!-- Approval Button Logic -->
+                            <div class="col-md-6 mt-3 no-print">
+                                <!-- Check if the status is "Rejected" -->
+                                {% if financial_request.status != 'Rejected' %}
+                                    <!-- Production Approval -->
+                                    {% if user_role == 'Production Manager' %}
+                                        {% if financial_request.approved_by_production.exists %}
+                                            <button disabled class="btn btn-secondary mb-2">Production Approved</button>
+                                        {% else %}
+                                            <form action="{% url 'finance:approve_request' financial_request.id %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
+                                            </form>
+                                            <form action="{% url 'finance:reject_request' financial_request.id %}" method="post" id="reject-form" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="button" id="show-comment" class="btn btn-danger mb-2">Reject</button>
+                                                <div id="comment-container" style="display:none;">
+                                                    <label for="comment">Rejection Comment (optional):</label>
+                                                    <textarea name="rejection_comment" id="comment" class="form-control mb-2" rows="3"></textarea>
+                                                    <button type="submit" name="action" value="reject" class="btn btn-danger mt-2">Submit Rejection</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
                                     {% endif %}
-                                </div>
-                                {% endif %}
 
-                                <!-- Approval Button Logic for Treasurer -->
-                                {% if user_role == 'Treasurer' %}
-                                <div class="mt-3 no-print">
-                                    {% if financial_request.approved_by_treasurer.exists %}
-                                        <button disabled class="btn btn-secondary mb-2">Treasurer Approved</button>
-                                    {% elif financial_request.approved_by_finance.exists %}
-                                        <form action="{% url 'finance:approve_request' financial_request.id %}" method="post">
-                                            {% csrf_token %}
-                                            <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
-                                            <button type="submit" name="action" value="reject" class="btn btn-danger mb-2">Reject</button>
-                                        </form>
+                                    <!-- Finance Approval -->
+                                    {% if user_role == 'Accountant' %}
+                                        {% if financial_request.approved_by_finance.exists %}
+                                            <!-- Approved by Finance -->
+                                        {% elif financial_request.approved_by_production.exists or financial_request.status == 'Pending' %}
+                                            <form action="{% url 'finance:approve_request' financial_request.id %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <div class="mb-3">
+                                                    <label for="account_to_charge" class="form-label">Account to be Charged:</label>
+                                                    <input type="text" name="account_to_charge" id="account_to_charge" class="form-control" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="account_code" class="form-label">Account Code:</label>
+                                                    <input type="text" name="account_code" id="account_code" class="form-control" required>
+                                                </div>
+                                                <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
+                                            </form>
+                                            <form action="{% url 'finance:reject_request' financial_request.id %}" method="post" id="reject-form-finance" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="button" id="show-comment-finance" class="btn btn-danger mb-2">Reject</button>
+                                                <div id="comment-container-finance" style="display:none;">
+                                                    <label for="comment">Rejection Comment (optional):</label>
+                                                    <textarea name="comment" id="comment" class="form-control mb-2" rows="3"></textarea>
+                                                    <button type="submit" name="action" value="reject" class="btn btn-danger mt-2">Submit Rejection</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
                                     {% endif %}
-                                </div>
-                                {% endif %}
 
-                                <!-- Approval Button Logic for Cashier -->
-                                {% if user_role == 'Cashier' %}
-                                <div class="mt-3 no-print">
-                                    {% if financial_request.approved_by_cashier.exists %}
-                                        <!-- If cashier has approved, display account info -->
-                                    {% else %}
-                                        <!-- If cashier hasn't approved, display form to collect account details -->
-                                        <form action="{% url 'finance:approve_request' financial_request.id %}" method="post">
-                                            {% csrf_token %}
-                                            <div class="mb-3">
-                                                <label for="account_to_charge" class="form-label">Account to be Charged:</label>
-                                                <input type="text" name="account_to_charge" id="account_to_charge" class="form-control" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="account_code" class="form-label">Account Code:</label>
-                                                <input type="text" name="account_code" id="account_code" class="form-control" required>
-                                            </div>
-                                            <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
-                                            <button type="submit" name="action" value="reject" class="btn btn-danger mb-2">Reject</button>
-                                        </form>
+                                    <!-- Treasurer and Assistant Treasurer Approval -->
+                                    {% if user_role == 'Treasurer' or user_role == 'Assistant Treasurer' %}
+                                        {% if financial_request.approved_by_treasurer.exists %}
+                                            <button disabled class="btn btn-secondary mb-2">Approved by Treasurer</button>
+                                        {% else %}
+                                            <form action="{% url 'finance:approve_request' financial_request.id %}" method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" name="action" value="approve" class="btn btn-primary mb-2">Approve</button>
+                                            </form>
+                                            <form action="{% url 'finance:reject_request' financial_request.id %}" method="post" id="reject-form-treasurer" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="button" id="show-comment-treasurer" class="btn btn-danger mb-2">Reject</button>
+                                                <div id="comment-container-treasurer" style="display:none;">
+                                                    <label for="comment">Rejection Comment (optional):</label>
+                                                    <textarea name="comment" id="comment" class="form-control mb-2" rows="3"></textarea>
+                                                    <button type="submit" name="action" value="reject" class="btn btn-danger mt-2">Submit Rejection</button>
+                                                </div>
+                                            </form>
+                                        {% endif %}
                                     {% endif %}
-                                </div>
                                 {% endif %}
-                            </div>
-                        </div>
-                        <div class="row ml-4">
-                            <div class="col-12 text-right no-print">
-                                <button onclick="printContent()" class="btn btn-primary mt-3">Print</button>
                             </div>
                         </div>
                     </div>
@@ -219,9 +221,18 @@
             </div>
         </section>
     </div>
+
     <script>
-        function printContent() {
-            window.print();
-        }
+        // Toggle visibility of comment box on Reject button click
+        document.getElementById("show-comment").onclick = function() {
+            document.getElementById("comment-container").style.display = "block";
+        };
+        document.getElementById("show-comment-finance").onclick = function() {
+            document.getElementById("comment-container-finance").style.display = "block";
+        };
+        document.getElementById("show-comment-treasurer").onclick = function() {
+            document.getElementById("comment-container-treasurer").style.display = "block";
+        };
     </script>
+
 {% endblock %}

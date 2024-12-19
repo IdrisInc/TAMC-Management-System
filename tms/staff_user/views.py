@@ -21,7 +21,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from .models import UserProfile,ChatMessage # Assuming UserProfile is in the same app
 from django.db import transaction
-
+from equipment.decorators import determine_user_role
 
 # Create your views here.
 
@@ -32,6 +32,7 @@ def user_registration(request):
     roles = Group.objects.all()
 
     if request.method == 'POST':
+        # Collect data
         username = request.POST.get('username')
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -82,18 +83,13 @@ def user_registration(request):
                 group = Group.objects.get(name=position)
                 user.groups.add(group)
 
-                # Ensure UserProfile does not already exist
-                if not UserProfile.objects.filter(user=user).exists():
-                    # Create the UserProfile with additional fields
-                    UserProfile.objects.create(
-                        user=user,
-                        phone_number=phone_number,
-                        gender=gender,
-                        nida_number=nida_number
-                    )
-                else:
-                    messages.error(request, 'Profile for this user already exists.')
-                    return redirect('staff_user:user_registration')
+                # Create the UserProfile with additional fields
+                UserProfile.objects.create(
+                    user=user,
+                    phone_number=phone_number,
+                    gender=gender,
+                    nida_number=nida_number
+                )
 
             messages.success(request, 'User registered successfully.')
             return redirect('staff_user:registered_user')
@@ -118,12 +114,17 @@ def login_process(request):
         user=authenticate(request,username=username,password=password)
         
         if user is not None:
-            login(request,user)
-            messages.success(request,'welcome '+ user.username)
+            login(request, user)
+            
+            # Get full name or fallback to username
+            full_name = user.get_full_name() or user.username
+            
+            messages.success(request, 'Welcome ' + full_name)
             return redirect('staff_user:staff/dashboard')
         else:
-            messages.error(request,'User not found')
+            messages.error(request, 'User not found')
             return redirect('staff_user:staff_login_process')
+
     
     else:
        return render(request,'login.html',{})

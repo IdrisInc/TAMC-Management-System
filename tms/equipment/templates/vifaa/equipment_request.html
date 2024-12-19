@@ -71,25 +71,32 @@
 
                   <!-- Equipment Fields -->
                   <div id="equipment-fields">
-                    <!-- Existing equipment fields will be displayed here -->
-                    {% for equipment_field in equipment_fields %}
-                    <div class="equipment-field">
-                      <div class="form-group">
-                        <label for="id_equipment">Equipment Required</label>
-                        <select class="form-control equipment-select" name="equipment[]" required>
-                          <option value="" disabled selected>Select Equipment</option>
-                          {% for equipment in available_equipments %}
-                          <option value="{{ equipment.id }}" {% if equipment.id == equipment_field.equipment.id %}selected{% endif %}>{{ equipment.name }}</option>
-                          {% endfor %}
-                        </select>
+                    {% if available_equipments %}
+                      <!-- Existing equipment fields will be displayed here -->
+                      {% for equipment_field in equipment_fields %}
+                      <div class="equipment-field">
+                        <div class="form-group">
+                          <label for="id_equipment">Equipment Required</label>
+                          <select class="form-control equipment-select" name="equipment[]" required>
+                            <option value="" disabled selected>Select Equipment</option>
+                            {% for equipment in available_equipments %}
+                            <option value="{{ equipment.id }}" {% if equipment.id == equipment_field.equipment.id %}selected{% endif %}>{{ equipment.name }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label for="id_quantity">Quantity</label>
+                          <input type="number" class="form-control" name="quantity[]" min="1" value="{{ equipment_field.quantity }}" required>
+                        </div>
                       </div>
-                      <div class="form-group">
-                        <label for="id_quantity">Quantity</label>
-                        <input type="number" class="form-control" name="quantity[]" min="1" value="{{ equipment_field.quantity }}">
-                      </div>
-                    </div>
-                    {% endfor %}
+                      {% endfor %}
+                    {% else %}
+                      <p class="text-danger">No equipment available to select.</p>
+                    {% endif %}
                   </div>
+
+                  <!-- Message for all equipment selected -->
+                  <p id="no-more-equipment-message" class="text-danger" style="display: none;">All equipment has been taken. Try again later.</p>
 
                   <!-- Person(s) Required Field -->
                   <div class="form-group">
@@ -101,8 +108,8 @@
                     </select>
                   </div>
 
-                  <button type="button" id="add-equipment-field" class="btn btn-primary">Add Equipment</button>
-                  <button type="submit" class="btn btn-primary">Update Task Assignment</button>
+                  <button type="button" id="add-equipment-field" class="btn btn-primary" {% if not available_equipments %}disabled{% endif %}>Add Equipment</button>
+                  <button type="submit" class="btn btn-primary" {% if not available_equipments %}disabled{% endif %}> Submit Task Assignment</button>
                 </div>
               </div>
             </form>
@@ -119,40 +126,36 @@ document.addEventListener("DOMContentLoaded", function() {
   var categorySelect = document.getElementById("id_category");
   var addEquipmentButton = document.getElementById("add-equipment-field");
   var equipmentFields = document.getElementById("equipment-fields");
-  var allEquipmentSelects = document.querySelectorAll(".equipment-select");
   var submissionDateInput = document.getElementById("id_date");
+  var noMoreEquipmentMessage = document.getElementById("no-more-equipment-message");
 
   // Set the minimum date to today
   const today = new Date().toISOString().split('T')[0];
   submissionDateInput.setAttribute('min', today);
 
-  if (categorySelect && addEquipmentButton && equipmentFields) {
-    // Function to handle category change event
-    categorySelect.addEventListener("change", function() {
-      // Add logic here if needed
-    });
-
+  if (addEquipmentButton && equipmentFields) {
     // Function to disable equipment that's already selected
     function updateEquipmentSelects() {
-      allEquipmentSelects.forEach(function(select) {
-        var selectedOptions = Array.from(allEquipmentSelects)
-          .filter(s => s !== select && s.value === select.value)
-          .map(s => s.value);
+      var allEquipmentSelects = document.querySelectorAll(".equipment-select");
+      var selectedValues = Array.from(allEquipmentSelects).map(select => select.value).filter(value => value);
 
+      allEquipmentSelects.forEach(function(select) {
         select.querySelectorAll("option").forEach(function(option) {
-          option.disabled = selectedOptions.includes(option.value) && option.value !== select.value;
+          option.disabled = selectedValues.includes(option.value) && option.value !== select.value;
         });
       });
+
+      // Check if all equipment options have been selected
+      if (selectedValues.length >= {{ available_equipments|length }}) {
+        noMoreEquipmentMessage.style.display = 'block';
+        addEquipmentButton.disabled = true;
+      } else {
+        noMoreEquipmentMessage.style.display = 'none';
+        addEquipmentButton.disabled = false;
+      }
     }
 
-    // Add event listener to equipment-select fields to update on change
-    allEquipmentSelects.forEach(function(select) {
-      select.addEventListener("change", updateEquipmentSelects);
-    });
-
-    // Initial call to disable options based on initial selections
-    updateEquipmentSelects();
-
+    // Function to add new equipment field
     addEquipmentButton.addEventListener("click", function() {
       var newEquipmentField = document.createElement("div");
       newEquipmentField.className = "equipment-field";
@@ -169,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
         <div class="form-group">
           <label for="id_quantity">Quantity</label>
-          <input type="number" class="form-control" name="quantity[]" min="1" value="1">
+          <input type="number" class="form-control" name="quantity[]" min="1" value="1" required>
         </div>
       `;
 
@@ -177,11 +180,16 @@ document.addEventListener("DOMContentLoaded", function() {
 
       // Attach event listener to the new field's equipment-select
       var newSelect = newEquipmentField.querySelector(".equipment-select");
-      newSelect.addEventListener("change", updateEquipmentSelects);
+      newSelect.addEventListener("change", function() {
+        updateEquipmentSelects();
+      });
 
       // Immediately update to avoid duplicates
       updateEquipmentSelects();
     });
+
+    // Initial call to disable options based on initial selections
+    updateEquipmentSelects();
   }
 });
 </script>

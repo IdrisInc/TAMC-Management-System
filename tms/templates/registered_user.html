@@ -2,117 +2,173 @@
 
 {% block title %}
 <title>
-   TAMC | Registered User
+   TAMC | Registered Users
 </title>
 {% endblock title %}
+
 {% block content %}
 <div class="content-wrapper">
-  <section class="content-header">
-      <div class="container-fluid">
-          <div class="row mb-2">
-              <div class="col-sm-6">
-                  <h1>All Users</h1>
-              </div>
-              <div class="col-sm-6">
-                  <ol class="breadcrumb float-sm-right">
-                      <li class="breadcrumb-item"><a href="#">Home</a></li>
-                      <li class="breadcrumb-item active">User</li>
-                  </ol>
-              </div>
-          </div>
-      </div><!-- /.container-fluid -->
-  </section>
-
-  <section class="content">
-      <div class="container-fluid">
-          <div class="row">
-              <div class="col-12">
-                  <div class="card card-primary">
-                      <div class="card-header">
-                          <h3 class="card-title">Registered Users</h3>
-                          <div class="card-tools">
-                              <div class="row">
-                                  <div class="col">
-                                      <div class="input-group input-group-sm" style="width: 250px;">
-                                          <form method="GET" action="{% url 'staff_user:registered_users' %}">
-                                              <input type="text" id="searchInput" onkeyup="searchUsers()" placeholder="Search by position or first name..." class="form-control">
-                                             
-                                          </form>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="card-body table-responsive p-0">
-                          <table class="table table-head-fixed text-nowrap table-hover table-striped" id="userTable">
-                              <thead>
-                                  <tr>
-                                      <th>Username</th>
-                                      <th>Email</th>
-                                      <th>First Name</th>
-                                      <th>Last Name</th>
-                                      <th>Position</th>
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  {% for user in users %}
-                                  <tr>
-                                      <td>{{ user.username }}</td>
-                                      <td>{{ user.email }}</td>
-                                      <td>{{ user.first_name }}</td>
-                                      <td>{{ user.last_name }}</td>
-                                      <td>
-                                          {% if user.groups.exists %}
-                                              {{ user.groups.first.name }}
-                                          {% else %}
-                                              N/A
-                                          {% endif %}
-                                      </td>
-                                  </tr>
-                                  {% endfor %}
-                              </tbody>
-                          </table>
-                          <div id="noResults" style="display: none;">No results found.</div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </section>
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>All Users</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Users</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+  
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Registered Users</h3>
+                            <div class="card-tools">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="input-group input-group-sm" style="width: 250px;">
+                                            <form method="GET" action="{% url 'staff_user:registered_users' %}">
+                                                <input type="text" id="searchInput" onkeyup="searchUsers()" placeholder="Search by position or first name..." class="form-control">
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-head-fixed text-nowrap table-hover table-striped" id="userTable">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Position</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.first_name }}</td>
+                                        <td>{{ user.last_name }}</td>
+                                        <td>
+                                            {% if user.groups.exists %}
+                                                {{ user.groups.first.name }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <!-- Empty case for rendering no users -->
+                                    <tr class="no-results">
+                                        <td colspan="5">No results found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+  
+                        <!-- Pagination Controls -->
+                        <div class="card-footer">
+                            <button id="prevPage" disabled>Previous</button>
+                            <span id="pageNumber">Page 1</span>
+                            <button id="nextPage">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
 
-
-  <script>
+<script>
     function searchUsers() {
         var input, filter, table, tr, td, i, txtValue, found;
         input = document.getElementById("searchInput");
         filter = input.value.toUpperCase();
         table = document.getElementById("userTable");
         tr = table.getElementsByTagName("tr");
+        var noResultsRow = table.querySelector(".no-results");
         found = false;
 
         // Loop through all table rows except the first one (table head)
         for (i = 1; i < tr.length; i++) {
             td = tr[i].getElementsByTagName("td");
             // Reset found flag for each row
-            found = false;
+            var rowContainsText = false;
             // Loop through all table data cells in the current row
             for (var j = 0; j < td.length; j++) {
                 txtValue = td[j].textContent || td[j].innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    found = true;
+                    rowContainsText = true;
                     break;
                 }
             }
             // Display or hide the row based on search result
-            if (found) {
+            if (rowContainsText) {
                 tr[i].style.display = "";
+                found = true;
             } else {
                 tr[i].style.display = "none";
             }
         }
-        // Show or hide no results message
-        document.getElementById("noResults").style.display = found ? "none" : "block";
+
+        // Handle the display of "No results found" row
+        if (noResultsRow) {
+            noResultsRow.style.display = found ? "none" : "table-row";
+        }
     }
-  </script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const tableBody = document.getElementById("userTableBody");
+        const rows = tableBody.getElementsByTagName("tr");
+        const rowsPerPage = 5; // Adjust this number to control how many rows per page
+        let currentPage = 1;
+    
+        function displayTable(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            Array.from(rows).forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? "" : "none";
+            });
+            document.getElementById("pageNumber").textContent = `Page ${page}`;
+        }
+    
+        function updatePagination() {
+            document.getElementById("prevPage").disabled = currentPage === 1;
+            document.getElementById("nextPage").disabled = currentPage === Math.ceil(rows.length / rowsPerPage);
+        }
+    
+        document.getElementById("prevPage").addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable(currentPage);
+                updatePagination();
+            }
+        });
+    
+        document.getElementById("nextPage").addEventListener("click", function () {
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                displayTable(currentPage);
+                updatePagination();
+            }
+        });
+    
+        // Initial table display
+        displayTable(currentPage);
+        updatePagination();
+    });
+</script>
 {% endblock %}
