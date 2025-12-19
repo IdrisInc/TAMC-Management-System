@@ -35,20 +35,20 @@
               <div class="card-body">
                 <div class="form-group">
                   <label for="amountNumeric">Numeric Amount</label>
-                  <input type="number" class="form-control" id="amountNumeric" placeholder="eg 2000" name="amount_numeric" readonly>
+                  <input type="number" class="form-control modern-input" id="amountNumeric" placeholder="eg 2000" name="amount_numeric" readonly>
                 </div>
                 <div class="form-group">
                   <label for="amountWords">Amount in Words</label>
-                  <input type="text" class="form-control" id="amountWords" placeholder="Two Thousand" name="amount_words" readonly>
+                  <input type="text" class="form-control modern-input" id="amountWords" placeholder="Two Thousand" name="amount_words" readonly>
                 </div>
                 <div class="form-group">
                   <label for="purpose">Purpose</label>
-                  <input type="text" class="form-control" id="purpose" placeholder="Transport Fare" name="purpose" required>
+                  <input type="text" class="form-control modern-input" id="purpose" placeholder="Transport Fare" name="purpose" required>
                 </div>
                 <div class="form-group">
                   <label for="description">Description of Request</label>
                   <div class="table-responsive">
-                    <table class="table table-bordered" id="descriptionTable">
+                    <table class="table table-bordered modern-table" id="descriptionTable">
                       <thead>
                         <tr>
                           <th>Item</th>
@@ -60,25 +60,25 @@
                       </thead>
                       <tbody>
                         <tr>
-                          <td><input type="text" class="form-control" name="item[]" required placeholder="Transport Fare"></td>
-                          <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>
-                          <td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>
-                          <td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>
-                          <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+                          <td><input type="text" class="form-control modern-input" name="item[]" required placeholder="Transport Fare"></td>
+                          <td><input type="number" class="form-control modern-input quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>
+                          <td><input type="number" class="form-control modern-input price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>
+                          <td><input type="text" class="form-control modern-input total_request" name="total_request[]" readonly required></td>
+                          <td><button type="button" class="btn btn-modern-danger" onclick="removeRow(this)">Remove</button></td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
-                  <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
+                  <button type="button" class="btn btn-modern-primary" onclick="addRow()">Add Item</button>
+                  <button type="button" class="btn btn-modern-success" onclick="calculateTotal()">Calculate Total</button>
                 </div>
                 <div class="form-group">
                   <label for="totalRequest">Total Request</label>
-                  <input type="text" class="form-control" id="totalRequest" name="total_request" readonly>
+                  <input type="text" class="form-control modern-input" id="totalRequest" name="total_request" readonly>
                 </div>
               </div>
               <div class="card-footer">
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-modern-primary">Submit</button>
               </div>
             </form>
           </div>
@@ -88,14 +88,122 @@
   </section>
 </div>
 
+<style>
+  /* Modern styling while maintaining structure */
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: none;
+  }
+  
+  .card-header {
+    background-color: #4f46e5;
+    color: white;
+    border-radius: 10px 10px 0 0 !important;
+    padding: 15px 20px;
+  }
+  
+  .card-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+  }
+  
+  .modern-input {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+  }
+  
+  .modern-input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+  
+  .modern-table {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .modern-table thead {
+    background-color: #f8fafc;
+  }
+  
+  .modern-table th {
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 600;
+    color: #475569;
+  }
+  
+  .btn-modern-primary {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-modern-primary:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  }
+  
+  .btn-modern-success {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-modern-success:hover {
+    background-color: #0d9f6e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  }
+  
+  .btn-modern-danger {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: white;
+    border-radius: 8px;
+    padding: 5px 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-modern-danger:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+  
+  .form-group label {
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+  
+  .content-header h1 {
+    color: #1e293b;
+    font-weight: 600;
+  }
+</style>
+
 <script>
+  // Your existing JavaScript remains exactly the same
   function addRow() {
     var newRow = '<tr>' +
-      '<td><input type="text" class="form-control" name="item[]" required></td>' +
-      '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-      '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-      '<td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>' +
-      '<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>' +
+      '<td><input type="text" class="form-control modern-input" name="item[]" required></td>' +
+      '<td><input type="number" class="form-control modern-input quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+      '<td><input type="number" class="form-control modern-input price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+      '<td><input type="text" class="form-control modern-input total_request" name="total_request[]" readonly required></td>' +
+      '<td><button type="button" class="btn btn-modern-danger" onclick="removeRow(this)">Remove</button></td>' +
       '</tr>';
     $('#descriptionTable tbody').append(newRow);
     calculateTotal();

@@ -1,0 +1,243 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+<title>TAMC | Task Assignment Form</title>
+{% endblock title %}
+
+{% block content %}
+<div id="messages" class="mb-4">
+  {% for message in user_messages %}
+    <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Main Content -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Content Header -->
+  <div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+          <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            Equipment Requests
+          </h1>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+          <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+              <li>
+                <div>
+                  <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="text-sm font-medium">Home</span>
+                  </a>
+                </div>
+              </li>
+              <li>
+                <div class="flex items-center">
+                  <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="ml-4 text-sm font-medium text-gray-500">Equipment Request</span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex justify-center">
+      <div class="w-full max-w-4xl">
+        <!-- Card -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+          <!-- Card Header -->
+          <div class="px-6 py-5 border-b border-gray-200 bg-blue-600">
+            <h3 class="text-lg font-medium leading-6 text-white">
+              <i class="fas fa-tasks mr-2"></i> Assign Your Task Here
+            </h3>
+          </div>
+          
+          <!-- Form -->
+          <form id="updateForm" method="post" enctype="multipart/form-data" class="px-6 py-5">
+            {% csrf_token %}
+            
+            <!-- Assignment Information -->
+            <div class="space-y-6">
+              <div>
+                <label for="id_assignment" class="block text-sm font-medium text-gray-700">Assignment</label>
+                <input type="text" id="id_assignment" name="assignment" placeholder="News Coverage" required
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              
+              <div>
+                <label for="id_category" class="block text-sm font-medium text-gray-700">Category</label>
+                <select id="id_category" name="category" required
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  <option value="" disabled selected>Select Category</option>
+                  {% for choice in category_choices %}
+                  <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              
+              <div>
+                <label for="id_date" class="block text-sm font-medium text-gray-700">Submission Date</label>
+                <input type="date" id="id_date" name="submission_date" required
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              
+              <div>
+                <label for="id_location" class="block text-sm font-medium text-gray-700">Location</label>
+                <input type="text" id="id_location" name="location" placeholder="Posta" required
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+              </div>
+              
+              <!-- Equipment Fields -->
+              <div id="equipment-fields" class="space-y-4">
+                {% if available_equipments %}
+                  {% for equipment_field in equipment_fields %}
+                  <div class="equipment-field p-4 border border-gray-200 rounded-md">
+                    <div class="mb-4">
+                      <label class="block text-sm font-medium text-gray-700">Equipment Required</label>
+                      <select class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm equipment-select" 
+                              name="equipment[]" required>
+                        <option value="" disabled selected>Select Equipment</option>
+                        {% for equipment in available_equipments %}
+                        <option value="{{ equipment.id }}" {% if equipment.id == equipment_field.equipment.id %}selected{% endif %}>{{ equipment.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700">Quantity</label>
+                      <input type="number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                             name="quantity[]" min="1" value="{{ equipment_field.quantity }}" required>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <p class="text-sm text-red-600">No equipment available to select.</p>
+                {% endif %}
+              </div>
+              
+              <!-- Message for all equipment selected -->
+              <p id="no-more-equipment-message" class="text-sm text-red-600 hidden">
+                All equipment has been taken. Try again later.
+              </p>
+              
+              <!-- Person(s) Required Field -->
+              <div>
+                <label for="id_persons_assigned" class="block text-sm font-medium text-gray-700">Person(s) Required</label>
+                <select id="id_persons_assigned" name="persons_assigned[]" multiple required
+                  class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                  {% for person in all_persons %}
+                  <option value="{{ person.id }}">{{ person.get_full_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              
+              <!-- Buttons -->
+              <div class="flex space-x-3">
+                <button type="button" id="add-equipment-field" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        {% if not available_equipments %}disabled{% endif %}>
+                  Add Equipment
+                </button>
+                <button type="submit" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        {% if not available_equipments %}disabled{% endif %}>
+                  Submit Task Assignment
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript to set the min date and manage equipment fields -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var categorySelect = document.getElementById("id_category");
+  var addEquipmentButton = document.getElementById("add-equipment-field");
+  var equipmentFields = document.getElementById("equipment-fields");
+  var submissionDateInput = document.getElementById("id_date");
+  var noMoreEquipmentMessage = document.getElementById("no-more-equipment-message");
+
+  // Set the minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  submissionDateInput.setAttribute('min', today);
+
+  if (addEquipmentButton && equipmentFields) {
+    // Function to disable equipment that's already selected
+    function updateEquipmentSelects() {
+      var allEquipmentSelects = document.querySelectorAll(".equipment-select");
+      var selectedValues = Array.from(allEquipmentSelects).map(select => select.value).filter(value => value);
+
+      allEquipmentSelects.forEach(function(select) {
+        select.querySelectorAll("option").forEach(function(option) {
+          option.disabled = selectedValues.includes(option.value) && option.value !== select.value;
+        });
+      });
+
+      // Check if all equipment options have been selected
+      if (selectedValues.length >= {{ available_equipments|length }}) {
+        noMoreEquipmentMessage.classList.remove('hidden');
+        addEquipmentButton.disabled = true;
+        addEquipmentButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        addEquipmentButton.classList.add('bg-blue-400', 'cursor-not-allowed');
+      } else {
+        noMoreEquipmentMessage.classList.add('hidden');
+        addEquipmentButton.disabled = false;
+        addEquipmentButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        addEquipmentButton.classList.remove('bg-blue-400', 'cursor-not-allowed');
+      }
+    }
+
+    // Function to add new equipment field
+    addEquipmentButton.addEventListener("click", function() {
+      var newEquipmentField = document.createElement("div");
+      newEquipmentField.className = "equipment-field p-4 border border-gray-200 rounded-md";
+
+      newEquipmentField.innerHTML = `
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Equipment Required</label>
+          <select class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm equipment-select" 
+                  name="equipment[]" required>
+            <option value="" disabled selected>Select Equipment</option>
+            {% for equipment in available_equipments %}
+            <option value="{{ equipment.id }}">{{ equipment.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Quantity</label>
+          <input type="number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                 name="quantity[]" min="1" value="1" required>
+        </div>
+      `;
+
+      equipmentFields.appendChild(newEquipmentField);
+
+      // Attach event listener to the new field's equipment-select
+      var newSelect = newEquipmentField.querySelector(".equipment-select");
+      newSelect.addEventListener("change", function() {
+        updateEquipmentSelects();
+      });
+
+      // Immediately update to avoid duplicates
+      updateEquipmentSelects();
+    });
+
+    // Initial call to disable options based on initial selections
+    updateEquipmentSelects();
+  }
+});
+</script>
+{% endblock %}

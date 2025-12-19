@@ -1,0 +1,61 @@
+<div class="bg-white shadow rounded-lg overflow-hidden {% if is_approval %}border-l-4 border-yellow-400{% endif %}">
+  <div class="px-6 py-4 border-b border-gray-200 {% if is_approval %}bg-yellow-50{% else %}bg-gray-50{% endif %}">
+    <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
+  </div>
+  
+  {% if requests %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200" id="{{ table_id }}">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date of Request</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+            {% if is_approval or table_id == "assigned-requests-table" %}
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            {% endif %}
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for task_assignment in requests %}
+          <tr class="request-row hover:bg-gray-50" 
+              data-id="{{ task_assignment.id }}" 
+              data-requested-by="{{ task_assignment.requested_by.get_full_name }}"
+              data-category="{{ task_assignment.category }}" 
+              data-persons-assigned="{% for person in task_assignment.persons_assigned.all %}{{ person.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}"  
+              data-submission-date="{{ task_assignment.submission_date }}"
+              data-equipment="{% for detail in task_assignment.assignmentequipment_set.all %}{{ detail.equipment.name }} (Quantity: {{ detail.quantity }}){% if not forloop.last %}, {% endif %}{% endfor %}"
+              data-approved-by="{% if task_assignment.production_approved %}<p>{{ task_assignment.production_approver.get_full_name }} (Production Manager)</p>{% endif %}{% if task_assignment.technical_manager_approved %}<p>{{ task_assignment.technical_manager_approver.get_full_name }} (Technical Manager)</p>{% endif %}{% if task_assignment.treasurer_approved %}<p>{{ task_assignment.treasurer_approver.get_full_name }} (Treasurer)</p>{% endif %}{% if task_assignment.assistant_treasurer_approved %}<p>{{ task_assignment.assistant_treasurer_approver.get_full_name }} (Assistant Treasurer)</p>{% endif %}{% if task_assignment.technical_approved %}<p>{{ task_assignment.technical_approver.get_full_name }} (Technical)</p>{% endif %}"
+              data-return-date="{{ task_assignment.return_date|date:'Y-m-d H:i' }}"
+              data-return-confirmed-by="{% if task_assignment.status == 'Returned' %}{{ task_assignment.return_confirmed_by.get_full_name }}{% endif %}">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ task_assignment.assignment }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ task_assignment.date|default:task_assignment.submission_date }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ task_assignment.location }}</td>
+            {% if is_approval or table_id == "assigned-requests-table" %}
+              <td class="px-6 py-4 whitespace-nowrap text-sm {% if task_assignment.status == 'Pending' %}text-yellow-600{% elif task_assignment.status == 'Approved' %}text-green-600{% elif task_assignment.status == 'Rejected' %}text-red-600{% else %}text-blue-600{% endif %}">
+                {{ task_assignment.status }}
+              </td>
+            {% endif %}
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 view-more" 
+                onclick="showDetails({{ task_assignment.id }}, '{{ task_assignment.status }}', 
+                {% if table_id == 'user-requests-table' %}true{% else %}false{% endif %}, 
+                {% if table_id == 'assigned-requests-table' %}true{% else %}false{% endif %}, 
+                {% if is_approval %}true{% else %}false{% endif %}, 
+                '{{ user_role }}')">
+                View More
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="pagination-controls px-6 py-4" data-table="{{ table_id }}"></div>
+    </div>
+  {% else %}
+    <div class="px-6 py-4 text-center text-gray-500">
+      {{ empty_message }}
+    </div>
+  {% endif %}
+</div>

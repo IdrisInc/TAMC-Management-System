@@ -1,653 +1,516 @@
 {% extends 'base/base.html' %}
-{% block title %}
-    <title> TAMC | Vacation Request Form </title>
-{% endblock title %}
-{% block content %}
-<!DOCTYPE html>
-<html lang="en">
 
-<body>
-    <div class="content-wrapper">
-        <section class="content-header">
-          <div class="container-fluid">
-            <div class="row mb-2">
-              <div class="col-sm-6">
-                <h1>Vacation Request</h1>
-              </div>
-              <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                  <li class="breadcrumb-item"><a href="#">Home</a></li>
-                  <li class="breadcrumb-item active">vacation Form</li>
+{% block title %}
+    <title>TAMC | Vacation Request Form</title>
+{% endblock title %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <!-- Header with Back Button -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Vacation Request</h1>
+            <nav class="flex mt-2" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="#" class="text-sm text-gray-700 hover:text-blue-600">Home</a>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <span class="mx-1 text-gray-500">/</span>
+                            <span class="ml-1 text-sm font-medium text-gray-500">Vacation Form</span>
+                        </div>
+                    </li>
                 </ol>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-    <!-- Overlay for description -->
-    <div id="overlay">
-        <div id="overlay-content">
-            <h2 id="important-note">IMPORTANT!</h2>
-          
-            <ul>
-                {% for desc in overlay.descriptions.all %}
-                    <li>{{ desc.description }}</li>
-                {% endfor %}
-            </ul>
-          
-            
-            <button id="close-overlay" class = 'btn btn-primary'>Close</button>
+            </nav>
         </div>
+        <a href="{% url 'vacation:vacation' %}" class="flex items-center text-blue-600 hover:text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+            </svg>
+            Back
+        </a>
     </div>
 
-    <!-- Multi-Step Form -->
-    {% comment %} <h1>Holiday Form</h1> {% endcomment %}
-    <section class="content">
-        <div class="container-fluid">
-          <div class="row justify-content-center">
-            <div class="col-md-9">
-              <div class="card card-primary">
-                <div class="card-header">
-                  <h3 class="card-title">Vacation Form</h3>
+    <!-- Form Container -->
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Multi-step Form Header -->
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-800">Vacation Request Form</h3>
+            
+            <!-- Step Indicator -->
+            <div class="mt-6 relative">
+                <div class="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
+                <div class="flex justify-between relative z-10">
+                    <div class="flex flex-col items-center" data-step="1">
+                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center mb-2">
+                            <span>1</span>
+                        </div>
+                        <span class="text-sm font-medium text-blue-600">Basic Info</span>
+                    </div>
+                    <div class="flex flex-col items-center" data-step="2">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center mb-2">
+                            <span>2</span>
+                        </div>
+                        <span class="text-sm font-medium text-gray-600">Dates</span>
+                    </div>
+                    <div class="flex flex-col items-center" data-step="3">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center mb-2">
+                            <span>3</span>
+                        </div>
+                        <span class="text-sm font-medium text-gray-600">Details</span>
+                    </div>
                 </div>
-                <form id="holiday-form" method="post">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <!-- Step 1: Basic Information -->
-                        <div class="form-step active" id="step-1">
-                            <h2>Step 1: Basic Information</h2>
-                            <div id="step-1-error" class="error"></div>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <form id="holiday-form" method="post" novalidate class="p-6">
+            {% csrf_token %}
+            
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" id="step-1">
+                <h4 class="flex items-center text-lg font-medium text-gray-800 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                    Basic Information
+                </h4>
                 
-                            <div class="form-group">
-                                <label for="address">Address:</label>
-                                <textarea id="address" name="address" class="form-control" required>{{ holiday.address|default:'' }}</textarea>
-                            </div>
+                <div id="step-1-error" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"></div>
                 
-                            <div class="form-group">
-                                <label for="working_holiday">Select a Holiday Type:</label>
-                                <select id="working_holiday" name="working_holiday" class="form-control" required>
-                                    <option value="">Select...</option>
-                                    {% for code, name in holiday_type_choices %}
-                                        <option value="{{ code }}" {% if holiday and holiday.working_holiday == code %}selected{% endif %}>{{ name }}</option>
-                                    {% endfor %}
-                                    <option value="other">Other (Please specify)</option>
-                                </select>
-                            </div>
+                <div class="mb-4">
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+                        Address During Vacation <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="address" name="address" rows="3" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Where will you be staying during your vacation?" required>{{ holiday.address|default:'' }}</textarea>
+                    <p class="mt-1 text-sm text-gray-500">Please provide your complete vacation address</p>
+                </div>
                 
-                            <div id="custom_holiday_field" class="form-group" style="display: {% if holiday and holiday.working_holiday == 'other' %}block{% else %}none{% endif %};">
-                                <label for="custom_holiday">Custom Holiday Type:</label>
-                                <input type="text" class="form-control" id="custom_holiday" name="custom_holiday" placeholder="Enter your custom holiday type" value="{{ holiday.custom_holiday|default:'' }}">
-                            </div>
+                <div class="mb-4">
+                    <label for="working_holiday" class="block text-sm font-medium text-gray-700 mb-1">
+                        Vacation Type <span class="text-red-500">*</span>
+                    </label>
+                    <select id="working_holiday" name="working_holiday" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Select vacation type...</option>
+                        {% for code, name in holiday_type_choices %}
+                            <option value="{{ code }}" {% if holiday and holiday.working_holiday == code %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                        <option value="other">Other (Please specify)</option>
+                    </select>
+                </div>
                 
-                            <button type="button" class="btn btn-primary" id="next-step">Next Step</button>
+                <div id="custom_holiday_field" class="mb-4 {% if not holiday or holiday.working_holiday != 'other' %}hidden{% endif %}">
+                    <label for="custom_holiday" class="block text-sm font-medium text-gray-700 mb-1">
+                        Specify Vacation Type <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="custom_holiday" name="custom_holiday" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter your vacation type" value="{{ holiday.custom_holiday|default:'' }}">
+                </div>
+            </div>
+            
+            <!-- Step 2: Dates -->
+            <div class="form-step hidden" id="step-2">
+                <h4 class="flex items-center text-lg font-medium text-gray-800 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    Vacation Dates
+                </h4>
+                
+                <div id="step-2-error" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">
+                            Start Date <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="start_date" name="start_date" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required value="{{ holiday.start_date|default:'' }}">
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">
+                            End Date <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="end_date" name="end_date" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            required value="{{ holiday.end_date|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="my_last_holiday_start" class="block text-sm font-medium text-gray-700 mb-1">
+                            Last Vacation Start
+                        </label>
+                        <input type="date" id="my_last_holiday_start" name="my_last_holiday_start" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            value="{{ holiday.my_last_holiday_start|default_if_none:'' }}">
+                    </div>
+                    <div>
+                        <label for="my_last_holiday_end" class="block text-sm font-medium text-gray-700 mb-1">
+                            Last Vacation End
+                        </label>
+                        <input type="date" id="my_last_holiday_end" name="my_last_holiday_end" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            value="{{ holiday.my_last_holiday_end|default_if_none:'' }}">
+                    </div>
+                </div>
+                
+                <div class="p-4 mb-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-medium">Total Vacation Days:</span> 
+                            <span id="duration-display" class="font-bold text-blue-600">0</span> days
                         </div>
+                        <span id="working-days-display" class="px-2 py-1 text-xs bg-white rounded-full shadow-sm"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Additional Information -->
+            <div class="form-step hidden" id="step-3">
+                <h4 class="flex items-center text-lg font-medium text-gray-800 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                    </svg>
+                    Additional Information
+                </h4>
                 
-                        <!-- Step 2: Dates -->
-                        <div class="form-step" id="step-2">
-                            <h2>Step 2: Dates</h2>
-                            <div id="step-2-error" class="error"></div>
+                <div id="step-3-error" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"></div>
                 
-                            <div class="form-group">
-                                <label for="start_date">Start Date:</label>
-                                <input type="date" class="form-control" id="start_date" name="start_date" required value="{{ holiday.start_date|default:'' }}">
-                            </div>
+                <div class="mb-4">
+                    <label for="current_address" class="block text-sm font-medium text-gray-700 mb-1">
+                        Current Address <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="current_address" name="current_address" rows="2" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Your current residential address" required>{{ holiday.current_address|default:'' }}</textarea>
+                </div>
                 
-                            <div class="form-group">
-                                <label for="end_date">End Date:</label>
-                                <input type="date" class="form-control" id="end_date" name="end_date" required value="{{ holiday.end_date|default:'' }}">
-                            </div>
+                <div class="mb-4">
+                    <label for="delegatee" class="block text-sm font-medium text-gray-700 mb-1">
+                        Work Delegation <span class="text-red-500">*</span>
+                    </label>
+                    <select id="delegatee" name="delegatee" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Select colleague to delegate to...</option>
+                        {% for user in users_in_same_group %}
+                            <option value="{{ user.id }}" {% if holiday and holiday.delegatee_id == user.id %}selected{% endif %}>
+                                {{ user.get_full_name }} ({{ user.username }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">Select who will handle your responsibilities while you're away</p>
+                </div>
                 
-                            {% comment %} {% if not has_approved_holiday %} {% endcomment %}
-                            <div class="form-group">
-                                <label for="my_last_holiday_start">My Last Holiday Start:</label>
-                                <input type="date" class="form-control" name="my_last_holiday_start" id="my_last_holiday_start" value="{{ holiday.my_last_holiday_start|default_if_none:'' }}">
-                            </div>
-                
-                            <div class="form-group">
-                                <label for="my_last_holiday_end">My Last Holiday End:</label>
-                                <input type="date" class="form-control" name="my_last_holiday_end" id="my_last_holiday_end" value="{{ holiday.my_last_holiday_end|default_if_none:'' }}">
-                            </div>
-                            {% comment %} {% endif %} {% endcomment %}
-                
-                            <button type="button" class="btn btn-secondary" id="prev-step">Previous Step</button>
-                            <button type="button" class="btn btn-primary" id="next-step-2">Next Step</button>
-                        </div>
-                
-                        <!-- Step 3: Additional Information -->
-                        <div class="form-step" id="step-3">
-                            <h2>Step 3: Additional Information</h2>
-                            <div id="step-3-error" class="error"></div>
-                
-                            <div class="form-group">
-                                <label for="current_address">Current Address:</label>
-                                <textarea id="current_address" class="form-control" name="current_address" required>{{ holiday.current_address|default:'' }}</textarea>
-                            </div>
-                
-                            <div class="form-group">
-                                <label for="delegatee">Select Delegatee:</label>
-                                <select id="delegatee" name="delegatee" class="form-control" required>
-                                    <option value="">Select...</option>
-                                    {% for user in users_in_same_group %}
-                                        <option value="{{ user.id }}" {% if holiday and holiday.delegatee_id == user.id %}selected{% endif %}>{{ user.get_full_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                
-                            {% comment %} {% if is_presenter_or_production %} {% endcomment %}
-                            {% comment %} <div class="form-group">
-                                <label for="programs">Program Names:</label>
-                                <div id="programs-container">
-                                    <!-- Initial input field for program name -->
-                                    <div class="program-field">
-                                        <input type="text" class="form-control program-name" name="programs[]" placeholder="Enter program name" required>
-                                        <!-- Only show the number input if the user is Production or Presenter -->
-                                        {% if is_presenter_or_production %}
-                                        <input type="number" class="form-control program-number" name="program_numbers[]" placeholder="Enter program number" >
-                                        {% endif %}
-                                        <button type="button" class="btn btn-danger remove-program-field">Remove</button>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-secondary" id="add-program-field">Add Another Program</button>
-                            </div>
-                            
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const programsContainer = document.getElementById('programs-container');
-                                    const addProgramButton = document.getElementById('add-program-field');
-                                    const isPresenterOrProduction = {{ is_presenter_or_production|yesno:"true,false" }};  // Pass boolean from backend
-                            
-                                    // Function to add a new program field
-                                    function addProgramField() {
-                                        const programField = document.createElement('div');
-                                        programField.className = 'program-field';
-                            
-                                        // Input for program name
-                                        const programNameInput = document.createElement('input');
-                                        programNameInput.type = 'text';
-                                        programNameInput.className = 'form-control program-name';
-                                        programNameInput.name = 'programs[]';
-                                        programNameInput.placeholder = 'Enter program name';
-                                        programNameInput.required = true;
-                                        programField.appendChild(programNameInput);
-                            
-                                        // Conditionally add input for program number if the user is a presenter or production
-                                        if (isPresenterOrProduction) {
-                                            const programNumberInput = document.createElement('input');
-                                            programNumberInput.type = 'number';
-                                            programNumberInput.className = 'form-control program-number';
-                                            programNumberInput.name = 'program_numbers[]';
-                                            programNumberInput.placeholder = 'Enter program number';
-                                            programNumberInput.required = true;
-                                            programField.appendChild(programNumberInput);
-                                        }
-                            
-                                        // Add a "Remove" button to the field
-                                        const removeButton = document.createElement('button');
-                                        removeButton.type = 'button';
-                                        removeButton.className = 'btn btn-danger remove-program-field';
-                                        removeButton.textContent = 'Remove';
-                                        programField.appendChild(removeButton);
-                            
-                                        // Append the new program field to the container
-                                        programsContainer.appendChild(programField);
-                            
-                                        // Attach event listener to the "Remove" button
-                                        removeButton.addEventListener('click', function () {
-                                            programField.remove();
-                                        });
-                                    }
-                            
-                                    // Add event listener to the "Add Another Program" button
-                                    addProgramButton.addEventListener('click', addProgramField);
-                            
-                                    // Attach remove event listener for the initial field
-                                    const initialRemoveButton = programsContainer.querySelector('.remove-program-field');
-                                    initialRemoveButton.addEventListener('click', function () {
-                                        initialRemoveButton.parentElement.remove();
-                                    });
-                                });
-                            </script>
-                             {% endcomment %}
-                        {% comment %} {% endif %} {% endcomment %}
-                        
-                        <div class="form-group">
-                            <label for="my_tasks">My Tasks:</label>
-                            <div id="my-tasks-container">
-                                <!-- Initial input field for My Tasks -->
-                                <div class="my-task-field">
-                                    <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
-                                    <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-secondary" id="add-my-task-field">Add Another Task</button>
-                        </div>
-                        
-                        
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const addMyTaskFieldButton = document.getElementById('add-my-task-field');
-                                const myTasksContainer = document.getElementById('my-tasks-container');
-                            
-                                // Event listener to add new My Task field
-                                addMyTaskFieldButton.addEventListener('click', function() {
-                                    const newField = document.createElement('div');
-                                    newField.classList.add('my-task-field');
-                                    newField.innerHTML = `
-                                        <input type="text" class="form-control my-task" name="my_tasks[]" placeholder="Enter a task" required>
-                                        <button type="button" class="btn btn-danger remove-my-task-field">Remove</button>
-                                    `;
-                                    myTasksContainer.appendChild(newField);
-                            
-                                    // Attach event listener for remove button
-                                    newField.querySelector('.remove-my-task-field').addEventListener('click', function() {
-                                        myTasksContainer.removeChild(newField);
-                                    });
-                                });
-                            
-                                // Event listener to remove existing My Task field
-                                myTasksContainer.querySelectorAll('.remove-my-task-field').forEach(function(button) {
-                                    button.addEventListener('click', function() {
-                                        const fieldToRemove = button.parentElement;
-                                        myTasksContainer.removeChild(fieldToRemove);
-                                    });
-                                });
-                            });
-                            
-                        </script>                            
-                            <button type="button" class="btn btn-secondary" id="prev-step-2">Previous Step</button>
-                            <button type="submit" class="btn btn-success">Submit</button>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tasks to Delegate <span class="text-red-500">*</span>
+                    </label>
+                    <p class="text-sm text-gray-500 mb-2">List all tasks that need to be handled during your absence</p>
+                    <div id="my-tasks-container">
+                        <div class="flex mb-2">
+                            <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 my-task" 
+                                name="my_tasks[]" placeholder="Enter a task" required>
+                            <button type="button" class="px-3 py-2 bg-red-500 text-white rounded-r-md hover:bg-red-600 remove-my-task-field">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                </form>
-                
-</section>
+                    <button type="button" id="add-my-task-field" class="mt-2 inline-flex items-center px-3 py-1 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Add Another Task
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Form Navigation -->
+            <div class="flex justify-between pt-6 border-t border-gray-200">
+                <button type="button" id="prev-step" class="hidden px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 inline" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Previous
+                </button>
+                <button type="button" id="next-step" class="ml-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 inline" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <button type="submit" id="submit-form" class="hidden ml-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 inline" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                    Submit Request
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var steps = document.querySelectorAll('.form-step');
-            var currentStep = 0;
-            var nextStepButtons = document.querySelectorAll('#next-step, #next-step-2');
-            var prevStepButtons = document.querySelectorAll('#prev-step, #prev-step-2');
-            var form = document.getElementById('holiday-form');
-            var holidayTypeSelect = document.getElementById('working_holiday');
-            var customHolidayField = document.getElementById('custom_holiday_field');
-            var overlay = document.getElementById('overlay');
-            var overlayContent = document.getElementById('overlay-content');
-            var closeButton = document.getElementById('close-overlay');
-            var startDateInput = document.getElementById('start_date');
-            var endDateInput = document.getElementById('end_date');
-            var lastHolidayStartInput = document.getElementById('my_last_holiday_start');
-            var lastHolidayEndInput = document.getElementById('my_last_holiday_end');
-
-            function showStep(step) {
-                steps.forEach(function(s, index) {
-                    s.classList.toggle('active', index === step);
-                    s.classList.toggle('disabled', index < step);
-                });
-                currentStep = step;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const form = document.getElementById('holiday-form');
+    const steps = document.querySelectorAll('.form-step');
+    const stepIndicators = document.querySelectorAll('[data-step]');
+    const nextBtn = document.getElementById('next-step');
+    const prevBtn = document.getElementById('prev-step');
+    const submitBtn = document.getElementById('submit-form');
+    let currentStep = 0;
+    
+    // Initialize the form
+    function initializeForm() {
+        showStep(0);
+    }
+    
+    // Holiday type toggle
+    function initHolidayTypeToggle() {
+        const holidayTypeSelect = document.getElementById('working_holiday');
+        const customHolidayField = document.getElementById('custom_holiday_field');
+        
+        holidayTypeSelect.addEventListener('change', function() {
+            if (this.value === 'other') {
+                customHolidayField.classList.remove('hidden');
+            } else {
+                customHolidayField.classList.add('hidden');
+                document.getElementById('custom_holiday').value = '';
             }
-
-            function validateStep(step) {
-                var stepElement = document.getElementById('step-' + (step + 1));
-                var inputs = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
-                var valid = true;
-
-                inputs.forEach(function(input) {
-                    if (!input.value.trim()) {
-                        valid = false;
-                    }
-                });
-
-                if (step === 1) { // Step 2 validation
-                    var startDate = new Date(startDateInput.value);
-                    var endDate = new Date(endDateInput.value);
-                    if (startDate && endDate && endDate < startDate) {
-                        valid = false;
-                        document.getElementById('step-2-error').textContent = 'End Date cannot be earlier than Start Date.';
-                        setTimeout(function() {
-                            document.getElementById('step-2-error').textContent = '';
-                        }, 5000);
-                    }
-                }
-
-                if (step === 2) { // Step 3 validation
-                    var lastHolidayStart = new Date(lastHolidayStartInput.value);
-                    var lastHolidayEnd = new Date(lastHolidayEndInput.value);
-                    var today = new Date();
-                    today.setHours(0, 0, 0, 0); // Reset time part for comparison
-
-                    if (lastHolidayStart && lastHolidayStart >= today) {
-                        valid = false;
-                        document.getElementById('step-3-error').textContent = 'My Last Holiday Start Date cannot be today or in the future.';
-                        setTimeout(function() {
-                            document.getElementById('step-3-error').textContent = '';
-                        }, 5000);
-                    }
-
-                    if (lastHolidayEnd && lastHolidayEnd >= today) {
-                        valid = false;
-                        document.getElementById('step-3-error').textContent = 'My Last Holiday End Date cannot be today or in the future.';
-                        setTimeout(function() {
-                            document.getElementById('step-3-error').textContent = '';
-                        }, 5000);
-                    }
-
-                    if (lastHolidayStart && lastHolidayEnd && lastHolidayEnd < lastHolidayStart) {
-                        valid = false;
-                        document.getElementById('step-3-error').textContent = 'My Last Holiday End Date cannot be earlier than My Last Holiday Start Date.';
-                        setTimeout(function() {
-                            document.getElementById('step-3-error').textContent = '';
-                        }, 5000);
-                    }
-                }
-
-                return valid;
-            }
-
-            function setupDateValidation() {
-                var today = new Date().toISOString().split('T')[0];
-                startDateInput.setAttribute('min', today);
-
-                startDateInput.addEventListener('change', function() {
-                    validateDates();
-                    // Update end date minimum date
-                    var startDate = startDateInput.value;
-                    endDateInput.setAttribute('min', startDate);
-                    validateDates();
-                });
-
-                endDateInput.addEventListener('change', function() {
-                    validateDates();
-                });
-
-                lastHolidayStartInput.addEventListener('change', function() {
-                    validateLastHolidayDates();
-                });
-
-                lastHolidayEndInput.addEventListener('change', function() {
-                    validateLastHolidayDates();
-                });
-            }
-
-            function validateDates() {
-                var startDate = new Date(startDateInput.value);
-                var endDate = new Date(endDateInput.value);
-                var errorElement = document.getElementById('step-2-error');
-
-                if (startDate && endDate && endDate < startDate) {
-                    errorElement.textContent = 'End Date cannot be earlier than Start Date.';
-                    setTimeout(function() {
-                        errorElement.textContent = '';
-                    }, 5000);
-                } else {
-                    errorElement.textContent = '';
-                }
-            }
-
-            function validateLastHolidayDates() {
-                var lastHolidayStart = new Date(lastHolidayStartInput.value);
-                var lastHolidayEnd = new Date(lastHolidayEndInput.value);
-                var today = new Date();
-                today.setHours(0, 0, 0, 0); // Reset time part for comparison
-                var errorElement = document.getElementById('step-3-error');
-
-                if (lastHolidayStart && lastHolidayStart >= today) {
-                    errorElement.textContent = 'My Last Holiday Start Date cannot be today or in the future.';
-                } else if (lastHolidayEnd && lastHolidayEnd >= today) {
-                    errorElement.textContent = 'My Last Holiday End Date cannot be today or in the future.';
-                } else if (lastHolidayStart && lastHolidayEnd && lastHolidayEnd < lastHolidayStart) {
-                    errorElement.textContent = 'My Last Holiday End Date cannot be earlier than My Last Holiday Start Date.';
-                } else {
-                    errorElement.textContent = '';
-                }
-
-                setTimeout(function() {
-                    errorElement.textContent = '';
-                }, 5000);
-            }
-
-            nextStepButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    if (validateStep(currentStep)) {
-                        var nextStep = currentStep + 1;
-                        if (nextStep < steps.length) {
-                            showStep(nextStep);
-                        }
-                    } else {
-                        var errorElement = document.getElementById('step-' + (currentStep + 1) + '-error');
-                        errorElement.textContent = 'Please fill in all required fields correctly before proceeding.';
-
-                        // Hide the error message after 5 seconds
-                        setTimeout(function() {
-                            errorElement.textContent = '';
-                        }, 5000);
-                    }
-                });
-            });
-
-            prevStepButtons.forEach(function(button) {
-                button.addEventListener('click', function() {
-                    var prevStep = currentStep - 1;
-                    if (prevStep >= 0) {
-                        showStep(prevStep);
-                    }
-                });
-            });
-
-            holidayTypeSelect.addEventListener('change', function() {
-                customHolidayField.style.display = this.value === 'other' ? 'block' : 'none';
-            });
-
-            closeButton.addEventListener('click', function() {
-                overlay.style.display = 'none';
-            });
-
-            // Show the overlay based on a query parameter
-           
         });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const overlay = document.getElementById('overlay');
-            const closeOverlayButton = document.getElementById('close-overlay');
-            const holidayForm = document.getElementById('holiday-form');
+    }
+    
+    // Date validation and duration calculation
+    function initDateValidation() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        const durationDisplay = document.getElementById('duration-display');
         
-            // Show the overlay when the page loads
-            overlay.style.display = 'flex';
+        // Calculate duration when dates change
+        [startDateInput, endDateInput].forEach(input => {
+            input.addEventListener('change', calculateDuration);
+        });
         
-            // Add an event listener to the close button
-            closeOverlayButton.addEventListener('click', function () {
-                // Hide the overlay
-                overlay.style.display = 'none';
+        // Also calculate duration if dates are pre-filled
+        if (startDateInput.value && endDateInput.value) {
+            setTimeout(calculateDuration, 100);
+        }
+    }
+    
+    // Calculate vacation duration
+    function calculateDuration() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        const durationDisplay = document.getElementById('duration-display');
+        const workingDaysDisplay = document.getElementById('working-days-display');
+        
+        if (startDateInput.value && endDateInput.value) {
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+            
+            // Calculate total days (inclusive)
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            durationDisplay.textContent = diffDays;
+            
+            // Calculate working days (simplified)
+            workingDaysDisplay.textContent = diffDays + ' days';
+        } else {
+            durationDisplay.textContent = '0';
+            workingDaysDisplay.textContent = '';
+        }
+    }
+    
+    // Dynamic task fields
+    function initDynamicFields() {
+        document.getElementById('add-my-task-field').addEventListener('click', function() {
+            const container = document.getElementById('my-tasks-container');
+            const newField = document.createElement('div');
+            newField.className = 'flex mb-2';
+            newField.innerHTML = `
+                <input type="text" class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 my-task" 
+                    name="my_tasks[]" placeholder="Enter a task" required>
+                <button type="button" class="px-3 py-2 bg-red-500 text-white rounded-r-md hover:bg-red-600 remove-my-task-field">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            `;
+            container.appendChild(newField);
+            
+            // Add event listener to new remove button
+            newField.querySelector('.remove-my-task-field').addEventListener('click', function() {
+                newField.remove();
+            });
+        });
+        
+        // Initialize any existing remove buttons
+        document.querySelectorAll('.remove-my-task-field').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+    }
+    
+    // Step navigation
+    function showStep(stepIndex) {
+        // Hide all steps
+        steps.forEach(step => {
+            step.classList.add('hidden');
+            step.classList.remove('active');
+        });
+        
+        // Show current step
+        steps[stepIndex].classList.remove('hidden');
+        steps[stepIndex].classList.add('active');
+        
+        // Update step indicators
+        stepIndicators.forEach((indicator, index) => {
+            const number = indicator.querySelector('div');
+            const label = indicator.querySelector('span');
+            
+            if (index === stepIndex) {
+                number.classList.remove('bg-gray-200', 'text-gray-600');
+                number.classList.add('bg-blue-600', 'text-white');
+                label.classList.remove('text-gray-600');
+                label.classList.add('text-blue-600');
+            } else if (index < stepIndex) {
+                number.classList.remove('bg-gray-200', 'text-gray-600');
+                number.classList.add('bg-blue-100', 'text-blue-600');
+                label.classList.remove('text-gray-600');
+                label.classList.add('text-blue-600');
+            } else {
+                number.classList.remove('bg-blue-600', 'text-white', 'bg-blue-100', 'text-blue-600');
+                number.classList.add('bg-gray-200', 'text-gray-600');
+                label.classList.remove('text-blue-600');
+                label.classList.add('text-gray-600');
+            }
+        });
+        
+        // Update button visibility
+        if (stepIndex === 0) {
+            prevBtn.classList.add('hidden');
+        } else {
+            prevBtn.classList.remove('hidden');
+        }
+        
+        if (stepIndex === steps.length - 1) {
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            nextBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+        
+        currentStep = stepIndex;
+        
+        // Scroll to top of form
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Form validation
+    function validateStep(stepIndex) {
+        const currentStep = steps[stepIndex];
+        const inputs = currentStep.querySelectorAll('input[required], select[required], textarea[required]');
+        let isValid = true;
+        
+        // Reset error display
+        const errorElement = document.getElementById(`step-${stepIndex + 1}-error`);
+        errorElement.classList.add('hidden');
+        errorElement.innerHTML = '';
+        
+        // Validate required fields
+        inputs.forEach(input => {
+            if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('border-red-500');
                 
-                // Show the form after the overlay is closed
-                holidayForm.style.display = 'block';
-            });
+                // Add error message for empty fields
+                const fieldName = input.labels ? input.labels[0].textContent.replace('*', '').trim() : 'This field';
+                if (!errorElement.innerHTML.includes(`${fieldName} is required`)) {
+                    if (errorElement.innerHTML) errorElement.innerHTML += '<br>';
+                    errorElement.innerHTML += `${fieldName} is required`;
+                }
+            } else {
+                input.classList.remove('border-red-500');
+            }
         });
         
-    </script>
-{% endblock content %}
-    {% block styles %}
-    <style>
-        {% comment %} body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        } {% endcomment %}
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        form {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .form-step {
-            margin-bottom: 20px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            pointer-events: none; /* Disable interactions */
-        }
-
-        .form-step.active {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto; /* Enable interactions */
-        }
-
-        .form-step.disabled {
-            opacity: 0.5;
-            pointer-events: none; /* Disable interactions */
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="date"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            height: 80px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-       
-        .error {
-            color: red;
-            margin-bottom: 15px;
-        }
-
-
-          /* Responsive Styles */
-     
-           
-        
-
-
-        #holiday-form {
-            display: none; /* Hide the form initially */
+        // Additional validation for step 2 (dates)
+        if (stepIndex === 1) {
+            const startDate = new Date(document.getElementById('start_date').value);
+            const endDate = new Date(document.getElementById('end_date').value);
+            
+            if (startDate && endDate && endDate < startDate) {
+                isValid = false;
+                errorElement.innerHTML = 'End date cannot be before start date';
+                document.getElementById('start_date').classList.add('border-red-500');
+                document.getElementById('end_date').classList.add('border-red-500');
+            }
         }
         
-      /* Basic Overlay Styling */
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    overflow-y: auto; /* Allow scrolling if content is too tall */
-}
-
-/* Overlay Content */
-#overlay-content {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px; /* Set a max-width for larger screens */
-    box-sizing: border-box;
-    margin: auto; /* Center vertically with any extra space removed */
-    display: flex;
-    flex-direction: column;
-    gap: 10px; /* Space between elements without extra padding */
-}
-
-/* Close Button */
-#close-overlay {
-    align-self: flex-end; /* Align close button to the right */
-    margin-top: 10px;
-    padding: 8px 16px;
-    
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    #overlay-content {
-        padding: 12px;
-        max-width: 500px;
-        margin:15px;
-    }
-}
-
-@media (max-width: 480px) {
-    #overlay-content {
-        padding: 8px;
-        max-width: 320px;
+        if (!isValid) {
+            errorElement.classList.remove('hidden');
+            currentStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         
+        return isValid;
     }
     
-    #overlay h2 {
-        font-size: 18px;
-    }
-
-    #overlay ul {
-        font-size: 14px;
-        margin: 8px; /* Remove any list margins */
-        padding: 0; /* Remove any list padding */
-    }
-}
-
+    // Initialize all functions
+    initializeForm();
+    initHolidayTypeToggle();
+    initDateValidation();
+    initDynamicFields();
+    
+    // Next button click handler
+    nextBtn.addEventListener('click', function() {
+        if (validateStep(currentStep)) {
+            showStep(currentStep + 1);
+        }
+    });
+    
+    // Previous button click handler
+    prevBtn.addEventListener('click', function() {
+        showStep(currentStep - 1);
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-    </style>
-
-
-    
-    {% endblock styles %}
-
-    
-    
-</body>
-</html>
+        if (validateStep(currentStep)) {
+            // Show loading state
+            submitBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+            `;
+            submitBtn.disabled = true;
+            
+            // Disable all form elements
+            const formElements = form.elements;
+            for (let i = 0; i < formElements.length; i++) {
+                formElements[i].disabled = true;
+            }
+            
+            // Submit form
+            this.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

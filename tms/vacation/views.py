@@ -22,6 +22,11 @@ from .tasks import delete_rejected_holiday,delete_rejected_permission_request
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='staff_user:staff_login_process')
+def vacation_home(request):
+    
+    return render (request,'vacation_home.html')
+
+@login_required(login_url='staff_user:staff_login_process')
 def holiday_create(request, holiday_id=None):
     user = request.user
     user_groups = set(user.groups.values_list('name', flat=True))
@@ -188,7 +193,7 @@ def view_holidays(request):
             'total_pages': paginator.num_pages,
         })
 
-    return render(request, 'holiday/view_holidays.html', context)
+    return render(request, 'holiday/new_view_holiday.html', context)
 
 
 def determine_visible_switches(user_groups):
@@ -239,7 +244,7 @@ def get_holidays_for_production_approval():
 def get_holidays_for_technical_manager_approval():
     return Holiday.objects.filter(
         Q(user__groups__name='Technical Manager', status='pending', delegatee__isnull=True) |
-        Q(delegatee__groups__name='Technical', status='Under Review', delegatee_approved=True)
+        Q(delegatee__groups__name='Technician', status='Under Review', delegatee_approved=True)
     )
 
 def get_holidays_for_treasurer_approval():
@@ -251,7 +256,7 @@ def get_holidays_for_treasurer_approval():
 def get_holidays_for_director_approval():
     return Holiday.objects.filter(
         Q(user__groups__name='Radio / TV Presenter', production_approved=True, status='Under Review') |
-        Q(user__groups__name='Technical', technical_manager_approved=True, status='Under Review') |
+        Q(user__groups__name='Technician', technical_manager_approved=True, status='Under Review') |
         Q(user__groups__name__in=['Cashier', 'Accountant'], treasurer_approved=True, status='Under Review')
     )
 

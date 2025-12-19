@@ -4,12 +4,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-   {% block title %}TAMC | Default Title {% endblock title %}
-  
-  <link rel="icon" type="image/x-icon" href="{% static 'dist/img/hope.png' %}">
+  {% block title %}TAMC | Default Title{% endblock title %}
 
-  <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="icon" type="image/x-icon" href="{% static 'dist/img/hope.png' %}">
+  
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
   
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
@@ -20,63 +20,95 @@
   <!-- AdminLTE Styles -->
   <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
 
-  <!-- Additional CSS if needed -->
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      mini-height: 100vh;
+      overflow-x: hidden;
+     
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #1d2b64, #f8cdda, #1d2b64, #f8cdda);
+      background-size: 400% 400%;
+      animation: gradientBG 12s ease infinite;
+    }
 
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .login-box {
+      background-color: rgba(247, 191, 8, 0.9);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+      width: 100%;
+      max-width: 500px;
+      margin: 40px auto;
+    }
+
+    .login-logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #1d2b64;
+      text-shadow: 1px 1px #fff;
+      text-align: center;
+    }
+
+    footer.footer {
+      color: white;
+      font-weight: 500;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: none;
+      padding: 10px 0;
+    }
+    @media (max-width: 576px) {
+  .login-box {
+    padding: 20px 15px;
+    margin: 15px;
+  }
+}
+footer.footer {
+  position: static;
+}
+
+  </style>
 </head>
-<body class="hold-transition login-page">
-  <!-- Preloader (if needed) -->
-  {% comment %}
-  <div id="preloader" class="flex-column justify-content-center align-items-center">
-    <img class="animation__wobble" src="{% static 'dist/img/hope.png' %}" alt="tipm logo" height="100" width="100">
-  </div>
-  {% endcomment %}
+<body>
 
   <div class="login-box">
     <div class="login-logo">
-      {% comment %}
-      <a href="index2.html">
-        <img style="background-color:grey" src="{% static 'dist/img/taifa.png' %}" height="90" width="90" aligned="center">
-      </a>
-      {% endcomment %}
       TAMC MANAGEMENT SYSTEM
     </div>
 
-    <!-- Content Block -->
     {% block content %}{% endblock content %}
-    <!-- /.content-block -->
   </div>
 
-  <!-- Footer -->
-  <footer class="footer fixed-bottom">
-    <div class="container text-center">
+  <footer class="footer  text-center">
+    <div class="container">
       &copy; {% now 'Y' %} <b>TAMC</b> All rights reserved.
     </div>
   </footer>
-  <!-- /.footer -->
 
-  <!-- jQuery -->
+  <!-- Scripts -->
   <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
-  <!-- Bootstrap Bundle -->
   <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <!-- AdminLTE App -->
   <script src="{% static 'dist/js/adminlte.min.js' %}"></script>
 
-  <!-- Custom Script to Hide Messages -->
   <script>
     $(document).ready(function() {
-      // Function to hide the messages after 5 seconds
-      function hideMessages() {
-        var messages = $(".alert");
-        messages.each(function() {
-          var message = $(this);
-          setTimeout(function() {
-            message.alert('close');
-          }, 5000);
-        });
-      }
-
-      // Call hideMessages function on page load
-      hideMessages();
+      $(".alert").each(function() {
+        var $this = $(this);
+        setTimeout(function() {
+          $this.alert('close');
+        }, 5000);
+      });
     });
   </script>
 </body>

@@ -1,0 +1,75 @@
+<!-- Sidebar -->
+<aside 
+    class="fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-gray-200 bg-white px-6 py-8 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:block"
+    :class="{ '-translate-x-full': !sidebarOpen }"
+>
+    <div class="flex h-16 shrink-0 items-center">
+        <!-- Logo or header content -->
+        <span class="text-lg font-semibold text-gray-800">TAMC Admin</span>
+    </div>
+
+    <nav class="mt-8">
+        <div class="space-y-1">
+            <!-- Dashboard -->
+            <a href="{% url 'staff_user:staff/dashboard' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if request.resolver_match.url_name == 'dashboard' %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-tachometer-alt mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                Dashboard
+            </a>
+
+            <!-- User Management -->
+            <a href="{% url 'staff_user:registered_users' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if 'user' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-users mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                User Management
+            </a>
+
+            <!-- Financial Management -->
+            <a href="{% url 'finance:financial_dash' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if 'finance' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-wallet mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                Financial
+            </a>
+
+            <!-- Equipment Management -->
+            <a href="#" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if 'equipment' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-laptop mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                Equipment Management
+            </a>
+
+            <!-- Leave Management -->
+            <a href="#" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if 'leave' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-calendar-alt mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                Leave Management
+            </a>
+
+            <!-- Task Management -->
+            <a href="#" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                {% if 'task' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                <i class="fas fa-tasks mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-500"></i>
+                Task Management
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<!-- Mobile overlay -->
+<div 
+    x-show="sidebarOpen"
+    @click="sidebarOpen = false"
+    class="fixed inset-0 z-40 bg-black bg-opacity-25 transition-opacity lg:hidden"
+    x-transition:enter="transition ease-out duration-150"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+></div>

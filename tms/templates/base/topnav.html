@@ -1,0 +1,41 @@
+<!-- templates/base/topnav.html -->
+<header class="sticky top-0 z-40 flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+    <!-- Sidebar toggle (mobile only) -->
+    {% comment %} <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700 focus:outline-none">
+        <i class="fas fa-bars text-xl"></i>
+    </button> {% endcomment %}
+
+    <div class="flex flex-1 justify-between items-center">
+        <!-- Search bar -->
+        <div class="relative w-full max-w-md">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input type="text"
+                   class="w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="Search...">
+        </div>
+
+        <!-- User menu -->
+        <div class="relative ml-4" x-data="{ open: false }">
+            <button @click="open = !open" class="flex items-center gap-x-2 focus:outline-none">
+                {% if user.profile.avatar %}
+                    <img class="h-8 w-8 rounded-full" src="{{ user.profile.avatar.url }}" alt="">
+                {% else %}
+                    <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                {% endif %}
+                <span class="hidden lg:block text-sm font-medium text-gray-900">{{ user.get_full_name }}</span>
+                <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+            </button>
+
+            <!-- Dropdown -->
+            <div x-show="open" @click.away="open = false"
+                 class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50">
+                <a href="{% url 'staff_user:my_profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                <a href="{% url 'staff_user:logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</a>
+            </div>
+        </div>
+    </div>
+</header>

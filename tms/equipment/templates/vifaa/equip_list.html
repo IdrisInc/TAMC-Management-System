@@ -4,159 +4,119 @@
 <title>TAMC | Equipment List</title>
 {% endblock title %}
 
-{% block style %}
-<style>
-    #grid-view, #table-view {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    #grid-view.show, #table-view.show {
-        opacity: 1;
-    }
-
-    /* Style for Edit button */
-    .edit-btn {
-        background-color: #4CAF50; /* Green background */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-    }
-
-    .edit-btn:hover {
-        background-color: #45a049; /* Darker green on hover */
-    }
-
-    /* Style for Delete button */
-    .delete-btn {
-        background-color: #f44336; /* Red background */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-    }
-
-    .delete-btn:hover {
-        background-color: #e41f1f; /* Darker red on hover */
-    }
-</style>
-
-
-{% endblock style %}
-
 {% block content %}
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>All Equipment</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">All Equipment</li>
-                    </ol>
-                </div>
-            </div>
+<div class="min-h-screen bg-gray-100">
+  <div class="p-4 sm:p-6">
+    <!-- Header Section -->
+    <div class="mb-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">All Equipment</h1>
+        <div class="flex space-x-2">
+          <a href="{% url 'equipment:register_equipment' %}" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            Add New Equipment
+          </a>
+          <button id="toggle-view-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            {% if view == 'grid' %}
+              Switch to Table View
+            {% else %}
+              Switch to Grid View
+            {% endif %}
+          </button>
         </div>
-    </section>
-
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <button id="toggle-view-btn" class="btn btn-primary float-right">
-                                {% if view == 'grid' %}
-                                    Switch to Table View
-                                {% else %}
-                                    Switch to Grid View
-                                {% endif %}
-                            </button>
-                        </div>
-
-                        <div class="card-body">
-                            <div id="search-form" style="{% if view == 'grid' %}display: none;{% else %}display: block;{% endif %}">
-                                <form method="get" id="search-form">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" name="q" id="searchInput" placeholder="Search by name or category" value="{{ request.GET.q }}">
-                                        <div class="input-group-append">
-                                            <button type="submit" class="btn btn-primary">Search</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Dynamic content (grid or table) -->
-                            <div id="equipment-content">
-                                {% include 'vifaa/equipment_list_partial.html' %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      </div>
+      <nav class="flex mt-2" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="text-sm text-gray-700 hover:text-blue-600">Home</a>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <span class="mx-1 text-gray-500">/</span>
+              <span class="ml-1 text-sm font-medium text-gray-500">All Equipment</span>
             </div>
-        </div>
-    </section>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <!-- Search and Content Section -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <!-- Search Form (hidden in grid view) -->
+      <div id="search-form" class="mb-4 {% if view == 'grid' %}hidden{% endif %}">
+        <form method="get" class="flex">
+          <input type="text" name="q" id="searchInput" 
+                 class="flex-grow px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="Search by name or category" value="{{ request.GET.q }}">
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-r hover:bg-blue-700">
+            Search
+          </button>
+        </form>
+      </div>
+
+      <!-- Equipment Content -->
+      <div id="equipment-content">
+        {% include 'vifaa/equipment_list_partial.html' %}
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-    document.getElementById('toggle-view-btn').addEventListener('click', function() {
-        var gridView = document.getElementById('grid-view');
-        var tableView = document.getElementById('table-view');
-        var searchForm = document.getElementById('search-form');
-        var btn = document.getElementById('toggle-view-btn');
+  document.getElementById('toggle-view-btn').addEventListener('click', function() {
+    const gridView = document.getElementById('grid-view');
+    const tableView = document.getElementById('table-view');
+    const searchForm = document.getElementById('search-form');
+    const btn = document.getElementById('toggle-view-btn');
 
-        if (gridView.style.display === 'none') {
-            gridView.style.display = 'grid';
-            tableView.style.display = 'none';
-            searchForm.style.display = 'none'; // Hide search form in grid view
-            btn.textContent = 'Switch to Table View';
-        } else {
-            gridView.style.display = 'none';
-            tableView.style.display = 'block';
-            searchForm.style.display = 'block'; // Show search form in table view
-            btn.textContent = 'Switch to Grid View';
-        }
-    });
+    if (gridView.classList.contains('hidden')) {
+      gridView.classList.remove('hidden');
+      tableView.classList.add('hidden');
+      searchForm.classList.add('hidden');
+      btn.textContent = 'Switch to Table View';
+    } else {
+      gridView.classList.add('hidden');
+      tableView.classList.remove('hidden');
+      searchForm.classList.remove('hidden');
+      btn.textContent = 'Switch to Grid View';
+    }
+  });
 
-    function loadPage(pageNumber) {
-        var query = document.getElementById('searchInput').value;  // Search query (if any)
-        var view = '{{ view }}'; // Current view
-        var url = '/ems/equipment-list/?page=' + pageNumber;
+  function loadPage(pageNumber) {
+    const query = document.getElementById('searchInput').value;
+    const view = '{{ view }}';
+    let url = '/ems/equipment-list/?page=' + pageNumber;
 
-        if (query) {
-            url += '&q=' + encodeURIComponent(query);
-        }
-
-        if (view) {
-            url += '&view=' + view;
-        }
-
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('equipment-content').innerHTML = data;
-        })
-        .catch(error => console.error('Error:', error));
+    if (query) {
+      url += '&q=' + encodeURIComponent(query);
     }
 
-    document.addEventListener('click', function(event) {
-        if (event.target.matches('.pagination-link')) {
-            event.preventDefault();
-            var pageNumber = event.target.getAttribute('data-page');
-            loadPage(pageNumber);
-        }
-    });
+    if (view) {
+      url += '&view=' + view;
+    }
 
-    document.getElementById('searchInput').addEventListener('input', function() {
-        loadPage(1);  // Re-load page with search results
-    });
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    })
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('equipment-content').innerHTML = data;
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  document.addEventListener('click', function(event) {
+    if (event.target.matches('.pagination-link')) {
+      event.preventDefault();
+      const pageNumber = event.target.getAttribute('data-page');
+      loadPage(pageNumber);
+    }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', function() {
+    loadPage(1);
+  });
 </script>
 {% endblock content %}

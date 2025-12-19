@@ -1,0 +1,421 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}
+<title>TAMC | Financial Requests</title>
+{% endblock title %}
+
+{% block content %}
+<div class="container mx-auto p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold">Financial Requests</h1>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card cursor-pointer transition-all duration-200 hover:shadow-lg bg-blue-50 border-blue-500" 
+             onclick="setActiveView('my')" 
+             id="my-requests-card">
+            <div class="card-body p-6 text-center">
+                <h3 class="text-lg font-medium">My Financial Requests</h3>
+            </div>
+        </div>
+        <div class="card cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-gray-200" 
+             onclick="setActiveView('general')" 
+             id="general-requests-card">
+            <div class="card-body p-6 text-center">
+                <h3 class="text-lg font-medium">Requests Made</h3>
+            </div>
+        </div>
+        <div class="card cursor-pointer transition-all duration-200 hover:shadow-lg bg-white border-gray-200" 
+             onclick="setActiveView('approved')" 
+             id="approved-requests-card">
+            <div class="card-body p-6 text-center">
+                <h3 class="text-lg font-medium">Approved Requests</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="flex flex-col md:flex-row gap-4">
+        <div class="relative flex-1">
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></i>
+            <input type="text" 
+                   id="search-input"
+                   placeholder="Search by purpose or name..." 
+                   class="pl-10 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="relative">
+            <i class="fas fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"></i>
+            <input type="date" 
+                   id="date-filter"
+                   class="pl-10 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+    </div>
+
+    <!-- My Requests -->
+    <div id="my-requests-view" class="request-view">
+        {% if user_requests %}
+            <div class="space-y-4">
+                {% for request in user_requests %}
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-text h-5 w-5 text-gray-400"></i>
+                                <div>
+                                    <h3 class="text-lg font-medium">{{ request.purpose }}</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-calendar h-4 w-4 text-gray-400"></i>
+                                <span class="text-sm text-gray-500">Date:</span>
+                                <span class="text-sm font-medium">{{ request.created_at|date:'Y-m-d' }}</span>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if request.status == 'Pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif request.status == 'Approved' %}bg-green-100 text-green-800
+                                    {% elif request.status == 'Rejected' %}bg-red-100 text-red-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ request.status }}
+                                </span>
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-1"
+                                        onclick="showRequestModal('{{ request.id }}', 'my')">
+                                    <span>View More</span>
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body flex items-center justify-center py-12">
+                    <p class="text-gray-500">You have not made any requests.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- General Requests -->
+    <div id="general-requests-view" class="request-view" style="display: none;">
+        {% if general_requests %}
+            <div class="space-y-4">
+                {% for request in general_requests %}
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-text h-5 w-5 text-gray-400"></i>
+                                <div>
+                                    <h3 class="text-lg font-medium">{{ request.purpose }}</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-user h-4 w-4 text-gray-400"></i>
+                                <span class="text-sm font-medium">{{ request.user.get_full_name }}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-calendar h-4 w-4 text-gray-400"></i>
+                                <span class="text-sm font-medium">{{ request.created_at|date:'Y-m-d' }}</span>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if request.status == 'Pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif request.status == 'Approved' %}bg-green-100 text-green-800
+                                    {% elif request.status == 'Rejected' %}bg-red-100 text-red-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ request.status }}
+                                </span>
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-1"
+                                        onclick="showRequestModal('{{ request.id }}', 'general')">
+                                    <span>View More</span>
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body flex items-center justify-center py-12">
+                    <p class="text-gray-500">No financial requests found.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Approved Requests -->
+    <div id="approved-requests-view" class="request-view" style="display: none;">
+        {% if archived_requests %}
+            <div class="space-y-4">
+                {% for request in archived_requests %}
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-file-text h-5 w-5 text-gray-400"></i>
+                                <div>
+                                    <h3 class="text-lg font-medium">{{ request.purpose }}</h3>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-user h-4 w-4 text-gray-400"></i>
+                                <span class="text-sm font-medium">{{ request.user.get_full_name }}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-calendar h-4 w-4 text-gray-400"></i>
+                                <span class="text-sm font-medium">{{ request.date_approved|date:'Y-m-d' }}</span>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Approved
+                                </span>
+                            </div>
+                            <div class="flex justify-end">
+                                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-1"
+                                        onclick="showRequestModal('{{ request.id }}', 'approved')">
+                                    <span>View More</span>
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-body flex items-center justify-center py-12">
+                    <p class="text-gray-500">No approved requests available.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div id="requestModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="bg-blue-600 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
+            <h3 class="text-lg font-medium">Financial Request Details</h3>
+            <button onclick="hideRequestModal()" class="text-white hover:text-gray-200">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div id="modalContent" class="p-6">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+        
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <button onclick="hideRequestModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Deletion</h3>
+        <p class="text-gray-600 mb-6">Are you sure you want to delete this financial request?</p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="hideDeleteConfirm()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">
+                Cancel
+            </button>
+            <form id="deleteForm" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// View switching functionality
+function setActiveView(view) {
+    // Hide all views
+    document.querySelectorAll('.request-view').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show selected view
+    document.getElementById(`${view}-requests-view`).style.display = 'block';
+    
+    // Update card styles
+    document.querySelectorAll('[id$="-requests-card"]').forEach(card => {
+        card.classList.remove('bg-blue-50', 'border-blue-500');
+        card.classList.add('bg-white', 'border-gray-200');
+    });
+    
+    const activeCard = document.getElementById(`${view}-requests-card`);
+    activeCard.classList.remove('bg-white', 'border-gray-200');
+    activeCard.classList.add('bg-blue-50', 'border-blue-500');
+}
+
+// Modal functionality
+function showRequestModal(requestId, type) {
+    // In a real implementation, you would fetch this data from your backend
+    const modalContent = document.getElementById('modalContent');
+    
+    // Example content - replace with actual data from your backend
+    modalContent.innerHTML = `
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Amount Requested</h4>
+                    <p class="text-lg font-semibold">$1,000.00</p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Date Requested</h4>
+                    <p>{{ request.created_at|date:'Y-m-d' }}</p>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-medium text-gray-700 mb-2">Purpose</h4>
+                <p>{{ request.purpose }}</p>
+            </div>
+            
+            <div>
+                <h4 class="font-medium text-gray-700 mb-2">Request Items</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left py-2 px-4 border-b">Item</th>
+                                <th class="text-left py-2 px-4 border-b">Quantity</th>
+                                <th class="text-left py-2 px-4 border-b">Price</th>
+                                <th class="text-left py-2 px-4 border-b">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 border-b">Notebooks</td>
+                                <td class="py-2 px-4 border-b">10</td>
+                                <td class="py-2 px-4 border-b">$5.00</td>
+                                <td class="py-2 px-4 border-b">$50.00</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 border-b">Pens</td>
+                                <td class="py-2 px-4 border-b">20</td>
+                                <td class="py-2 px-4 border-b">$2.50</td>
+                                <td class="py-2 px-4 border-b">$50.00</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-50">
+                                <td colspan="3" class="py-2 px-4 font-medium text-right">Total:</td>
+                                <td class="py-2 px-4 font-medium">$100.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-medium text-gray-700 mb-2">Status</h4>
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    Pending
+                </span>
+            </div>
+            
+            ${type === 'my' ? `
+            <div class="flex space-x-2 pt-4 border-t">
+                <a href="/finance/update/${requestId}/" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">Update</a>
+                <button onclick="showDeleteConfirm('${requestId}')" class="bg-red-100 hover:bg-red-200 text-red-800 font-bold py-2 px-4 rounded">Delete</button>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    document.getElementById('requestModal').classList.remove('hidden');
+}
+
+function hideRequestModal() {
+    document.getElementById('requestModal').classList.add('hidden');
+}
+
+// Delete confirmation functionality
+function showDeleteConfirm(requestId) {
+    document.getElementById('deleteForm').action = `/finance/delete/${requestId}/`;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function hideDeleteConfirm() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Search functionality
+document.getElementById('search-input').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+        const purpose = card.querySelector('h3').textContent.toLowerCase();
+        const userElement = card.querySelector('[class*="fa-user"]');
+        const userName = userElement ? userElement.nextElementSibling.textContent.toLowerCase() : '';
+        
+        if (purpose.includes(searchTerm) || userName.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Date filter functionality
+document.getElementById('date-filter').addEventListener('change', function() {
+    const selectedDate = this.value;
+    const cards = document.querySelectorAll('.card');
+    
+    if (!selectedDate) {
+        cards.forEach(card => card.style.display = 'block');
+        return;
+    }
+    
+    cards.forEach(card => {
+        const dateElement = card.querySelector('[class*="fa-calendar"]');
+        if (dateElement) {
+            const dateValue = dateElement.nextElementSibling.nextElementSibling.textContent;
+            if (dateValue === selectedDate) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        }
+    });
+});
+
+// Initialize the page with My Requests view
+document.addEventListener('DOMContentLoaded', function() {
+    setActiveView('my');
+    
+    // Close modals when clicking outside
+    document.getElementById('requestModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideRequestModal();
+        }
+    });
+    
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideDeleteConfirm();
+        }
+    });
+});
+</script>
+{% endblock %}

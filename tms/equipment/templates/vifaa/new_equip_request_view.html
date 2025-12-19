@@ -1,0 +1,339 @@
+{% extends "base/base.html" %}
+{% load custom_filters %}
+
+{% block title %}
+<title>TAMC | My Requests</title>
+{% endblock title %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+  <!-- Header Section -->
+  <div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="md:flex md:items-center md:justify-between">
+        <div class="flex-1 min-w-0">
+          <h1 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            Task Assignment
+          </h1>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+          <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+              <li>
+                <div>
+                  <a href="#" class="text-gray-400 hover:text-gray-500">
+                    <span class="text-sm font-medium">Home</span>
+                  </a>
+                </div>
+              </li>
+              <li>
+                <div class="flex items-center">
+                  <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  <span class="ml-4 text-sm font-medium text-gray-500">Task Assignment</span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% for message in messages %}
+  <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %}">
+    {{ message }}
+  </div>
+  {% endfor %}
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- View Switch Buttons -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      {% if user_role in "Production Manager, Technical Manager, Treasurer, Assistant Treasurer" %}
+        <input type="radio" class="hidden" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+        <label for="view-user-requests" class="px-4 py-2 border border-blue-500 rounded-md text-blue-500 hover:bg-blue-50 cursor-pointer">
+          My Requests
+        </label>
+
+        <input type="radio" class="hidden" name="view-switch" id="view-assigned-requests" autocomplete="off">
+        <label for="view-assigned-requests" class="px-4 py-2 border border-green-500 rounded-md text-green-500 hover:bg-green-50 cursor-pointer">
+          Assigned Requests
+        </label>
+
+        <input type="radio" class="hidden" name="view-switch" id="view-approval-requests" autocomplete="off">
+        <label for="view-approval-requests" class="px-4 py-2 border border-yellow-500 rounded-md text-yellow-500 hover:bg-yellow-50 cursor-pointer">
+          Approval Requests
+        </label>
+      {% elif user_role in "Radio / TV Presenter,Editor" %}
+        <input type="radio" class="hidden" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+        <label for="view-user-requests" class="px-4 py-2 border border-blue-500 rounded-md text-blue-500 hover:bg-blue-50 cursor-pointer">
+          My Requests
+        </label>
+
+        <input type="radio" class="hidden" name="view-switch" id="view-assigned-requests" autocomplete="off">
+        <label for="view-assigned-requests" class="px-4 py-2 border border-green-500 rounded-md text-green-500 hover:bg-green-50 cursor-pointer">
+          Assigned Requests
+        </label>
+      {% else %}
+        <input type="radio" class="hidden" name="view-switch" id="view-user-requests" autocomplete="off" checked>
+        <label for="view-user-requests" class="px-4 py-2 border border-blue-500 rounded-md text-blue-500 hover:bg-blue-50 cursor-pointer">
+          My Requests
+        </label>
+      {% endif %}
+    </div>
+
+    <!-- Request Sections -->
+    <div id="user-requests-div" class="{% if user_role in 'Radio / TV Presenter,Editor' %}block{% else %}hidden{% endif %}">
+      {% include "vifaa/request_table.html" with requests=user_requests title="My Requests" empty_message="You have not made any requests yet." table_id="user-requests-table" %}
+    </div>
+
+    <div id="approval-requests-div" class="{% if user_role not in 'Radio / TV Presenter,Editor' %}block{% else %}hidden{% endif %} mt-6">
+      {% include "vifaa/request_table.html" with requests=approval_requests title="Pending Approval Requests" empty_message="No requests pending approval." table_id="approval-requests-table" is_approval=True %}
+    </div>
+
+    <div id="assigned-requests-div" class="{% if user_role in 'Radio / TV Presenter,Editor' %}block{% else %}hidden{% endif %} mt-6">
+      {% include "vifaa/request_table.html" with requests=assigned_requests title="Assigned Requests" empty_message="No assigned requests." table_id="assigned-requests-table" %}
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+{% include "vifaa/confirm_return_modal.html" %}
+{% include "vifaa/request_detail_modal.html" %}
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // View switching functionality
+  const toggleRequestSections = () => {
+    const userRequestsDiv = document.getElementById('user-requests-div');
+    const approvalRequestsDiv = document.getElementById('approval-requests-div');
+    const assignedRequestsDiv = document.getElementById('assigned-requests-div');
+    
+    const userRequestsRadio = document.getElementById('view-user-requests');
+    const approvalRequestsRadio = document.getElementById('view-approval-requests');
+    const assignedRequestsRadio = document.getElementById('view-assigned-requests');
+
+    if (userRequestsRadio.checked) {
+      userRequestsDiv.classList.remove('hidden');
+      approvalRequestsDiv.classList.add('hidden');
+      assignedRequestsDiv.classList.add('hidden');
+    } else if (assignedRequestsRadio?.checked) {
+      userRequestsDiv.classList.add('hidden');
+      approvalRequestsDiv.classList.add('hidden');
+      assignedRequestsDiv.classList.remove('hidden');
+    } else if (approvalRequestsRadio?.checked) {
+      userRequestsDiv.classList.add('hidden');
+      approvalRequestsDiv.classList.remove('hidden');
+      assignedRequestsDiv.classList.add('hidden');
+    }
+  };
+
+  document.querySelectorAll('input[name="view-switch"]').forEach(radio => {
+    radio.addEventListener('change', toggleRequestSections);
+  });
+  toggleRequestSections();
+
+  // Pagination setup
+  document.querySelectorAll('.pagination-controls').forEach(control => {
+    const tableId = control.getAttribute('data-table');
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr');
+    const rowsPerPage = 5;
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    let currentPage = 1;
+
+    const displayPage = (page) => {
+      const start = (page - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+
+      rows.forEach((row, index) => {
+        row.style.display = (index >= start && index < end) ? '' : 'none';
+      });
+      updatePaginationControls();
+    };
+
+    const updatePaginationControls = () => {
+      control.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.innerText = i;
+        button.className = 'px-3 py-1 mx-1 rounded-md ' + 
+          (i === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300');
+        if (i === currentPage) button.disabled = true;
+        button.onclick = () => {
+          currentPage = i;
+          displayPage(currentPage);
+        };
+        control.appendChild(button);
+      }
+    };
+
+    if (rows.length > 0) displayPage(currentPage);
+  });
+});
+
+// Modal functions
+const showModal = (modalId) => {
+  document.getElementById(modalId).classList.remove('hidden');
+  document.body.classList.add('overflow-hidden');
+};
+
+const closeModal = (modalId) => {
+  document.getElementById(modalId).classList.add('hidden');
+  document.body.classList.remove('overflow-hidden');
+};
+
+// Request details display
+const showDetails = (requestId, status, isOwnRequest, isAssignedRequest, isPendingApprovalRequest, userRole) => {
+  const requestRow = document.querySelector(`.request-row[data-id="${requestId}"]`);
+  if (!requestRow) {
+    console.error(`Request with ID ${requestId} not found`);
+    return;
+  }
+
+  const modalBody = document.getElementById('modal-body-content');
+  const modalFooter = document.getElementById('modal-footer-content');
+  
+  // Extract data attributes
+  const requestedBy = requestRow.dataset.requestedBy || 'Not available';
+  const equipmentDetails = requestRow.dataset.equipment || 'None';
+  const personsAssigned = requestRow.dataset.personsAssigned || 'None';
+  const submissionDate = requestRow.dataset.submissionDate || 'Not available';
+  const approvedBy = requestRow.dataset.approvedBy || 'Not approved yet';
+  const returnDate = requestRow.dataset.returnDate || 'Not returned yet';
+  const returnConfirmedBy = requestRow.dataset.returnConfirmedBy || 'Not confirmed yet';
+
+  // Populate modal body
+  modalBody.innerHTML = `
+    <div id="printable-content" class="space-y-2">
+      <p><strong class="text-gray-700">Request From:</strong> <span class="text-gray-600">${requestedBy}</span></p>
+      <p><strong class="text-gray-700">Description:</strong> <span class="text-gray-600">${requestRow.cells[0].innerText}</span></p>
+      <p><strong class="text-gray-700">Date of Request:</strong> <span class="text-gray-600">${requestRow.cells[1].innerText}</span></p>
+      <p><strong class="text-gray-700">Persons Assigned:</strong> <span class="text-gray-600">${personsAssigned}</span></p>
+      <p><strong class="text-gray-700">Location:</strong> <span class="text-gray-600">${requestRow.cells[2].innerText}</span></p>
+      <p><strong class="text-gray-700">Submission Date:</strong> <span class="text-gray-600">${submissionDate}</span></p>
+      <p><strong class="text-gray-700">Equipment:</strong> <span class="text-gray-600">${equipmentDetails}</span></p>
+      <p><strong class="text-gray-700">Status:</strong> <span class="${status === 'Pending' ? 'text-yellow-600' : status === 'Approved' ? 'text-green-600' : status === 'Rejected' ? 'text-red-600' : 'text-blue-600'}">${status}</span></p>
+      <p><strong class="text-gray-700">Approved By:</strong> <span class="text-gray-600">${approvedBy}</span></p>
+      <p><strong class="text-gray-700">Return Date:</strong> <span class="text-gray-600">${returnDate}</span></p>
+      <p><strong class="text-gray-700">Return Confirmed By:</strong> <span class="text-gray-600">${returnConfirmedBy}</span></p>
+    </div>
+  `;
+
+  // Set up action buttons
+  modalFooter.innerHTML = '';
+  document.getElementById('confirmReturnForm').action = `/ems/confirm-return/${requestId}/`;
+
+  // Own request actions
+  if (isOwnRequest && status === 'Pending') {
+    modalFooter.innerHTML += `
+      <button class="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 mr-2" onclick="editRequest(${requestId})">Edit</button>
+      <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" onclick="deleteRequest(${requestId})">Delete</button>
+    `;
+  }
+
+  // Approval buttons based on role and status
+  if ((status === 'Pending' && userRole === 'Production Manager') || 
+      (status === 'Under Review' && ['Technical Manager', 'Technical', 'Treasurer', 'Assistant Treasurer'].includes(userRole))) {
+    modalFooter.innerHTML += `
+      <button class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 mr-2" onclick="approveRequest(${requestId})">Approve</button>
+      <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" onclick="rejectRequest(${requestId})">Reject</button>
+    `;
+  }
+
+  // Return confirmation for Technical role
+  if (status === 'Approved' && userRole === 'Technical') {
+    modalFooter.innerHTML += `
+      <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" onclick="showModal('confirmReturnModal')">
+        Confirm Return
+      </button>`;
+  }
+
+  // Print option for returned requests
+  if (status === 'Returned') {
+    modalFooter.innerHTML += `
+      <button class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 ml-2" onclick="printDetails()">Print</button>
+    `;
+  }
+
+  showModal('requestModal');
+};
+
+// Print functionality
+const printDetails = () => {
+  const printContents = document.getElementById('printable-content').innerHTML;
+  const printWindow = window.open('', '', 'height=500,width=800');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Print Request Details</title>
+        <style>
+          body { font-family: Arial, sans-serif; }
+          p { margin: 8px 0; }
+          strong { font-weight: bold; }
+        </style>
+      </head>
+      <body>${printContents}</body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+  printWindow.onafterprint = () => printWindow.close();
+};
+
+// Form submission handlers
+document.getElementById('confirmReturnForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const requestId = this.action.split('/').slice(-2)[0];
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  
+  fetch(this.action, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify({})
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
+  .then(() => window.location.href = '/ems/view-task-assignment/')
+  .catch(error => console.error('Error:', error));
+});
+
+// Placeholder functions for request actions
+const editRequest = (id) => window.location.href = `/ems/edit-task/${id}/`;
+const deleteRequest = (id) => handleRequest(`/ems/delete-task/${id}/`, 'POST', () => {
+  document.querySelector(`.request-row[data-id="${id}"]`)?.remove();
+  closeModal('requestModal');
+});
+
+const approveRequest = (id) => handleRequest(`/ems/approve-task/${id}/`, 'POST');
+const rejectRequest = (id) => handleRequest(`/ems/reject-task/${id}/`, 'POST');
+
+const handleRequest = (url, method, callback) => {
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    }
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
+  .then(() => callback ? callback() : window.location.reload())
+  .catch(error => console.error('Error:', error));
+};
+</script>
+{% endblock %}

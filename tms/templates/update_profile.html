@@ -1,4 +1,5 @@
 {% extends "base/authbase.html" %}
+{% load static %}
 
 {% block title %}
 <title>TAMC | Update Profile</title>
@@ -6,85 +7,240 @@
 
 {% block content %}
 <div class="update-profile-container">
-    <h2>Update Your Profile</h2>
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Update Your Profile</h3>
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-    <form method="POST">
-        {% csrf_token %}
-
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Username" name="username" value="{{ user.username }}" required>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-user"></span>
+                <!-- Profile Picture Upload -->
+                <div class="text-center mb-4">
+                    <div class="profile-picture-container">
+                        {% if profile.profile_picture %}
+                            <img id="profile-preview" src="{{ profile.profile_picture.url }}" alt="Profile Picture" class="profile-picture">
+                        {% else %}
+                            <img id="profile-preview" src="{% static 'dist/img/default-avatar.png' %}" alt="Profile Picture" class="profile-picture">
+                        {% endif %}
+                        <label for="id_profile_picture" class="upload-btn">
+                            <i class="fas fa-camera"></i>
+                            <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture" style="display: none;">
+                        </label>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="input-group mb-3">
-            <input type="email" class="form-control" placeholder="Email" name="email" value="{{ user.email }}" required>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-envelope"></span>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="username" placeholder="Username" name="username" value="{{ user.username }}" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <div class="input-group">
+                                <input type="email" class="form-control" id="email" placeholder="Email" name="email" value="{{ user.email }}" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="First Name" name="first_name" value="{{ user.first_name }}" required>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-user"></span>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" class="form-control" id="first_name" placeholder="First Name" name="first_name" value="{{ user.first_name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="middle_name">Middle Name</label>
+                            <input type="text" class="form-control" id="middle_name" placeholder="Middle Name" name="middle_name" value="{{ user.middle_name }}">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" placeholder="Last Name" name="last_name" value="{{ user.last_name }}" required>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Middle Name" name="middle_name" value="{{ user.middle_name }}">
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-user"></span>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phone_number">Phone Number</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="phone_number" placeholder="Phone Number" name="phone_number" value="{{ profile.phone_number }}">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="nida_number">NIDA Number</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="nida_number" placeholder="NIDA Number" name="nida_number" value="{{ profile.nida_number }}">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Last Name" name="last_name" value="{{ user.last_name }}" required>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-user"></span>
+                <div class="form-group">
+                    <label>Gender</label>
+                    <div class="d-flex">
+                        <div class="custom-control custom-radio mr-3">
+                            <input class="custom-control-input" type="radio" id="male" name="gender" value="Male" {% if profile.gender == 'Male' %}checked{% endif %}>
+                            <label for="male" class="custom-control-label">Male</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input class="custom-control-input" type="radio" id="female" name="gender" value="Female" {% if profile.gender == 'Female' %}checked{% endif %}>
+                            <label for="female" class="custom-control-label">Female</label>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="Phone Number" name="phone_number" value="{{ profile.phone_number }}">
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-phone"></span>
+                <div class="form-group text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-save mr-2"></i> Update Profile
+                    </button>
+                    <a href="{% url 'staff_user:my_profile' %}" class="btn btn-outline-secondary btn-lg ml-2">
+                        <i class="fas fa-arrow-left mr-2"></i> Cancel
+                    </a>
                 </div>
-            </div>
-        </div>
-
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="NIDA Number" name="nida_number" value="{{ profile.nida_number }}">
-            <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-id-card"></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary btn-block">Update</button>
-            </div>
-        </div>
-    </form>
-
-    <div class="row mt-3">
-        <div class="col-12">
-            <a href="{% url 'staff_user:my_profile' %}" class="btn btn-secondary btn-block">Back to Profile</a>
+            </form>
         </div>
     </div>
 </div>
+
+<style>
+    .update-profile-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 15px;
+    }
+    
+    .profile-picture-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-picture {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .upload-btn {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #4e73df;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .upload-btn:hover {
+        background: #2e59d9;
+        transform: scale(1.1);
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #5a5c69;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fc;
+    }
+    
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+        padding: 0.5rem 2rem;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2e59d9;
+    }
+</style>
+
+<script>
+    // Preview profile picture before upload
+    document.getElementById('id_profile_picture').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profile-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('id_profile_picture');
+        const file = fileInput.files[0];
+        
+        if (file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please upload a valid image file (JPEG, PNG, GIF)');
+                e.preventDefault();
+                return false;
+            }
+            
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                alert('Image size should be less than 2MB');
+                e.preventDefault();
+                return false;
+            }
+        }
+        return true;
+    });
+</script>
 {% endblock %}

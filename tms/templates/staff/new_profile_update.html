@@ -1,0 +1,174 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="px-4 sm:px-0">
+        <h1 class="text-2xl font-bold text-gray-900">Edit Profile</h1>
+        <p class="mt-1 text-sm text-gray-600">Update your personal information and account settings</p>
+    </div>
+
+    <!-- Edit Form -->
+    <form method="post" enctype="multipart/form-data" class="mt-6 shadow sm:rounded-lg bg-white">
+        {% csrf_token %}
+        
+        <div class="px-4 py-5 sm:p-6">
+            <!-- Avatar Upload -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700">Profile Photo</label>
+                <div class="mt-2 flex items-center">
+                    {% if profile.profile_picture %}
+                    <img class="h-16 w-16 rounded-full object-cover" src="{{ profile.profile_picture.url }}" alt="" id="avatar-preview">
+                    {% else %}
+                    <div class="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600" id="avatar-preview">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="ml-4">
+                        <label for="id_avatar" class="cursor-pointer rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                            <span>Change</span>
+                            <input id="id_avatar" name="avatar" type="file" class="sr-only" accept="image/*">
+                        </label>
+                        <button type="button" id="remove-avatar" class="ml-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-50">
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Personal Information -->
+            <div class="border-b border-gray-200 pb-6 mb-6">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Personal Information</h3>
+                <p class="mt-1 text-sm text-gray-500">Update your personal details</p>
+                
+                <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div class="sm:col-span-3">
+                        <label for="id_first_name" class="block text-sm font-medium text-gray-700">First name</label>
+                        <div class="mt-1">
+                            <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.first_name.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.first_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="id_last_name" class="block text-sm font-medium text-gray-700">Last name</label>
+                        <div class="mt-1">
+                            <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.last_name.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.last_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-4">
+                        <label for="id_email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <div class="mt-1">
+                            <input type="email" name="email" id="id_email" value="{{ form.email.value }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.email.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="id_phone" class="block text-sm font-medium text-gray-700">Phone</label>
+                        <div class="mt-1">
+                            <input type="text" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.phone.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <label for="id_department" class="block text-sm font-medium text-gray-700">Department</label>
+                        <div class="mt-1">
+                            <input type="text" name="department" id="id_department" value="{{ form.department.value|default:'' }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.department.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.department.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="sm:col-span-6">
+                        <label for="id_bio" class="block text-sm font-medium text-gray-700">Bio</label>
+                        <div class="mt-1">
+                            <textarea id="id_bio" name="bio" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">{{ form.bio.value|default:'' }}</textarea>
+                            {% if form.bio.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.bio.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Address Information -->
+            <div class="pb-6 mb-6">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Address Information</h3>
+                <p class="mt-1 text-sm text-gray-500">Your primary address information</p>
+                
+                <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                    <div class="sm:col-span-6">
+                        <label for="id_address" class="block text-sm font-medium text-gray-700">Street Address</label>
+                        <div class="mt-1">
+                            <input type="text" name="address" id="id_address" value="{{ form.address.value|default:'' }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            {% if form.address.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-x-3">
+                <a href="{% url 'staff_user:my_profile' %}" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+    // Avatar preview and removal
+    document.getElementById('id_avatar').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const preview = document.getElementById('avatar-preview');
+                if (preview.tagName === 'IMG') {
+                    preview.src = event.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.id = 'avatar-preview';
+                    img.className = 'h-16 w-16 rounded-full object-cover';
+                    img.src = event.target.result;
+                    preview.replaceWith(img);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('remove-avatar').addEventListener('click', function() {
+        const preview = document.getElementById('avatar-preview');
+        if (preview.tagName === 'IMG') {
+            const div = document.createElement('div');
+            div.id = 'avatar-preview';
+            div.className = 'h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-xl font-bold text-gray-600';
+            div.textContent = '{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}';
+            preview.replaceWith(div);
+        }
+        document.getElementById('id_avatar').value = '';
+        // You might want to add a hidden field to indicate avatar removal to the server
+    });
+</script>
+{% endblock %}
+{% endblock %}

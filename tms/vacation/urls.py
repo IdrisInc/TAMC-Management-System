@@ -3,6 +3,7 @@ from .import views
 app_name = 'vacation'
 
 urlpatterns = [
+  path('leave-permission',views.vacation_home, name='vacation'),
     path('create/', views.holiday_create, name='holiday_create'),
      path('view/', views.view_holidays, name='view_holidays'),
      path('edit/<int:id>/',views.edit_holiday,name= 'edit_holiday'),

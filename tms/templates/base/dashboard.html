@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="space-y-8">
+      <!-- Welcome Banner -->
+      <div class="rounded-lg bg-blue-600 px-6 py-8 shadow-sm sm:px-8">
+          <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+              <div class="flex-1 min-w-0">
+                  <h1 class="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+                      Welcome back, {{ user.first_name }}!
+                  </h1>
+                  <p class="mt-1 text-sm leading-6 text-blue-100">
+                      Here's what's happening with your organization today.
+                  </p>
+              </div>
+              <div class="flex-none">
+                  <button type="button" class="rounded-md bg-white px-3.5 py-2 text-sm font-semibold text-blue-600 shadow-sm hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                      Quick Action
+                  </button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Pending Requests -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <div class="flex items-center">
+                  <div class="p-3 rounded-md bg-blue-100">
+                      <i class="fas fa-clock text-blue-600"></i>
+                  </div>
+                  <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-500">Pending Requests</p>
+                      <p class="text-2xl font-semibold text-gray-900">12</p>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Active Tasks -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <div class="flex items-center">
+                  <div class="p-3 rounded-md bg-green-100">
+                      <i class="fas fa-tasks text-green-600"></i>
+                  </div>
+                  <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-500">Active Tasks</p>
+                      <p class="text-2xl font-semibold text-gray-900">8</p>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Equipment Due -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <div class="flex items-center">
+                  <div class="p-3 rounded-md bg-yellow-100">
+                      <i class="fas fa-laptop text-yellow-600"></i>
+                  </div>
+                  <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-500">Equipment Due</p>
+                      <p class="text-2xl font-semibold text-gray-900">3</p>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Budget Used -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <div class="flex items-center">
+                  <div class="p-3 rounded-md bg-purple-100">
+                      <i class="fas fa-money-bill-wave text-purple-600"></i>
+                  </div>
+                  <div class="ml-4">
+                      <p class="text-sm font-medium text-gray-500">Budget Used</p>
+                      <p class="text-2xl font-semibold text-gray-900">75%</p>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Recent Activity and Charts -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <!-- Recent Activity -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+              <div class="space-y-4">
+                  {% for activity in recent_activities %}
+                  <div class="flex items-start">
+                      <div class="flex-shrink-0">
+                          <img class="h-10 w-10 rounded-full" src="{{ activity.user.profile.avatar.url }}" alt="">
+                      </div>
+                      <div class="ml-3">
+                          <p class="text-sm font-medium text-gray-900">{{ activity.user.get_full_name }}</p>
+                          <p class="text-sm text-gray-500">{{ activity.description }}</p>
+                          <p class="text-xs text-gray-400 mt-1">{{ activity.timestamp|timesince }} ago</p>
+                      </div>
+                  </div>
+                  {% endfor %}
+              </div>
+          </div>
+          
+          <!-- Budget Chart -->
+          <div class="rounded-lg bg-white shadow p-6">
+              <h2 class="text-lg font-semibold text-gray-900 mb-4">Budget Overview</h2>
+              <div class="h-64">
+                  <!-- Chart will be rendered here with Chart.js -->
+                  <canvas id="budgetChart"></canvas>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Budget Chart
+    const ctx = document.getElementById('budgetChart').getContext('2d');
+    const budgetChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Budget Used',
+                data: [65, 59, 80, 81, 56, 55],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,868 +1,172 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<html lang="en" class="h-full bg-gray-100">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Admin Panel{% endblock %}</title>
 
-  {% block title %}{% endblock title %}
-    <!-- Meta tags, title, and other head content here -->
- <!-- Link to Magnific Popup CSS -->
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css">
- <!-- Include your own styles here -->
-    <!-- Google Font: Source Sans Pro -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- daterange picker -->
-    <link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
-    <!-- iCheck for checkboxes and radio inputs -->
-    <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
 
-    <!-- Bootstrap Color Picker -->
-    <link rel="stylesheet" href="{% static 'plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css' %}">
-
-    <!-- Tempusdominus Bootstrap 4 -->
-    <link rel="stylesheet" href="{% static 'plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css' %}">
-
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{% static 'plugins/select2/css/select2.min.css' %}">
-    <link rel="stylesheet" href="{% static 'plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}">
-
-    <!-- Bootstrap4 Duallistbox -->
-    <link rel="stylesheet" href="{% static 'plugins/bootstrap4-duallistbox/bootstrap-duallistbox.min.css' %}">
-
-    <!-- BS Stepper -->
-    <link rel="stylesheet" href="{% static 'plugins/bs-stepper/css/bs-stepper.min.css' %}">
-
-    <!-- dropzonejs -->
-    <link rel="stylesheet" href="{% static 'plugins/dropzone/min/dropzone.min.css' %}">
-
-    <!-- Theme style -->
-    <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
-
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{% static 'plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
-    <link rel="stylesheet" href="{% static 'plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
-    <link rel="stylesheet" href="{% static 'plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
-
-    <!-- fullCalendar -->
-    <link rel="stylesheet" href="{% static 'plugins/fullcalendar/main.css' %}">
-
-    <link rel="icon" type="image/x-icon" href="{% static 'dist/img/hope.png' %}">
-
-    <!-- overlayScrollbars -->
-    <link rel="stylesheet" href="{% static 'plugins/overlayScrollbars/css/OverlayScrollbars.min.css' %}">
-
-  <!-- Include Bootstrap CSS -->
-  <link rel="stylesheet" href="path/to/bootstrap.min.css">
-  <!-- Include Summernote CSS -->
-  <link rel="stylesheet" href="path/to/summernote.min.css">
-  <link rel="stylesheet" href="{% static 'plugins/summernote/summernote-bs4.min.css' %}">
-  
-
-
-
-   
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="hold-transition sidebar-mini layout-footer-fixed">
-  <div class="wrapper">
+<body x-data="{ sidebarOpen: false }" class="relative h-full">
+
     <!-- Preloader -->
-    <div id="preloader" class="preloader-wrapper">
-      <div class="preloader-image">
-          <img src="{% static 'dist/img/hope.png' %}" alt="Hope Logo" height="100" width="100">
-      </div>
-  </div>
-  
+<div id="preloader" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white bg-opacity-90 transition-opacity duration-500">
+    <img src="{% static 'dist/img/hope.png' %}" alt="Loading" class="h-16 mb-4 animate-pulse" />
+    <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
+</div>
 
-    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-      <!-- Left navbar links -->
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-          <a href="{% url 'staff_user:staff/dashboard' %}" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-          <a href="#" class="nav-link">Contact</a>
-        </li>
-      </ul>
+    <div class="min-h-full flex">
+        <!-- Sidebar -->
+        <aside 
+            class="fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto border-r border-gray-200 bg-white px-6 py-8 lg:static lg:translate-x-0 lg:flex-shrink-0"
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            x-transition:enter="transition transform duration-300"
+            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition transform duration-300"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="-translate-x-full"
+        >
+            <div class="flex h-16 shrink-0 items-center justify-between">
+                <span class="text-lg font-semibold text-gray-800">Admin Panel</span>
+                <!-- Close button (mobile only) -->
+                <button @click="sidebarOpen = false" class="lg:hidden text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
 
-      <!-- SEARCH FORM -->
-      <form class="form-inline ml-3" method="get">
-        <div class="input-group input-group-sm">
-          <input class="form-control form-control-navbar" type="search" name="q" placeholder="Search" aria-label="Search" value="{{ query }}">
-          <div class="input-group-append">
-            <button class="btn btn-navbar" type="submit">
-              <i class="fas fa-search"></i>
-            </button>
-          </div>
+            <nav class="mt-8 space-y-1">
+                <!-- Links -->
+                <a href="{% url 'staff_user:staff/dashboard' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if request.resolver_match.url_name == 'dashboard' %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-tachometer-alt mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    Dashboard
+                </a>
+                <a href="{% url 'staff_user:registered_users' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if 'user' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-users mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    User Management
+                </a>
+                <a href="{% url 'finance:financial_dash' %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if 'finance' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-wallet mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    Financial
+                </a>
+                <a href="{% url "equipment:equipment_list" %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if 'equipment' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-laptop mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    Equipment Management
+                </a>
+                <a href="{% url "vacation:vacation" %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if 'leave' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-calendar-alt mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    Leave Management
+                </a>
+                <a href="{% url "equipment:task" %}" class="group flex items-center rounded-md px-3 py-2 text-sm font-medium 
+                    {% if 'task' in request.resolver_match.url_name %}bg-gray-100 text-gray-900
+                    {% else %}text-gray-700 hover:bg-gray-50 hover:text-gray-900{% endif %}">
+                    <i class="fas fa-tasks mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                    Task Management
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Overlay -->
+        <div 
+            x-show="sidebarOpen"
+            @click="sidebarOpen = false"
+            class="fixed inset-0 z-40 bg-black bg-opacity-25 transition-opacity lg:hidden"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+        ></div>
+
+        <!-- Main content area -->
+        <div class="flex flex-col flex-1 lg:pl-72">
+            <!-- Top nav with toggle -->
+            <div class="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between lg:justify-end">
+                <!-- Toggle button for mobile -->
+                <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <div class="text-right">
+                    {% include 'base/topnav.html' %}
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <main class="py-10">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
         </div>
-      </form>
-
-      <!-- Right navbar links -->
-      <ul class="navbar-nav ml-auto">
-        <!-- Messages Dropdown Menu -->
-        <li class="nav-item dropdown">
-          <!-- Messages content here -->
-        </li>
-        <!-- Notifications Dropdown Menu -->
-        <li class="nav-item dropdown">
-          <!-- Notifications content here -->
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-widget="fullscreen" href="#" role="button">
-            <i class="fas fa-expand-arrows-alt"></i>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-            <i class="fas fa-th-large"></i>
-          </a>
-        </li>
-      </ul>
-    </nav>
-
-  <aside class="main-sidebar sidebar-dark-primary elevation-4">
-      <!-- Brand Logo -->
-      <a href="" class="brand-link">
-          <img src="{% static 'dist/img/hope.png' %}" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-          <span class="brand-text font-weight-light">TAMC {% now 'D-Y' %}</span>
-      </a>
-
-      <!-- Sidebar -->
-      <div class="sidebar">
-          <!-- Sidebar user panel (optional) -->
-          <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-              <!-- User panel content here -->
-              <div class="info">
-                <a href="#" class="d-block">{{user.get_full_name}}</a>
-              </div>
-          </div>
-
-          <!-- SidebarSearch Form -->
-          <div class="form-inline">
-              <!-- SidebarSearch content here -->
-             
-          </div>
-
-          <!-- Sidebar Menu -->
-          <nav class="mt-2">
-              <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                  <!-- Add icons to the links using the .nav-icon class -->
-                  <li class="nav-item menu-open">
-                      <a href="#" class="nav-link active">
-                        <i class="fas fa-user"></i>
-                          <p>
-                             Users
-                              <i class="right fas fa-angle-left"></i>
-                          </p>
-                      </a>
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'staff_user:registered_users' %}" class="nav-link">
-                                <i class="nav-icon fas fa-user-friends"></i>
-
-                                  <p>staff</p>
-                              </a>
-                          </li>
-                      </ul>
-                      <ul class="nav nav-treeview " >
-                          <li class="nav-item">
-                              <a href="{% url 'staff_user:my_profile' %}" class="nav-link">
-                                  <i class="far fa-user nav-icon"></i>
-                                  <p>Profile</p>
-                              </a>
-                          </li>
-                      </ul>
-                  </li>
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                        <i class="nav-icon fas fa-coins"></i>
-
-                          <p>
-                              Financial Request
-                              <i class="fas fa-angle-left right"></i>
-                              <span class="badge badge-info right">2</span>
-                          </p>
-                      </a>
-                      <ul class="nav nav-treeview">
-                       
-                          <li class="nav-item">
-                              <a href="{% url 'finance:financial_form' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p> Cheque/Petty Form </p>
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a href="{% url 'finance:request_detail' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Cheque/Petty Requests </p>
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a href="{% url 'finance:all_financial_request' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>All Request </p>
-                              </a>
-                          </li>
-                        
-                        
-                          <!-- Additional request form items here -->
-                      </ul>
-                  </li>
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                        <i class="nav-icon fas fa-toolbox"></i>
-                          <p>
-                              Equipment
-                              <i class="right fas fa-angle-left"></i>
-                          </p>
-                      </a>
-                      
-                      {% comment %} {% if user_role == 'Technical' or user_role == 'Technical Manager' %} {% endcomment %}
-                        
-                    
-                        
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'equipment:register_equipment' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Add Equipment</p>
-                              </a>
-                          </li>
-                          <!-- Additional equipment items here -->
-                      </ul>
-                        {% comment %} {% endif %} {% endcomment %}
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'equipment:equipment_list' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>All Equipment</p>
-                              </a>
-                          </li>
-                          <!-- Additional equipment items here -->
-                      </ul>
-                     
-                   
-                      
-                  </li>
-                
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                          <i class="nav-icon fas fa-tasks"></i>
-                          <p>
-                              Task Assignment
-                              <i class="right fas fa-angle-left"></i>
-                          </p>
-                      </a>
-                      
-                      {% comment %} {% if user_role == 'Technical' or user_role == 'Technical Manager' %} {% endcomment %}
-                      
-                        
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href='{% url "equipment:task_assignment" %}' class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p> Assign Task</p>
-                              </a>
-                          </li>
-                          <!-- Additional equipment items here -->
-                      </ul>
-                        
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href='{% url "equipment:view_assignments" %}' class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Assigned Task</p>
-                              </a>
-                          </li>
-                          <!-- Additional equipment items here -->
-                      </ul>
-                     
-                  </li>
-                
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                          <i class="nav-icon fas fa-table"></i>
-                          <p>
-                              Program Running Order
-                              <i class="fas fa-angle-left right"></i>
-                          </p>
-                      </a>
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'pro:program_create' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Design PRO</p>
-                              </a>
-                          </li>
-                         
-                          <li class="nav-item">
-                              <a href="{% url 'pro:program_list' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Program List</p>
-                              </a>
-                          </li>
-                         
-                          <!-- Additional actions items here -->
-                      </ul>
-                    
-                  </li>
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                          <i class="nav-icon fas fa-table"></i>
-                          <p>
-                              Personal Requests
-                              <i class="fas fa-angle-left right"></i>
-                          </p>
-                      </a>
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'vacation:holiday_create' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Holiday Form</p>
-                              </a>
-                          </li>
-                         
-                          <li class="nav-item">
-                              <a href="{% url 'vacation:view_holidays' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Holiday Request</p>
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a href="{% url 'vacation:permission_request' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Permission Form</p>
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a href="{% url 'vacation:view_permission_request'  %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>View Permission</p>
-                              </a>
-                          </li>
-                         
-                          <!-- Additional actions items here -->
-                      </ul>
-                    
-                  </li>
-                  <li class="nav-item">
-                      <a href="#" class="nav-link active">
-                          <i class="nav-icon fas fa-wrench"></i>
-                          <p>
-                            Actions
-                              <i class="fas fa-angle-left right"></i>
-                          </p>
-                      </a>
-                      <ul class="nav nav-treeview">
-                          <li class="nav-item">
-                              <a href="{% url 'staff_user:change_password' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Change Password</p>
-                              </a>
-                          </li>
-                          <li class="nav-item">
-                              <a href="{% url 'staff_user:user_registration' %}" class="nav-link">
-                                  <i class="far fa-circle nav-icon"></i>
-                                  <p>Add Staff</p>
-                              </a>
-                          </li>
-                         
-                          <!-- Additional actions items here -->
-                      </ul>
-                    
-                  </li>
-
-                  <li class="nav-item">
-                    <a href="#" class="nav-link active">
-                     <i class="fas fa-edit "></i>
-                        <p>
-                          Feedback
-                          <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{% url 'staff_user:chat' %}" class="nav-link">
-                              <i class="fas fa-comments"></i>
-                                <p>Send Your Message</p>
-                            </a>
-                        </li>
-                      </ul>
-                    </li>
-
-                  <li class="nav-item">
-                      <a href="{% url 'staff_user:logout' %}" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i>
-                          <p>logout</p>
-                      </a>
-                  </li>
-              </ul>
-          </nav>
-          <!-- /.sidebar-menu -->
-      </div>
-      <!-- /.sidebar -->
-  </aside>
-
-
-  {% block content %}
-  {% endblock content %}
-   <footer class="main-footer">
-    <div class="float-right d-none d-sm-block">
-      <b>Version</b> 1.0.0
     </div>
-    <strong>Copyright &copy; {% now "Y" %} <a href="#">TAMC</a>.</strong> All rights reserved.
-   </footer>
-  
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here --> <textarea id="summernote-editor"></textarea>
-    </aside>
-    <!-- /.control-sidebar -->
-  </div>
-  <!-- ./wrapper -->
- 
 
-    <!-- JavaScript files -->
-    <!-- jQuery Mapael -->
-   <!-- Ensure jQuery is included first -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
-   
-    <script>
-      $(document).ready(function() {
-        $('#summernote-editor').summernote({
-          // Summernote options
-        });
-      });
-    </script>
-    
-
-<!-- Bootstrap JS -->
-<!-- jQuery -->
-<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script> 
-
-<!-- Bootstrap 4 -->
-<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
-<!-- Other necessary plugins -->
-<script src="{% static 'plugins/jquery-mousewheel/jquery.mousewheel.js' %}"></script>
-<script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
-<script src="{% static 'plugins/jquery-mapael/jquery.mapael.min.js' %}"></script>
-<script src="{% static 'plugins/jquery-mapael/maps/usa_states.min.js' %}"></script>
-<script src="{% static 'plugins/select2/js/select2.full.min.js' %}"></script>
-<script src="{% static 'plugins/moment/moment.min.js' %}"></script>
-<script src="{% static 'plugins/daterangepicker/daterangepicker.js' %}"></script>
-<script src="{% static 'plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js' %}"></script>
-<script src="{% static 'plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js' %}"></script>
-<script src="{% static 'plugins/bootstrap-switch/js/bootstrap-switch.min.js' %}"></script>
-<script src="{% static 'plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
-<script src="{% static 'plugins/bs-stepper/js/bs-stepper.min.js' %}"></script>
-<script src="{% static 'plugins/dropzone/min/dropzone.min.js' %}"></script>
-<script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
-
-<!-- AdminLTE App -->
-<script src="{% static 'dist/js/adminlte.min.js' %}"></script>
-
-<!-- Page-specific scripts -->
-<script src="{% static 'dist/js/pages/dashboard.js' %}"></script>
-
-<!-- DataTables -->
-<script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
-<script src="{% static 'plugins/jszip/jszip.min.js' %}"></script>
-<script src="{% static 'plugins/pdfmake/pdfmake.min.js' %}"></script>
-<script src="{% static 'plugins/pdfmake/vfs_fonts.js' %}"></script>
-<script src="{% static 'plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
-<script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
-<script src="{% static 'plugins/summernote/summernote-bs4.min.js' %}"></script>
-
-<!-- FullCalendar -->
-<script src="{% static 'plugins/fullcalendar/main.js' %}"></script>
-
-
+    <!-- Preloader Hide Script -->
 <script>
-  $(document).ready(function() {
-    $('[data-widget="pushmenu"]').PushMenu();
-  });
-</script>
+const preloader = document.getElementById('preloader');
 
+// Hide preloader on full page load
+window.addEventListener('load', () => {
+    preloader.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+    setTimeout(() => {
+        preloader.style.display = 'none';
+    }, 500);
+});
 
+// Show preloader before HTMX request
+let preloaderTimeout;
 
-    <script>
-        $(function () {
-      
-          /* initialize the external events
-           -----------------------------------------------------------------*/
-          function ini_events(ele) {
-            ele.each(function () {
-      
-              // create an Event Object (https://fullcalendar.io/docs/event-object)
-              // it doesn't need to have a start or end
-              var eventObject = {
-                title: $.trim($(this).text()) // use the element's text as the event title
-              }
-      
-              // store the Event Object in the DOM element so we can get to it later
-              $(this).data('eventObject', eventObject)
-      
-              // make the event draggable using jQuery UI
-              $(this).draggable({
-                zIndex        : 1070,
-                revert        : true, // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
-              })
-      
-            })
-          }
-      
-          ini_events($('#external-events div.external-event'))
-      
-          /* initialize the calendar
-           -----------------------------------------------------------------*/
-          //Date for the calendar events (dummy data)
-          var date = new Date()
-          var d    = date.getDate(),
-              m    = date.getMonth(),
-              y    = date.getFullYear()
-      
-          var Calendar = FullCalendar.Calendar;
-          var Draggable = FullCalendar.Draggable;
-      
-          var containerEl = document.getElementById('external-events');
-          var checkbox = document.getElementById('drop-remove');
-          var calendarEl = document.getElementById('calendar');
-      
-          // initialize the external events
-          // -----------------------------------------------------------------
-      
-          new Draggable(containerEl, {
-            itemSelector: '.external-event',
-            eventData: function(eventEl) {
-              return {
-                title: eventEl.innerText,
-                backgroundColor: window.getComputedStyle( eventEl ,null).getPropertyValue('background-color'),
-                borderColor: window.getComputedStyle( eventEl ,null).getPropertyValue('background-color'),
-                textColor: window.getComputedStyle( eventEl ,null).getPropertyValue('color'),
-              };
-            }
-          });
-      
-          var calendar = new Calendar(calendarEl, {
-            headerToolbar: {
-              left  : 'prev,next today',
-              center: 'title',
-              right : 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            themeSystem: 'bootstrap',
-            //Random default events
-            events: [
-              {
-                title          : 'All Day Event',
-                start          : new Date(y, m, 1),
-                backgroundColor: '#f56954', //red
-                borderColor    : '#f56954', //red
-                allDay         : true
-              },
-              {
-                title          : 'Long Event',
-                start          : new Date(y, m, d - 5),
-                end            : new Date(y, m, d - 2),
-                backgroundColor: '#f39c12', //yellow
-                borderColor    : '#f39c12' //yellow
-              },
-              {
-                title          : 'Meeting',
-                start          : new Date(y, m, d, 10, 30),
-                allDay         : false,
-                backgroundColor: '#0073b7', //Blue
-                borderColor    : '#0073b7' //Blue
-              },
-              {
-                title          : 'Lunch',
-                start          : new Date(y, m, d, 12, 0),
-                end            : new Date(y, m, d, 14, 0),
-                allDay         : false,
-                backgroundColor: '#00c0ef', //Info (aqua)
-                borderColor    : '#00c0ef' //Info (aqua)
-              },
-              {
-                title          : 'Birthday Party',
-                start          : new Date(y, m, d + 1, 19, 0),
-                end            : new Date(y, m, d + 1, 22, 30),
-                allDay         : false,
-                backgroundColor: '#00a65a', //Success (green)
-                borderColor    : '#00a65a' //Success (green)
-              },
-              {
-                title          : 'Click for Google',
-                start          : new Date(y, m, 28),
-                end            : new Date(y, m, 29),
-                url            : 'https://www.google.com/',
-                backgroundColor: '#3c8dbc', //Primary (light-blue)
-                borderColor    : '#3c8dbc' //Primary (light-blue)
-              }
-            ],
-            editable  : true,
-            droppable : true, // this allows things to be dropped onto the calendar !!!
-            drop      : function(info) {
-              // is the "remove after drop" checkbox checked?
-              if (checkbox.checked) {
-                // if so, remove the element from the "Draggable Events" list
-                info.draggedEl.parentNode.removeChild(info.draggedEl);
-              }
-            }
-          });
-      
-          calendar.render();
-          // $('#calendar').fullCalendar()
-      
-          /* ADDING EVENTS */
-          var currColor = '#3c8dbc' //Red by default
-          // Color chooser button
-          $('#color-chooser > li > a').click(function (e) {
-            e.preventDefault()
-            // Save color
-            currColor = $(this).css('color')
-            // Add color effect to button
-            $('#add-new-event').css({
-              'background-color': currColor,
-              'border-color'    : currColor
-            })
-          })
-          $('#add-new-event').click(function (e) {
-            e.preventDefault()
-            // Get value and make sure it is not null
-            var val = $('#new-event').val()
-            if (val.length == 0) {
-              return
-            }
-      
-            // Create events
-            var event = $('<div />')
-            event.css({
-              'background-color': currColor,
-              'border-color'    : currColor,
-              'color'           : '#fff'
-            }).addClass('external-event')
-            event.text(val)
-            $('#external-events').prepend(event)
-      
-            // Add draggable funtionality
-            ini_events(event)
-      
-            // Remove event from text input
-            $('#new-event').val('')
-          })
-        })
+document.body.addEventListener('htmx:beforeRequest', (evt) => {
+    if (evt.detail.target.id === "user-table") {
+        preloader.style.display = 'flex';
+        preloader.classList.remove('opacity-0');
 
-
-
-        $(document).ready(function() {
-          $('#summernote-editor').summernote({
-            // Summernote options
-          });
-        });
-      </script>
-
-      
-<!-- message -->
-
-<script>
-  // Function to hide the messages
-  function hideMessages() {
-    var messagesDiv = document.getElementById("messages");
-    if (messagesDiv) {
-      var messages = messagesDiv.getElementsByClassName("alert");
-      for (var i = 0; i < messages.length; i++) {
-        var message = messages[i];
-        // Automatically hide each message after 5 seconds (5000 milliseconds)
-        setTimeout(function () {
-          message.style.display = "none";
-        }, 5000);
-      }
+        // Ensure preloader shows at least 300ms
+        preloaderTimeout = setTimeout(() => {}, 300);
     }
-  }
-
-  // Call the hideMessages function when the page loads
-  window.addEventListener("load", hideMessages);
-</script>
+});
 
 
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-      var calendarEl = document.getElementById('calendar');
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          events: [
-              {
-                  title: 'Event 1',
-                  start: '2023-10-10'
-              },
-              {
-                  title: 'Event 2',
-                  start: '2023-10-15'
-              },
-              {
-                  title: 'Event 3',
-                  start: '2023-10-20'
-              }
-              // Add more events as needed
-          ]
-      });
-      calendar.render();
-  });
-
-
-  
-</script>
-{% block styles %}
-
-
-
-<style>
-  /* Preloader styles */
-
-.preloader-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999; /* Ensure it's on top of other content */
-}
-
-/* Additional styles for the image container */
-.preloader-image {
-  border-radius: 50%; /* Optional: Applies rounded corners to the container */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Optional: Adds a shadow to the container */
-
-
-  border: 8px solid #f3f3f3; /* Light grey border */
-    border-top: 8px solid #3498db; /* Blue border for animation */
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 5s linear infinite; /* Rotate animation */
-  
-
-}
-
-  
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-
-
-  }
-
-
-  /* Hide content by default */
-/* Hide content by setting visibility to hidden */
-#content-wrapper {
-    visibility: hidden;
-}
-
-
-
-</style>
-
-{% endblock styles %}
-
-
-
-
-  {% comment %} /* Custom CSS for mobile responsiveness */
-  @media (max-width: 767px) {
-    .main-sidebar {
-      width: 250px; /* Adjust the width as needed for mobile */
-    }
-    .sidebar-mini.sidebar-collapse .main-sidebar {
-      margin-left: -250px; /* Matches the width above to slide in/out */
-    }
-  } {% endcomment %}
-
-  
-
-<script>
-  // JavaScript for handling the sidebar open/close button for mobile
-  $(document).ready(function() {
-    $('.main-sidebar .nav-treeview').css('display', 'none'); // Hide the menu initially
-
-    $('.navbar .fas.fa-bars').on('click', function() {
-      var isVisible = $('.main-sidebar .nav-treeview').is(':visible');
-      if (isVisible) {
-        $('.main-sidebar .nav-treeview').hide();
-      } else {
-        $('.main-sidebar .nav-treeview').show();
-      }
-    });
-  });
-
-</script>
-
-
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
-<script>
-  // JavaScript for hiding the preloader with a delay once the page is fully loaded
-  document.addEventListener('DOMContentLoaded', function () {
-    var preloader = document.getElementById('preloader');
-    var contentWrapper = document.getElementById('content-wrapper');
-
-    if (preloader) {
-        setTimeout(function() {
+// Hide preloader after HTMX swaps content
+document.body.addEventListener('htmx:afterSwap', (evt) => {
+    if (evt.detail.target.id === "user-table") {
+        clearTimeout(preloaderTimeout);
+        preloader.classList.add('opacity-0');
+        setTimeout(() => {
             preloader.style.display = 'none';
-            contentWrapper.style.display = 'block'; // Show the content once the preloader is hidden
-        }, 1000); // Adjust the delay time (in milliseconds) as needed
+        }, 300);
     }
 });
 
 </script>
 
-<script>
-  // Function to hide the messages
-  function hideMessages() {
-    var messagesDiv = document.getElementById("messages");
-    if (messagesDiv) {
-      var messages = messagesDiv.getElementsByClassName("alert");
-      for (var i = 0; i < messages.length; i++) {
-        var message = messages[i];
-        // Automatically hide each message after 5 seconds (5000 milliseconds)
-        setTimeout(function () {
-          message.style.display = "none";
-        }, 5000);
-      }
-    }
-  }
 
-  // Call the hideMessages function when the page loads
-  window.addEventListener("load", hideMessages);
-</script>
-
-<!-- Include jQuery -->
-{% comment %} <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> {% endcomment %}
-
-</div>
-
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,168 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Profile Header -->
+    <div class="px-4 sm:px-0">
+        <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900">User Profile</h1>
+            <a href="{% url 'staff_user:update_profile' %}" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+                <i class="fas fa-edit mr-2"></i> Edit Profile
+            </a>
+        </div>
+        <p class="mt-1 text-sm text-gray-600">Manage your account settings and personal information</p>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="mt-6 shadow sm:rounded-lg bg-white">
+        <div class="px-4 py-5 sm:px-6">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+                <!-- Avatar -->
+                <div class="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
+                    {% if profile %}
+                    <img class="h-24 w-24 rounded-full object-cover" src="{{ profile.profile_picture.url }}" alt="">
+                    {% else %}
+                    <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center text-4xl font-bold text-gray-600">
+                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Basic Info -->
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-gray-900">{{ user.get_full_name }}</h2>
+                    <p class="text-sm text-gray-500">{{ user.email }}</p>
+                    
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        {% for group in user.groups.all %}
+                        <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">{{ group.name }}</span>
+                        {% endfor %}
+                        
+                        {% if user.is_active %}
+                        <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Active</span>
+                        {% else %}
+                        <span class="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Divider -->
+        <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                <!-- Personal Information -->
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Personal Information</dt>
+                    <dd class="mt-1 text-sm text-gray-900 space-y-2">
+                        <div>
+                            <span class="font-medium">First Name:</span> {{ user.first_name }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Last Name:</span> {{ user.last_name }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Phone:</span> {{ user.profile.phone|default:"Not provided" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Department:</span> {{ user.profile.department|default:"Not provided" }}
+                        </div>
+                    </dd>
+                </div>
+                
+                <!-- Account Information -->
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Account Information</dt>
+                    <dd class="mt-1 text-sm text-gray-900 space-y-2">
+                        <div>
+                            <span class="font-medium">Username:</span> {{ user.username }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Last Login:</span> {{ user.last_login|date:"M d, Y H:i"|default:"Never" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Date Joined:</span> {{ user.date_joined|date:"M d, Y" }}
+                        </div>
+                        <div>
+                            <span class="font-medium">Password:</span> 
+                            <a href="{% url 'staff_user:change_password' %}" class="text-blue-600 hover:text-blue-800">Change Password</a>
+                        </div>
+                    </dd>
+                </div>
+                
+                <!-- Additional Information -->
+                {% if user.profile.bio or user.profile.address %}
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Additional Information</dt>
+                    <dd class="mt-1 text-sm text-gray-900 space-y-2">
+                        {% if user.profile.bio %}
+                        <div>
+                            <span class="font-medium">Bio:</span> 
+                            <p class="mt-1">{{ user.profile.bio }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if user.profile.address %}
+                        <div>
+                            <span class="font-medium">Address:</span> 
+                            <p class="mt-1">{{ user.profile.address }}</p>
+                        </div>
+                        {% endif %}
+                    </dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+
+    <!-- Two-factor Authentication Section -->
+    <div class="mt-6 shadow sm:rounded-lg bg-white">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Security</h3>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-sm font-medium text-gray-900">Two-factor Authentication</h4>
+                    <p class="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                </div>
+                <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                    {% if user.profile.two_factor_enabled %}
+                    <i class="fas fa-lock text-green-500 mr-2"></i> Enabled
+                    {% else %}
+                    <i class="fas fa-lock-open text-red-500 mr-2"></i> Disabled
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="mt-6 shadow sm:rounded-lg bg-white">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Recent Activity</h3>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+            <ul class="divide-y divide-gray-200">
+                {% for activity in recent_activities %}
+                <li class="py-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-{{ activity.icon }} text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
+                            <p class="text-sm text-gray-500">{{ activity.timestamp|timesince }} ago</p>
+                        </div>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="py-4 text-center text-sm text-gray-500">No recent activity</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 import re
-from django.shortcuts import render,redirect
+from django.shortcuts import get_object_or_404, render,redirect
 from django.contrib.auth import authenticate,login,logout,update_session_auth_hash
 from django.contrib import messages
 # from staff_user.models import MyUser
@@ -13,6 +13,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 
 from django.core.validators import validate_email
+from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -27,19 +28,23 @@ from equipment.decorators import determine_user_role
 
 # codes toregister user
 
+def index(request):
+    
+    return render(request,'index.html')
+
 @permission_required('auth.add_user', raise_exception=True)
 def user_registration(request):
     roles = Group.objects.all()
 
     if request.method == 'POST':
         # Collect data
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password_confirm')
+        username = request.POST.get('username','').strip()
+        email = request.POST.get('email','').strip()
+        password = request.POST.get('password1')
+        password_confirm = request.POST.get('password2')
         position = request.POST.get('position')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
+        first_name = request.POST.get('first_name').strip()
+        last_name = request.POST.get('last_name').strip()
         middle_name = request.POST.get('middle_name')
         phone_number = request.POST.get('phone_number')
         gender = request.POST.get('gender')
@@ -75,8 +80,11 @@ def user_registration(request):
             with transaction.atomic():
                 # Create the User object
                 user = User.objects.create_user(
-                    username=username, email=email, password=password,
-                    first_name=first_name, last_name=last_name
+                    username=username, 
+                    email=email, 
+                    password=password,
+                    first_name=first_name, 
+                    last_name=last_name
                 )
 
                 # Assign the user to a group
@@ -84,15 +92,15 @@ def user_registration(request):
                 user.groups.add(group)
 
                 # Create the UserProfile with additional fields
-                UserProfile.objects.create(
-                    user=user,
-                    phone_number=phone_number,
-                    gender=gender,
-                    nida_number=nida_number
-                )
+                profile = user.profile
+                profile.middle_name =middle_name,
+                profile.phone_number = phone_number
+                profile.gender = gender
+                profile.nida_number = nida_number
+                profile.save()
 
             messages.success(request, 'User registered successfully.')
-            return redirect('staff_user:registered_user')
+            return redirect('staff_user:registered_users')
 
         except Exception as e:
             messages.error(request, f'Error registering user: {e}')
@@ -132,14 +140,43 @@ def login_process(request):
 @login_required(login_url='staff_user:staff_login_process')
 def view_registered_users(request):
     search_query = request.GET.get('search_query')
+    role_id = request.GET.get('role')
+    status = request.GET.get('status')
+    roles = Group.objects.all()
+    users= User.objects.all()
     if search_query:
-        users = User.objects.filter(Q(username__icontains=search_query) | Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query) | Q(groups__name__icontains=search_query)).distinct()
-    else:
-        users = User.objects.all()
-    return render(request, 'registered_user.html', {'users': users})
+        users = users.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains='search_query')
+        )
+    if role_id:
+        users = users.filter(groups__id=role_id)
+    
+    if status == 'active':
+        users = users.filter(is_active=True)
+    elif status == 'inactive':
+        users = users.filter(is_active=False)
+    users = users.distinct()
+    paginator = Paginator(users, 10)  # 10 users per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+     'users': page_obj,
+      'roles':roles
+        }
+    if request.headers.get('HX-Request')== 'true':
+        return render(request,'registered_user.html',context)
 
+    return render(request, 
+                  'registered_user.html', 
+                 context
+                  )
+    
 # dashboard start here
-@login_required(login_url='staff_user:staff_login_process')
+@login_required(login_url='staff_user:staff_login_process') 
 def dashboard(request):
   
 
@@ -218,7 +255,7 @@ def view_user_profile(request):
         context = {
             'profile': profile,
         }
-        return render(request, 'user_profile.html', context)
+        return render(request, 'staff/new_profile.html', context)
 
     except UserProfile.DoesNotExist:
         # Handle the case when the user doesn't have a profile
@@ -228,48 +265,63 @@ def view_user_profile(request):
 
 @login_required(login_url='staff_user:staff_login_process')
 def update_profile(request):
-    user = request.user  # Current logged-in user
+    user = request.user
+
     try:
-        profile = UserProfile.objects.get(user=user)  # Get the associated profile
+        profile = UserProfile.objects.get(user=user)
 
         if request.method == 'POST':
-            # Update User-related fields
+            # User fields
             user.email = request.POST.get('email', '')
             user.first_name = request.POST.get('first_name', '')
             user.middle_name = request.POST.get('middle_name', '')
             user.last_name = request.POST.get('last_name', '')
             user.username = request.POST.get('username', '')
 
-            # Validate username uniqueness
+            # Check username uniqueness
             if User.objects.filter(username=user.username).exclude(pk=user.pk).exists():
                 messages.error(request, 'Username is already taken.')
                 return redirect('staff_user:update_profile')
 
-            # Validate email uniqueness
+            # Check email uniqueness
             if User.objects.filter(email=user.email).exclude(pk=user.pk).exists():
-                messages.error(request,'Email is already in use.')
+                messages.error(request, 'Email is already in use.')
                 return redirect('staff_user:update_profile')
 
-            # Update Profile-related fields
+            # Profile fields
             profile.phone_number = request.POST.get('phone_number', '')
             profile.nida_number = request.POST.get('nida_number', '')
 
-            user.save()  # Save User changes
-            profile.save()  # Save Profile changes
+            # Handle profile picture upload
+            if 'profile_picture' in request.FILES:
+                profile.profile_picture = request.FILES['profile_picture']
+
+            user.save()
+            profile.save()
 
             messages.success(request, 'Profile updated successfully!')
-            return redirect('staff_user:my_profile')  # Redirect to the profile view
+            return redirect('staff_user:my_profile')
 
         context = {
             'user': user,
             'profile': profile,
         }
-        return render(request, 'update_profile.html', context)
+        return render(request, 'staff/new_profile_update.html', context)
 
     except UserProfile.DoesNotExist:
         messages.error(request, 'Your profile is missing. Please contact support.')
-        return redirect('staff_user:user_profile')  # Redirect back to the profile view
+        return redirect('staff_user:user_profile')
 
+def view_user_detail(request, user_id):
+    profile = get_object_or_404(UserProfile, user__id=user_id)
+    
+    return render(
+        request,
+        'staff/new_profile_update.html',
+        {
+            'profile':profile
+        }
+    )
 
 @login_required(login_url='staff_user:staff_login_process')
 def change_password(request):
@@ -337,7 +389,7 @@ def message_success(request):
 @login_required(login_url='staff_user:staff_login_process')
 def logout_user(request):
     logout(request)
-    return redirect('staff_user:staff_login_process')
+    return redirect('staff_user:welcome')
 
 def custom_404_page(request, exception=None):
     return render(request, 'base/404.html', status=404)

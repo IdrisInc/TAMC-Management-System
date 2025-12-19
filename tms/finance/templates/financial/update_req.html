@@ -6,115 +6,194 @@
 {% endblock title %}
 
 {% block content %}
-<div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>Update Financial Request</h1>
+<div class="min-h-screen bg-gray-50 py-6">
+    <!-- Content Header -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Update Financial Request</h1>
                 </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Financial Form</li>
-                    </ol>
+                <div class="mt-4 sm:mt-0">
+                    <nav class="flex space-x-2 text-sm text-gray-500">
+                        <a href="#" class="hover:text-blue-600 transition-colors">Home</a>
+                        <span>/</span>
+                        <span class="text-gray-700">Financial Form</span>
+                    </nav>
                 </div>
             </div>
         </div>
-    </section>
 
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row justify-content-center">
-                <!-- left column -->
-                <div class="col-md-9">
-                    <!-- general form elements -->
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Petty/Cheque</h3>
-                        </div>
-                        <form method="post" onsubmit="return validateForm()">
-                            {% csrf_token %}
-                            <div class="card-body">
-                                <!-- Pre-fill the form fields with existing request data -->
-                                <input type="hidden" name="request_id" value="{{ request.id }}">
-                                
-                                <!-- Amount Numeric Field (Read-only) -->
-                                <div class="form-group">
-                                    <label for="amount_numeric">Amount in Numeric</label>
-                                    <input type="number" class="form-control" id="amount_numeric" name="amount_numeric" value="{{ request.amount_numeric }}" readonly required>
-                                </div>
-
-                                <!-- Amount in Words Field (Read-only) -->
-                                <div class="form-group">
-                                    <label for="amount_words">Amount in Words</label>
-                                    <input type="text" class="form-control" id="amount_words" name="amount_words" value="{{ request.amount_words }}" readonly required>
-                                </div>
-
-                                <!-- Purpose Field -->
-                                <div class="form-group">
-                                    <label for="purpose">Purpose</label>
-                                    <input type="text" class="form-control" id="purpose" name="purpose" value="{{ request.purpose }}" required>
-                                </div>
-
-                                <!-- Description of Request Table -->
-                                <div class="form-group">
-                                    <label for="description">Description of Request</label>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" id="descriptionTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>Item</th>
-                                                    <th>Quantity</th>
-                                                    <th>Price</th>
-                                                    <th>Total Request</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for item in request.items.all %}
-                                                <tr>
-                                                    <td><input type="text" class="form-control" name="item[]" value="{{ item.item_name }}" required></td>
-                                                    <td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="{{ item.quantity }}" required oninput="updateTotal(this)"></td>
-                                                    <td><input type="number" class="form-control price" name="price[]" min="0" value="{{ item.price }}" required oninput="updateTotal(this)"></td>
-                                                    <td><input type="text" class="form-control total_request" name="total_request[]" value="{{ item.total_request }}" readonly required></td>
-                                                    <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <!-- Buttons to add new rows and calculate total -->
-                                    <button type="button" class="btn btn-primary" onclick="addRow()">Add Item</button>
-                                    <button type="button" class="btn btn-success" onclick="calculateTotal()">Calculate Total</button>
-                                </div>
-
-                                <!-- Total Request Field (Read-only) -->
-                                <div class="form-group">
-                                    <label for="total_request">Total Request</label>
-                                    <input type="text" class="form-control" id="total_request" name="total_request" value="{{ request.total_request }}" readonly>
-                                </div>
-
-                                <!-- Submit Button -->
-                                <button type="submit" class="btn btn-primary">Update Request</button>
-                            </div>
-                        </form>
+        <!-- Main Content -->
+        <div class="flex justify-center">
+            <div class="w-full max-w-4xl">
+                <!-- Form Card -->
+                <div class="bg-white shadow-lg rounded-lg border border-gray-200">
+                    <div class="bg-blue-600 text-white px-6 py-4 rounded-t-lg">
+                        <h3 class="text-lg font-medium">Petty/Cheque Request</h3>
                     </div>
+                    
+                    <form method="post" onsubmit="return validateForm()" class="p-6 space-y-6">
+                        {% csrf_token %}
+                        
+                        <!-- Hidden field -->
+                        <input type="hidden" name="request_id" value="{{ request.id }}">
+                        
+                        <!-- Amount Numeric Field -->
+                        <div class="form-group">
+                            <label for="amount_numeric" class="block text-sm font-medium text-gray-700 mb-2">
+                                Amount in Numeric
+                            </label>
+                            <input type="number" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="amount_numeric" 
+                                   name="amount_numeric" 
+                                   value="{{ request.amount_numeric }}" 
+                                   readonly required>
+                        </div>
+
+                        <!-- Amount in Words Field -->
+                        <div class="form-group">
+                            <label for="amount_words" class="block text-sm font-medium text-gray-700 mb-2">
+                                Amount in Words
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="amount_words" 
+                                   name="amount_words" 
+                                   value="{{ request.amount_words }}" 
+                                   readonly required>
+                        </div>
+
+                        <!-- Purpose Field -->
+                        <div class="form-group">
+                            <label for="purpose" class="block text-sm font-medium text-gray-700 mb-2">
+                                Purpose
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   id="purpose" 
+                                   name="purpose" 
+                                   value="{{ request.purpose }}" 
+                                   required>
+                        </div>
+
+                        <!-- Description of Request Table -->
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Description of Request
+                            </label>
+                            
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200" id="descriptionTable">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Request</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        {% for item in request.items.all %}
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3">
+                                                <input type="text" 
+                                                       class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                                                       name="item[]" 
+                                                       value="{{ item.item_name }}" 
+                                                       required>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="number" 
+                                                       class="w-full px-2 py-1 border border-gray-300 rounded quantity focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                                                       name="quantity[]" 
+                                                       min="0" 
+                                                       value="{{ item.quantity }}" 
+                                                       required 
+                                                       oninput="updateTotal(this)">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="number" 
+                                                       class="w-full px-2 py-1 border border-gray-300 rounded price focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" 
+                                                       name="price[]" 
+                                                       min="0" 
+                                                       value="{{ item.price }}" 
+                                                       required 
+                                                       oninput="updateTotal(this)">
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="text" 
+                                                       class="w-full px-2 py-1 border border-gray-300 rounded bg-gray-50 total_request focus:outline-none" 
+                                                       name="total_request[]" 
+                                                       value="{{ item.total_request }}" 
+                                                       readonly required>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <button type="button" 
+                                                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors" 
+                                                        onclick="removeRow(this)">
+                                                    Remove
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Table Action Buttons -->
+                            <div class="mt-4 flex flex-wrap gap-3">
+                                <button type="button" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors" 
+                                        onclick="addRow()">
+                                    <i class="fas fa-plus mr-2"></i>Add Item
+                                </button>
+                                <button type="button" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium transition-colors" 
+                                        onclick="calculateTotal()">
+                                    <i class="fas fa-calculator mr-2"></i>Calculate Total
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Total Request Field -->
+                        <div class="form-group">
+                            <label for="total_request" class="block text-sm font-medium text-gray-700 mb-2">
+                                Total Request
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium" 
+                                   id="total_request" 
+                                   name="total_request" 
+                                   value="{{ request.total_request }}" 
+                                   readonly>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end pt-6 border-t border-gray-200">
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <i class="fas fa-save mr-2"></i>Update Request
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     function addRow() {
-        var newRow = '<tr>' +
-            '<td><input type="text" class="form-control" name="item[]" required></td>' +
-            '<td><input type="number" class="form-control quantity" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-            '<td><input type="number" class="form-control price" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
-            '<td><input type="text" class="form-control total_request" name="total_request[]" readonly required></td>' +
-            '<td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>' +
+        var newRow = '<tr class="hover:bg-gray-50">' +
+            '<td class="px-4 py-3"><input type="text" class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" name="item[]" required></td>' +
+            '<td class="px-4 py-3"><input type="number" class="w-full px-2 py-1 border border-gray-300 rounded quantity focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" name="quantity[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+            '<td class="px-4 py-3"><input type="number" class="w-full px-2 py-1 border border-gray-300 rounded price focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" name="price[]" min="0" value="0" required oninput="updateTotal(this)"></td>' +
+            '<td class="px-4 py-3"><input type="text" class="w-full px-2 py-1 border border-gray-300 rounded bg-gray-50 total_request focus:outline-none" name="total_request[]" readonly required></td>' +
+            '<td class="px-4 py-3"><button type="button" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition-colors" onclick="removeRow(this)">Remove</button></td>' +
             '</tr>';
         $('#descriptionTable tbody').append(newRow);
         calculateTotal();
@@ -141,8 +220,8 @@
             totalRequest += total;
         });
         $('#total_request').val(totalRequest.toFixed(2));
-        $('#amount_numeric').val(totalRequest.toFixed(2)); // Fill amount_numeric with total
-        convertAmountToWords(); // Update amount in words
+        $('#amount_numeric').val(totalRequest.toFixed(2));
+        convertAmountToWords();
     }
 
     function validateForm() {

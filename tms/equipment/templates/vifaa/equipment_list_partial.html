@@ -1,46 +1,6 @@
 {% block style %}
 <style>
-    /* Style for Edit button */
-    .edit-btn {
-        background-color: #4CAF50; /* Green background */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .edit-btn:hover {
-        background-color: #45a049; /* Darker green on hover */
-    }
-
-    /* Style for Delete button */
-    .delete-btn {
-        background-color: #f44336; /* Red background */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .delete-btn:hover {
-        background-color: #e41f1f; /* Darker red on hover */
-    }
-
-    /* General styling for the table */
-    .table-hover tbody tr:hover {
-        background-color: #f1f1f1; /* Light gray background on row hover */
-    }
-
-    /* Style for the grid item */
-    .filtr-item {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 10px;
-        text-align: center;
-    }
-
+    /* These can be moved to your main CSS file if using Tailwind */
     .filtr-item img {
         max-width: 100%;
         height: auto;
@@ -49,94 +9,164 @@
 {% endblock style %}
 
 <!-- Grid View -->
-<div id="grid-view" class="{% if view == 'grid' %}show{% else %}hidden{% endif %}">
-    <div class="btn-group w-100 mb-2">
-        <a class="btn btn-info active" href="javascript:void(0)" data-filter="all">All items</a>
+<div id="grid-view" class="{% if view == 'grid' %}block{% else %}hidden{% endif %}">
+    <div class="flex flex-wrap gap-2 mb-4">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded active" data-filter="all">All items</button>
         {% for category in categories %}
-        <a class="btn btn-info" href="javascript:void(0)" data-filter="{{ category }}">{{ category }}</a>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded" data-filter="{{ category }}">{{ category }}</button>
         {% endfor %}
     </div>
 
-    <!-- Display total equipment count in the grid view -->
-    <div class="mb-2">
-        <strong>Total Equipment: {{ total_equipment_count }}</strong>
+    <!-- Equipment count -->
+    <div class="mb-4 font-semibold">
+        Total Equipment: {{ total_equipment_count }}
     </div>
 
-    <div class="filter-container p-0 row">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {% for equipment in equipment %}
-        <div class="filtr-item col-lg-3 col-md-4 col-sm-6 col-12 mb-4" data-category="{{ equipment.category }}" data-sort="sample">
-            <a href="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}#{% endif %}" data-toggle="lightbox" data-title="{{ equipment.name }}">
-                <img src="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}https://via.placeholder.com/300{% endif %}" class="img-fluid mb-2" alt="{{ equipment.name }}">
-                <p>Name: {{ equipment.name }}</p>
-                <p>Serial Number: {{ equipment.serial_number }}</p>
+        <div class="filtr-item border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow" 
+             data-category="{{ equipment.category }}" data-sort="sample">
+            <a href="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}#{% endif %}" 
+               data-toggle="lightbox" data-title="{{ equipment.name }}">
+                <img src="{% if equipment.equipment_image %}{{ equipment.equipment_image.url }}{% else %}https://via.placeholder.com/300{% endif %}" 
+                     class="w-full h-48 object-cover mb-2 rounded" alt="{{ equipment.name }}">
+                <p class="font-medium">Name: {{ equipment.name }}</p>
+                <p class="text-sm text-gray-600">Serial: {{ equipment.serial_number }}</p>
             </a>
-           
+            <div class="mt-2 flex space-x-2">
+                <a href="{% url 'equipment:edit_equipment' equipment.id %}" 
+                   class="edit-btn px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+                    Edit
+                </a>
+                <a href="{% url 'equipment:delete_confirmation' equipment.id %}" 
+                   class="delete-btn px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                    Delete
+                </a>
+            </div>
         </div>
         {% empty %}
-        <p class="col-12">No equipment found.</p>
+        <p class="col-span-full text-center py-4 text-gray-500">No equipment found.</p>
         {% endfor %}
     </div>
 </div>
 
 <!-- Table View -->
-<div id="table-view" class="{% if view == 'table' %}show{% else %}hidden{% endif %}">
-    <!-- Display total equipment count in the table view -->
-    <div class="mb-2">
-        <strong>Total Equipment: {{ total_equipment_count }}</strong>
+<div id="table-view" class="{% if view == 'table' %}block{% else %}hidden{% endif %} overflow-x-auto">
+    <!-- Equipment count -->
+    <div class="mb-4 font-semibold">
+        Total Equipment: {{ total_equipment_count }}
     </div>
 
-    <table class="table table-head-fixed text-nowrap table-hover table-striped">
-        <thead>
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
             <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Type/Model</th>
-                <th>Registered Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type/Model</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registered Date</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-white divide-y divide-gray-200">
             {% for equipment in equipment %}
-            <tr>
-                <td>{{ equipment.name }} - {{ equipment.serial_number }}</td>
-                <td>{{ equipment.category }}</td>
-                <td>{{ equipment.type_model }}</td>
-                <td>{{ equipment.registered_date|date:"Y-m-d H:i" }}</td>
-                <td>{{ equipment.status }}</td>
-             
-                <td>
-                    <!-- Edit button with custom background color -->
-                    <a href="{% url 'equipment:edit_equipment' equipment.id %}" class="edit-btn">Edit</a>
-                    
-                    <!-- Delete button with custom background color -->
-                    <a href="{% url 'equipment:delete_confirmation' equipment.id %}" class="delete-btn">Delete</a>
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{ equipment.name }}</div>
+                    <div class="text-sm text-gray-500">{{ equipment.serial_number }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ equipment.category }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ equipment.type_model }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ equipment.registered_date|date:"Y-m-d H:i" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if equipment.status == 'Active' %}bg-green-100 text-green-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                        {{ equipment.status }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a href="{% url 'equipment:edit_equipment' equipment.id %}" 
+                       class="edit-btn px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 mr-2">
+                        Edit
+                    </a>
+                    <a href="{% url 'equipment:delete_confirmation' equipment.id %}" 
+                       class="delete-btn px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                        Delete
+                    </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No equipment found.</td>
+                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No equipment found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Pagination controls -->
-<div class="pagination">
-    <span class="step-links">
+<!-- Pagination -->
+<div class="mt-4 flex items-center justify-between">
+    <div class="flex-1 flex justify-between sm:hidden">
         {% if page_obj.has_previous %}
-            <a href="?page=1&q={{ request.GET.q }}&view={{ view }}">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&view={{ view }}">previous</a>
+        <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&view={{ view }}" 
+           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Previous
+        </a>
         {% endif %}
-
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-        </span>
-
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&view={{ view }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&view={{ view }}">last &raquo;</a>
+        <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&view={{ view }}" 
+           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Next
+        </a>
         {% endif %}
-    </span>
+    </div>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Showing page <span class="font-medium">{{ page_obj.number }}</span> of <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+            </p>
+        </div>
+        <div>
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page=1&q={{ request.GET.q }}&view={{ view }}" 
+                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">First</span>
+                    &laquo;
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}&view={{ view }}" 
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <a href="?page={{ num }}&q={{ request.GET.q }}&view={{ view }}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-100 text-sm font-medium text-blue-600">
+                        {{ num }}
+                    </a>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}&q={{ request.GET.q }}&view={{ view }}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ num }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}&view={{ view }}" 
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}&q={{ request.GET.q }}&view={{ view }}" 
+                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <span class="sr-only">Last</span>
+                    &raquo;
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
 </div>

@@ -1,153 +1,105 @@
 {% extends "base/authbase.html" %}
 
 {% block title %}
-    <title>TAMC | Register</title>
+<title>TAMC | Register</title>
 {% endblock title %}
 
 {% block content %}
-<body class="hold-transition register-page">
-    <div class="register-box">
-        <div class="register-logo">
-            <!-- <a href="#" disabled><b>Admin |</b> TAMC</a> -->
-        </div>
+<div class="card p-4 shadow-lg rounded-lg border-0">
+    <div class="card-body">
 
-        <div class="card">
-            <div class="card-body register-card-body">
-                <p class="login-box-msg">Register a new membership</p>
-                
-                <div id="messages">
-                    {% for message in messages %}
-                        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+        <h3 class="text-center mb-4">Create User Account</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
                 </div>
+            {% endfor %}
+        {% endif %}
 
-                <form action="" method="post">
-                    {% csrf_token %}
+        <form method="post" action="{% url 'staff_user:user_registration' %}">
+            {% csrf_token %}
 
-                    <!-- Existing Input Fields -->
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="First Name" name="first_name" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Middle Name" name="middle_name">
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Last Name" name="last_name" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Username" name="username" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="email" class="form-control" placeholder="Email" name="email" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-envelope"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="password" class="form-control" placeholder="Password" name="password" required>
-                        <div class="input-group-append">
-                            <div la="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <input type="password" class="form-control" placeholder="Confirm Password" name="password_confirm" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group mb-3">
-                      <select class="custom-select" name="position" required>
-                          <option value="" selected>Select Position</option>
-                          {% for role in roles %}
-                              <option value="{{ role.name }}">{{ role.name }}</option>
-                          {% endfor %}
-                      </select>
-                      <div class="input-group-append">
-                          <div class="input-group-text">
-                              <span class="fas fa-user"></span>
-                          </div>
-                      </div>
-                  </div>
-
-                  <!-- Additional Fields -->
-                  <div class="input-group mb-3">
-                      <input type="text" class="form-control" placeholder="Phone Number" name="phone_number" required>
-                      <div class="input-group-append">
-                          <div class="input-group-text">
-                              <span class="fas fa-phone"></span>
-                          </div>
-                      </div>
-                  </div>
-
-                  <div class="input-group mb-3">
-                      <select class="custom-select" name="gender" required>
-                          <option value="" selected>Select Gender</option>
-                          <option value="male">Male</option>
-                          <option value="female">Female</option>
-                      </select>
-                      <div class="input-group-append">
-                          <div class="input-group-text">
-                              <span class="fas fa-venus-mars"></span>
-                          </div>
-                      </div>
-                  </div>
-
-                  <div class="input-group mb-3">
-                      <input type="text" class="form-control" placeholder="NIDA Number" name="nida_number" required>
-                      <div class="input-group-append">
-                          <div la="input-group-text">
-                              <span class="fas fa-id-card"></span>
-                          </div>
-                      </div>
-                  </div>
-
-                    <div class="row">
-                        <div class="col-4">
-                        </div>
-                        <div class="col-4 mb-3">
-                            <button type="submit" class="btn btn-primary btn-block">Register</button>
-                        </div>
-                    </div>
-                </form>
-
-                {% comment %} <a href="{% url 'staff_user:staff_login_process' %}" class="text-center">Already have a membership</a> {% endcomment %}
+            <!-- Username -->
+            <div class="mb-3">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" required>
             </div>
-        </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+
+            <!-- First name -->
+            <div class="mb-3">
+                <label>First name</label>
+                <input type="text" name="first_name" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label>Middle name</label>
+                <input type="text" name="middle_name" class="form-control">
+            </div>
+
+            <!-- Last name -->
+            <div class="mb-3">
+                <label>Last name</label>
+                <input type="text" name="last_name" class="form-control">
+            </div>
+
+            <!-- Phone -->
+            <div class="mb-3">
+                <label>Phone number</label>
+                <input type="text" name="phone_number" class="form-control">
+            </div>
+
+            <!-- Gender -->
+            <div class="mb-3">
+                <label>Gender</label>
+                <select name="gender" class="form-control">
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <!-- NIDA -->
+            <div class="mb-3">
+                <label>NIDA Number</label>
+                <input type="text" name="nida_number" class="form-control">
+            </div>
+
+            <!-- Role -->
+            <div class="mb-3">
+                <label>Role</label>
+                <select name="position" class="form-control" required>
+                    <option value="">Select role</option>
+                    {% for role in roles %}
+                        <option value="{{ role.name }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label>Password</label>
+                <input type="password" name="password1" class="form-control" required>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-3">
+                <label>Confirm Password</label>
+                <input type="password" name="password2" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                Register
+            </button>
+        </form>
+
     </div>
-</body>
+</div>
 {% endblock content %}

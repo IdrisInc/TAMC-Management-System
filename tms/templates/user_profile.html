@@ -1,140 +1,224 @@
 {% extends "base/base.html" %}
 {% load static %}
 {% block title %}
-    <title>TAMC | Profile</title>
+    <title> TAMC | Profile</title>
 {% endblock title %}
 
 {% block content %}
-  <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class ="content-header">
+<!-- Content Wrapper -->
+<div class="content-wrapper" ">
+    <!-- Content Header -->
+    <section class="content-header pt-4">
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Profile</h1>
+            <h1 class="font-weight-bold">My Profile</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              {% comment %} <li class="breadcrumb-item"><a href="#">User</a></li> {% endcomment %}
+              <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
               <li class="breadcrumb-item active">Profile</li>
-              <div id="messages">
-                {% for message in messages %}
-                  <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% endif %}">
-                    {{ message }}
-                  </div>
-                {% endfor %}
-              </div>
-             
             </ol>
           </div>
         </div>
-      </div><!-- /.container-fluid -->
+      </div>
     </section>
 
     <!-- Main content -->
-    <section class="content">
+    <section class="content pb-4">
         <div class="container-fluid">
+            <!-- Messages -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'success' %}success{% else %}danger{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
           <div class="row">
-            <div class="col-md-3">
-  
-              <!-- Profile Image -->
-              <div class="card card-primary card-outline">
-                <div class="card-body box-profile">
-                  <div class="text-center">
-                    <img class="profile-user-img img-fluid img-circle"
-                         src="{% static 'dist/img/hope.png' %} "
-                         alt="User profile picture">
+            <!-- Left Column - Profile Card -->
+            <div class="col-lg-4">
+              <div class="card shadow-sm border-0">
+                <div class="card-body p-4 text-center">
+                  <div class="mb-4">
+                   <img src="{{ profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%;">
+
                   </div>
-  
-   
-        <!-- Display user information -->
-        <h3 class="profile-username text-center"> {{ request.user.get_full_name }}  </h3>
-        <p class="text-muted text-center"> {% if user.groups.exists %}
-            {{ user.groups.first.name }}
-        {% else %}
-            N/A
-        {% endif %}</p>
-        <ul class="list-group list-group-unbordered mb-3">
-            <li class="list-group-item"><b>Email</b> <p class="float-right"> {{ user.email }}</p></li>
-            {% comment %} <li class="list-group-item"><b>Full Name</b> <p class="float-right">{{ user.first_name }} {{ user.last_name }}</p></li> {% endcomment %}
-                {% comment %} <li class="list-group-item"> <b>Last Name:</b> <p class="float-right">{{ user.last_name }}</p></li> {% endcomment %}
-
-        <!-- Display user profile information -->
-        <li class="list-group-item">   <b>Phone Number:</b><p class="float-right"> {{ profile.phone_number }}</p></li>
-            <li class="list-group-item"><strong>Gender:</strong><p class="float-right"> {{ profile.gender }}</p></li>
-                <li class="list-group-item"><b>NIDA Number:</b><p class="float-right"> {{ profile.nida_number }}</p></li>
-    </div>
-    <a href="{% url 'staff_user:update_profile' %}"class= 'btn btn-primary '>Update Profile</a>
-</div>
-</div>
-
-
-<div class="col-md-9">
-   
-        <div class="card card-primary card-outline ">
-            <div class="card-header ">
-              
-              <h3 class="card-title ">Important Note</h3>
-
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                  <i class="fas fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-            <div class="card-body">
-             Don't share your password and username for your safety
-            </div>
-            <!-- /.card-body -->
-        
-          
-          </div>
-
-   <div class="card card-primary card-outline">
-            <div class="card-header">
-              
-              <h3 class="card-title">Important Note</h3>
-
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                  <i class="fas fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-            <div class="card-body">
-              Remember carefull to make your Request and follow  request status
-            </div>
-            <!-- /.card-body -->
-           
-           
-               
-                <!-- /.card-footer-->
-              </div>
-              
-              <div class="card card-primary card-outline">
-                <div class="card-header">
                   
-                  <h3 class="card-title">Important Note</h3>
-  
-                  <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                      <i class="fas fa-minus"></i>
-                    </button>
-                    <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </div>
+                  <h3 class="font-weight-bold mb-1">{{ request.user.get_full_name }}</h3>
+                  <p class="text-muted mb-3">
+                    {% if user.groups.exists %}
+                        {{ user.groups.first.name }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                  </p>
+                  
+                  <ul class="list-group list-group-flush mb-4 text-left">
+                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span class="font-weight-bold">Email</span>
+                        <span class="text-muted">{{ user.email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span class="font-weight-bold">Phone</span>
+                        <span class="text-muted">{{ profile.phone_number|default:"N/A" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span class="font-weight-bold">Gender</span>
+                        <span class="text-muted">{{ profile.gender|default:"N/A" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                        <span class="font-weight-bold">NIDA Number</span>
+                        <span class="text-muted">{{ profile.nida_number|default:"N/A" }}</span>
+                    </li>
+                  </ul>
+                  
+                  <a href="{% url 'staff_user:update_profile' %}" class="btn btn-primary btn-block rounded-pill py-2">
+                    <i class="fas fa-edit mr-2"></i>Update Profile
+                  </a>
                 </div>
-                <div class="card-body">
-                  If you have concern, suggestion or any question you may contact System Admin
+              </div>
+            </div>
+
+            <!-- Right Column - Notes -->
+            <div class="col-lg-8">
+                <!-- Note 1 -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 font-weight-bold">Security Notice</h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-link text-muted" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="mr-3 text-danger">
+                                <i class="fas fa-shield-alt fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">Never share your password and username with anyone for your account's safety.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- /.card-body -->
+
+                <!-- Note 2 -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 font-weight-bold">Request Guidelines</h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-link text-muted" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="mr-3 text-primary">
+                                <i class="fas fa-clipboard-check fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">Please be careful when making requests and remember to follow up on your request status regularly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Note 3 -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 font-weight-bold">Support Information</h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-link text-muted" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="mr-3 text-success">
+                                <i class="fas fa-headset fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">If you have any concerns, suggestions, or questions, please contact the System Administrator for assistance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </section>
+</div>
 {% endblock content %}
+
+{% block style %}
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+    
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .profile-user-img {
+        border: 4px solid #fff;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .list-group-item {
+        padding: 0.75rem 0;
+        background-color: transparent;
+    }
+    
+    .btn-primary {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border-left: 4px solid;
+    }
+    
+    .alert-success {
+        border-left-color: #10b981;
+    }
+    
+    .alert-danger {
+        border-left-color: #ef4444;
+    }
+    
+    .content-header h1 {
+        color: #1e293b;
+    }
+    
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+    }
+</style>
+{% endblock style %}

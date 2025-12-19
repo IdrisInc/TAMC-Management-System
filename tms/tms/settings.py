@@ -83,18 +83,14 @@ WSGI_APPLICATION = 'tms.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        # 'NAME': BASE_DIR / 'db.sqlite3',  # This will create a SQLite database file in your project directory
-        'NAME':'tamc_db',
-        'USER':'root',
-        'PASSWORD': '1',
-        'HOST': '127.0.0.1',
-        'PORT':'3306',
-    #     'OPTIONS': {
-    #         'ssl': {'ca': None} 
-    #     }
-        
-     }
+        'NAME': 'tamc_db',
+        'USER': 'django_user',
+        'PASSWORD': 'strongpassword',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
 }
+
 
 
 

@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}
+<title>TAMC | Financial Requests</title>
+{% endblock title %}
+
+{% block content %}
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="text-xl font-bold">Financial Requests</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right flex space-x-2">
+                        <li class="breadcrumb-item"><a href="#" class="text-blue-600 hover:text-blue-800">Home</a></li>
+                        <li class="breadcrumb-item"><span class="text-gray-400">/</span></li>
+                        <li class="breadcrumb-item"><a href="#" class="text-blue-600 hover:text-blue-800">Financial Request</a></li>
+                        <li class="breadcrumb-item"><span class="text-gray-400">/</span></li>
+                        <li class="breadcrumb-item active text-gray-600">Submitted Requests</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- New Action Cards Section -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-blue-50 border border-blue-200 rounded-lg shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-blue-100 p-3 rounded-full">
+                                    <i class="fas fa-file-invoice-dollar text-blue-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-medium text-gray-900">Create New Request</h3>
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        Submit a new financial request for petty cash or cheque payments.
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="{% url 'finance:financial_form' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Go to Request Form
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-green-50 border border-green-200 rounded-lg shadow-sm">
+                        <div class="card-body p-6">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 bg-green-100 p-3 rounded-full">
+                                    <i class="fas fa-list-alt text-green-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h3 class="text-lg font-medium text-gray-900">View All Requests</h3>
+                                    <p class="mt-1 text-sm text-gray-600">
+                                        Review all submitted financial requests and their current status.
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="{% url 'finance:request_detail' %}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                            View Requests
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Action Cards Section -->
+
+            <!-- Rest of your existing content -->
+          
+        </div>
+    </section>
+</div>
+
+<!-- ... rest of your existing modals and scripts ... -->
+
+{% endblock %}

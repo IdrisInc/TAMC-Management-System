@@ -4,6 +4,7 @@ from .import views
 app_name = 'finance'
 
 urlpatterns = [
+  path('request/',views.financial_dash, name='financial_dash'),
     path('money-request/', views.money, name='financial_form'), 
     path('request-detail/', views.request_detail_view, name='request_detail'), 
     

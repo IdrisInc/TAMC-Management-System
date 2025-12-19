@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from .models import FinancialRequest, Item
 from django.urls import reverse
 from .utility import determine_user_role
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, HttpResponse
 from django.db.models import Q
 from django.db.models import Sum,F
 import datetime
@@ -42,57 +42,70 @@ from .tasks import delete_rejected_financial_request
 
 
 
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import HttpResponse
+from .models import FinancialRequest, Item
+
 @login_required(login_url='staff_user:staff_login_process')
 def money(request):
     if request.method == 'POST':
-        # Retrieve data from the POST request
         amount_numeric = request.POST.get('amount_numeric')
         amount_words = request.POST.get('amount_words')
         purpose = request.POST.get('purpose')
-        total_request = request.POST.get('total_request')
         items = request.POST.getlist('item[]')
         quantities = request.POST.getlist('quantity[]')
         prices = request.POST.getlist('price[]')
 
-        # Validate the data
-        if not (amount_numeric and amount_words and purpose and total_request):
+        # Validation
+        if not (amount_numeric and amount_words and purpose):
             return HttpResponse('Please fill in all required fields.')
 
         if not all([item and quantity and price for item, quantity, price in zip(items, quantities, prices)]):
             return HttpResponse('Please fill in all item fields.')
 
-        # Convert numeric fields to appropriate data types
         try:
-            amount_numeric = float(amount_numeric)
-            total_request = float(total_request)
+            amount_numeric_value = float(amount_numeric.replace(",", "").replace("TSh", "").strip())
             quantities = [int(quantity) for quantity in quantities]
             prices = [float(price) for price in prices]
         except ValueError:
             return HttpResponse('Invalid numeric input.')
 
-        # Create a financial request and associated items within a transaction
+        total_request = sum(quantity * price for quantity, price in zip(quantities, prices))
+
         with transaction.atomic():
-            # Save the financial request
             financial_request = FinancialRequest.objects.create(
-                amount_numeric=amount_numeric,
+                amount_numeric=amount_numeric_value,
                 amount_words=amount_words,
                 purpose=purpose,
                 total_request=total_request,
-                user=request.user  # Associate the request with the authenticated user
+                user=request.user
             )
 
-            # Save items related to the financial request
             for item, quantity, price in zip(items, quantities, prices):
-                Item.objects.create(financial_request=financial_request, item_name=item, quantity=quantity, price=price)
+                Item.objects.create(
+                    financial_request=financial_request,
+                    item_name=item,
+                    quantity=quantity,
+                    price=price
+                )
 
-        return redirect('finance:request_detail')  # Redirect to a success page
-    return render(request, 'financial/money.html')
+        return redirect('finance:request_detail')
+
+    return render(request, 'financial/new_money.html')
 
 
 
 
 
 from django.http import JsonResponse
+@login_required (login_url='staff_user:staff_login_process')
+def financial_dash(request):
+    
+    return render (request, 'financial/new_financial_details.html')
+
 
 @login_required(login_url='staff_user:staff_login_process')
 def request_detail_view(request):
@@ -167,7 +180,7 @@ def request_detail_view(request):
         }
         return JsonResponse(response_data)
 
-    return render(request, 'financial/financial_req_detail.html', {
+    return render(request, 'financial/new_financial_req_detail.html', {
         'user_requests': user_requests,
         'general_requests': general_requests_page_obj,  # Use the paginated object
         'user_role': user_role,

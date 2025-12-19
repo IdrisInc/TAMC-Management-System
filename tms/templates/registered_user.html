@@ -1,174 +1,234 @@
 {% extends 'base/base.html' %}
 
-{% block title %}
-<title>
-   TAMC | Registered Users
-</title>
-{% endblock title %}
+{% block title %}User Management{% endblock %}
 
 {% block content %}
-<div class="content-wrapper">
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1>All Users</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Users</li>
-                    </ol>
-                </div>
-            </div>
+<div class="space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
+        <a href="{% url 'staff_user:user_registration' %}" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+            <i class="fas fa-plus mr-2"></i> Add User
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="rounded-lg bg-white shadow p-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Search</label>
+            <input type="text" id="searchInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="Search by name or email">
         </div>
-    </section>
-  
-    <section class="content">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card card-primary">
-                        <div class="card-header">
-                            <h3 class="card-title">Registered Users</h3>
-                            <div class="card-tools">
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="input-group input-group-sm" style="width: 250px;">
-                                            <form method="GET" action="{% url 'staff_user:registered_users' %}">
-                                                <input type="text" id="searchInput" onkeyup="searchUsers()" placeholder="Search by position or first name..." class="form-control">
-                                            </form>
-                                        </div>
-                                    </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Role</label>
+            <select id="roleInput" class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 sm:text-sm">
+                <option value="">All Roles</option>
+                {% for role in roles %}
+                <option value="{{ role.name }}">{{ role.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Status</label>
+            <select id="statusInput" class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 sm:text-sm">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+                    <th class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Last Active</th>
+                    <th class="relative py-3.5 pl-3 pr-4 sm:pr-6"><span class="sr-only">Actions</span></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white" id="userTableBody">
+                {% for user in users %}
+                <tr class="user-row">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6 name">
+                        <div class="flex items-center">
+                            {% if user.profile.avatar %}
+                                <img class="h-10 w-10 rounded-full" src="{{ user.profile.avatar.url }}" alt="Avatar">
+                            {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-600">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
                                 </div>
-                            </div>
+                            {% endif %}
+                            <div class="ml-4">{{ user.get_full_name }}</div>
                         </div>
-                        <div class="card-body table-responsive p-0">
-                            <table class="table table-head-fixed text-nowrap table-hover table-striped" id="userTable">
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Email</th>
-                                        <th>First Name</th>
-                                        <th>Last Name</th>
-                                        <th>Position</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userTableBody">
-                                    {% for user in users %}
-                                    <tr>
-                                        <td>{{ user.username }}</td>
-                                        <td>{{ user.email }}</td>
-                                        <td>{{ user.first_name }}</td>
-                                        <td>{{ user.last_name }}</td>
-                                        <td>
-                                            {% if user.groups.exists %}
-                                                {{ user.groups.first.name }}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <!-- Empty case for rendering no users -->
-                                    <tr class="no-results">
-                                        <td colspan="5">No results found.</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    </td>
+                    <td class="email">{{ user.email }}</td>
+                    <td class="role">
+                        {% for group in user.groups.all %}{{ group.name }} {% endfor %}
+                    </td>
+                    <td class="status">{% if user.is_active %}Active{% else %}Inactive{% endif %}</td>
+                    <td>{{ user.last_login|date:"M d, Y" }}</td>
+                    <td class="text-right">
+                        <div class="flex space-x-2 justify-end">
+                            <button
+    onclick="openUserModal(this)"
+    data-name="{{ user.get_full_name }}"
+    data-email="{{ user.email }}"
+    data-department="{{ user.profile.department|default:'-' }}"
+    data-status="{% if user.is_active %}Active{% else %}Inactive{% endif %}"
+    data-last-login="{{ user.last_login|date:'M d, Y' }}"
+    data-roles="{% for g in user.groups.all %}{{ g.name }} {% endfor %}"
+    class="text-blue-600 hover:text-blue-900"
+>
+    <i class="fas fa-eye"></i>
+</button>
+
+<a href="{% url 'staff_user:view_user_detail' user.id %}" class="text-indigo-600 hover:text-indigo-900">
+    <i class="fas fa-edit"></i>
+</a>
+
+                            <form method="post" action="" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
-  
-                        <!-- Pagination Controls -->
-                        <div class="card-footer">
-                            <button id="prevPage" disabled>Previous</button>
-                            <span id="pageNumber">Page 1</span>
-                            <button id="nextPage">Next</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-3 py-4 text-center text-gray-500">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- View User Modal -->
+<div id="userModal" class="fixed inset-0 z-[9999] hidden">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeUserModal()"></div>
+
+    <!-- Modal Box -->
+    <div class="relative mx-auto mt-24 max-w-2xl bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+            <h2 class="text-lg font-semibold text-gray-900">User Details</h2>
+            <button onclick="closeUserModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-    </section>
+
+        <!-- Content -->
+        <div id="userModalContent" class="p-6">
+            <!-- JS will inject content here -->
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end px-6 py-4 border-t bg-gray-50">
+            <button onclick="closeUserModal()"
+                class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium hover:bg-gray-300">
+                Close
+            </button>
+        </div>
+    </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script>
-    function searchUsers() {
-        var input, filter, table, tr, td, i, txtValue, found;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("userTable");
-        tr = table.getElementsByTagName("tr");
-        var noResultsRow = table.querySelector(".no-results");
-        found = false;
+const searchInput = document.getElementById('searchInput');
+const roleInput = document.getElementById('roleInput');
+const statusInput = document.getElementById('statusInput');
+const tableBody = document.getElementById('userTableBody');
+const rows = tableBody.getElementsByClassName('user-row');
 
-        // Loop through all table rows except the first one (table head)
-        for (i = 1; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td");
-            // Reset found flag for each row
-            var rowContainsText = false;
-            // Loop through all table data cells in the current row
-            for (var j = 0; j < td.length; j++) {
-                txtValue = td[j].textContent || td[j].innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    rowContainsText = true;
-                    break;
-                }
-            }
-            // Display or hide the row based on search result
-            if (rowContainsText) {
-                tr[i].style.display = "";
-                found = true;
-            } else {
-                tr[i].style.display = "none";
-            }
-        }
+function filterUsers() {
+    const searchText = searchInput.value.toLowerCase();
+    const roleText = roleInput.value.toLowerCase();
+    const statusText = statusInput.value.toLowerCase();
 
-        // Handle the display of "No results found" row
-        if (noResultsRow) {
-            noResultsRow.style.display = found ? "none" : "table-row";
+    for (let row of rows) {
+        const name = row.querySelector('.name').textContent.toLowerCase();
+        const email = row.querySelector('.email').textContent.toLowerCase();
+        const role = row.querySelector('.role').textContent.toLowerCase();
+        const status = row.querySelector('.status').textContent.toLowerCase();
+
+        if (
+            (name.includes(searchText) || email.includes(searchText)) &&
+            (role.includes(roleText) || roleText === '') &&
+            (status.includes(statusText) || statusText === '')
+        ) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
     }
+}
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const tableBody = document.getElementById("userTableBody");
-        const rows = tableBody.getElementsByTagName("tr");
-        const rowsPerPage = 5; // Adjust this number to control how many rows per page
-        let currentPage = 1;
-    
-        function displayTable(page) {
-            const start = (page - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            Array.from(rows).forEach((row, index) => {
-                row.style.display = (index >= start && index < end) ? "" : "none";
-            });
-            document.getElementById("pageNumber").textContent = `Page ${page}`;
-        }
-    
-        function updatePagination() {
-            document.getElementById("prevPage").disabled = currentPage === 1;
-            document.getElementById("nextPage").disabled = currentPage === Math.ceil(rows.length / rowsPerPage);
-        }
-    
-        document.getElementById("prevPage").addEventListener("click", function () {
-            if (currentPage > 1) {
-                currentPage--;
-                displayTable(currentPage);
-                updatePagination();
-            }
-        });
-    
-        document.getElementById("nextPage").addEventListener("click", function () {
-            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
-                currentPage++;
-                displayTable(currentPage);
-                updatePagination();
-            }
-        });
-    
-        // Initial table display
-        displayTable(currentPage);
-        updatePagination();
-    });
+searchInput.addEventListener('input', filterUsers);
+roleInput.addEventListener('change', filterUsers);
+statusInput.addEventListener('change', filterUsers);
+
+
+function openUserModal(btn) {
+    const modal = document.getElementById('userModal');
+    const content = document.getElementById('userModalContent');
+
+    content.innerHTML = `
+        <div class="space-y-4">
+            <div>
+                <p class="text-sm text-gray-500">Full Name</p>
+                <p class="font-medium">${btn.dataset.name}</p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Email</p>
+                <p class="font-medium">${btn.dataset.email}</p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Department</p>
+                <p class="font-medium">${btn.dataset.department}</p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Roles</p>
+                <p class="font-medium">${btn.dataset.roles}</p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Status</p>
+                <span class="inline-flex rounded-md px-2 py-1 text-xs font-medium
+                    ${btn.dataset.status === 'Active'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'}">
+                    ${btn.dataset.status}
+                </span>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">Last Login</p>
+                <p class="font-medium">${btn.dataset.lastLogin}</p>
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').classList.add('hidden');
+}
+
+// Close with ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeUserModal();
+});
+
+
 </script>
 {% endblock %}

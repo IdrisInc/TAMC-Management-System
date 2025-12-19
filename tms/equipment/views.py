@@ -24,7 +24,12 @@ from django.shortcuts import redirect, render
 from .models import Equipment
 
 @login_required(login_url='staff_user:staff_login_process')
-@role_required('Technical', 'Technical Manager')
+def task_home(request):
+    
+    return render(request,'vifaa/new_task_home.html')
+
+@login_required(login_url='staff_user:staff_login_process')
+# @role_required('Technical', 'Technical Manager')
 @permission_required('auth.add_user', raise_exception=True)
 def register_equipment(request):
     if request.method == 'POST':
@@ -78,7 +83,7 @@ def register_equipment(request):
     return render(request, 'vifaa/equip_register.html', context)
 
 
-@login_required(login_url='staff_user:staff_login_process')
+# @login_required(login_url='staff_user:staff_login_process')
 def equipment_list(request):
     user_role = determine_user_role(request.user)
     query = request.GET.get('q', '')  # Get the search query
@@ -163,7 +168,7 @@ from datetime import date
 from .decorators import role_required
 
 @login_required(login_url='staff_user:staff_login_process')
-@role_required('Production Manager', 'Radio / TV Presenter', 'Editor')
+# @role_required('Production Manager', 'Radio / TV Presenter', 'Editor')
 def task_assignment(request):
     current_user = request.user
 
@@ -228,7 +233,7 @@ def task_assignment(request):
         'assignment_details_choices': AssignmentDetail.objects.all(),
     }
 
-    return render(request, 'vifaa/equipment_request.html', context)
+    return render(request, 'vifaa/new_equipment_request.html', context)
 
 @login_required(login_url='staff_user:staff_login_process')
 def view_assignments(request):
@@ -331,7 +336,7 @@ def view_assignments(request):
         'approved_requests': approved_requests,
     }
 
-    return render(request, 'vifaa/equip_request_view.html', context)
+    return render(request, 'vifaa/new_equip_request_view.html', context)
 
 
 @login_required(login_url='staff_user:staff_login_process')

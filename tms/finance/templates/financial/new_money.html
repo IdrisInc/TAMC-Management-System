@@ -1,0 +1,148 @@
+{% extends "base/base.html" %}
+{% block title %}<title>TAMC | Financial Request Form</title>{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-semibold text-gray-900">Financial Request</h1>
+    </div>
+
+    <div class="bg-white rounded-lg shadow border">
+        <div class="px-6 py-4 border-b">
+            <h3 class="text-lg font-semibold text-gray-800">Petty/Cheque Request</h3>
+        </div>
+
+        <form method="post" onsubmit="return validateForm()" class="p-6 space-y-6">
+            {% csrf_token %}
+            <div>
+                <label for="purpose" class="block text-sm font-medium">Purpose</label>
+                <input type="text" id="purpose" name="purpose" required
+                       class="block w-full px-3 py-2 border rounded-md shadow-sm" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium mb-2">Description of Request</label>
+                <table class="w-full text-sm border rounded" id="descriptionTable">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2">Item</th>
+                            <th class="px-3 py-2">Quantity</th>
+                            <th class="px-3 py-2">Price</th>
+                            <th class="px-3 py-2">Total</th>
+                            <th class="px-3 py-2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <tr>
+                            <td><input type="text" name="item[]" required class="border px-2 py-1 w-full" /></td>
+                            <td><input type="number" name="quantity[]" value="0" class="border px-2 py-1 w-full quantity" /></td>
+                            <td><input type="number" name="price[]" value="0" class="border px-2 py-1 w-full price" /></td>
+                            <td><input type="text" readonly class="border bg-gray-100 px-2 py-1 w-full total_request" /></td>
+                            <td><button type="button" onclick="removeRow(this)" class="text-red-600">Remove</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" onclick="addRow()" class="mt-3 bg-gray-800 text-white px-4 py-2 rounded">Add Item</button>
+            </div>
+
+            <div id="totalSummary" class="p-4 bg-gray-50 border rounded-md">
+                <h2 class="text-lg font-semibold">Total Summary</h2>
+                <div class="flex flex-col sm:flex-row gap-4 mt-2">
+                    <input type="text" id="amountNumeric" name="amount_numeric" readonly
+                           class="w-full sm:w-1/3 border px-4 py-2 font-bold text-green-600 text-center rounded" />
+                    <input type="text" id="amountWords" name="amount_words" readonly
+                           class="w-full sm:w-2/3 border px-4 py-2 font-bold text-blue-600 text-center rounded" />
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-semibold py-2 rounded">Submit Request</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function addRow() {
+    const row = document.querySelector("#itemsBody tr").cloneNode(true);
+    row.querySelectorAll("input").forEach(input => {
+        input.value = input.classList.contains("total_request") ? "" : input.type === "text" ? "" : "0";
+    });
+    document.getElementById("itemsBody").appendChild(row);
+    attachInputListeners(row);
+}
+
+function removeRow(btn) {
+    const row = btn.closest("tr");
+    const table = document.getElementById("itemsBody");
+    if (table.rows.length > 1) {
+        row.remove();
+        calculateTotal();
+    }
+}
+
+function attachInputListeners(row) {
+    row.querySelector(".quantity").addEventListener("input", () => updateRowTotal(row));
+    row.querySelector(".price").addEventListener("input", () => updateRowTotal(row));
+}
+
+function updateRowTotal(row) {
+    const quantity = parseFloat(row.querySelector(".quantity").value) || 0;
+    const price = parseFloat(row.querySelector(".price").value) || 0;
+    const total = (quantity * price).toFixed(2);
+    row.querySelector(".total_request").value = total;
+    calculateTotal();
+}
+
+function calculateTotal() {
+    let total = 0;
+    document.querySelectorAll(".total_request").forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+
+    const totalFormatted = total.toFixed(2);
+    document.getElementById("amountNumeric").value = 'TSh ' + Number(totalFormatted).toLocaleString();
+    document.getElementById("amountWords").value = numberToWords(total);
+}
+
+function numberToWords(num) {
+    if (num === 0) return "Zero";
+
+    const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+               "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+               "Seventeen", "Eighteen", "Nineteen"];
+    const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+    const g = ["", "Thousand", "Million", "Billion"];
+
+    function chunkToWords(n) {
+        let str = "";
+        if (n >= 100) {
+            str += a[Math.floor(n / 100)] + " Hundred ";
+            n %= 100;
+        }
+        if (n >= 20) {
+            str += b[Math.floor(n / 10)] + " ";
+            n %= 10;
+        }
+        if (n > 0) str += a[n] + " ";
+        return str.trim();
+    }
+
+    const parts = num.toFixed(2).split(".");
+    let intPart = parseInt(parts[0]);
+    let decPart = parseInt(parts[1]);
+
+    let word = "", i = 0;
+    while (intPart > 0) {
+        const chunk = intPart % 1000;
+        if (chunk) word = chunkToWords(chunk) + " " + g[i] + " " + word;
+        intPart = Math.floor(intPart / 1000);
+        i++;
+    }
+
+    if (decPart > 0) word += ` and ${chunkToWords(decPart)} Cents`;
+
+    return word.trim();
+}
+
+document.querySelectorAll("#itemsBody tr").forEach(row => attachInputListeners(row));
+</script>
+{% endblock %}
